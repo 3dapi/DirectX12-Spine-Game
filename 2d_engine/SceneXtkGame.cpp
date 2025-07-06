@@ -86,25 +86,6 @@ int SceneXtkGame::Destroy()
 }
 
 #pragma region Frame Update
-// Executes the basic game loop.
-void SceneXtkGame::Tick()
-{
-	m_timer.Tick([&]()
-	{
-		Update(m_timer);
-	});
-
-	// Only update audio engine once per frame
-	if(!m_audEngine->IsCriticalError() && m_audEngine->Update())
-	{
-		// Setup a retry in 1 second
-		m_audioTimerAcc = 1.f;
-		m_retryDefault = true;
-	}
-
-	Render();
-}
-
 // Updates the world.
 int SceneXtkGame::Update(const std::any& t)
 {

@@ -15,7 +15,6 @@
 #include "Common/GameTimer.h"
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
-#include "StepTimer.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -33,16 +32,11 @@ public:
 	int		Update(const std::any& t)				override;
 	int		Render()								override;
 protected:
-	void Tick();
 	void CreateDeviceDependentResources();
 	void CreateWindowSizeDependentResources();
 	void NewAudioDevice();
 
 	void XM_CALLCONV DrawGrid(DirectX::FXMVECTOR xAxis,DirectX::FXMVECTOR yAxis,DirectX::FXMVECTOR origin,size_t xdivs,size_t ydivs,DirectX::GXMVECTOR color);
-
-
-	// Rendering loop timer.
-	DX::StepTimer                           m_timer;
 
 	// Input devices.
 	std::unique_ptr<DirectX::GamePad>           m_gamePad;

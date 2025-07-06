@@ -73,6 +73,9 @@ inline void SAFE_RELEASE_VECTOR(std::vector<T*>& vec) {
 	vec.clear();
 }
 
+inline uint32_t rgba2uint32(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) { return (r) | (g<<8) | (b<<16) | (a<<24); }
+inline uint32_t bgra2uint32(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) { return (b) | (g<<8) | (r<<16) | (a<<24); }
+
 inline std::wstring utf8ToWstr(const std::string& str)
 {
 	int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);

@@ -16,6 +16,9 @@
     <Filter Include="assets">
       <UniqueIdentifier>{7c3405bb-5876-4a15-9d39-5194a7d4995a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{b614dd72-7e18-4d48-9df7-86ac17b967b8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="_main.cpp">
@@ -157,14 +160,20 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\Default.hlsl">
-      <Filter>res</Filter>
+    <FxCompile Include="Shaders\LightingUtil.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\spine.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\TreeSprite.hlsl">
+      <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\2dsprite.hlsl">
-      <Filter>res</Filter>
+      <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\spine.fx">
-      <Filter>res</Filter>
+    <FxCompile Include="Shaders\Default.hlsl">
+      <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

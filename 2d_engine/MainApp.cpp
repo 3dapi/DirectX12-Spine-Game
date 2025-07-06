@@ -128,9 +128,9 @@ int MainApp::init(const std::any& initialValue /* = */)
 		auto scene = std::make_unique<SceneSpine>();
 		if(scene)
 		{
-			//if(SUCCEEDED(scene->Init()))
+			if(SUCCEEDED(scene->Init()))
 			{
-				//m_pSceneSpine = std::move(scene);
+				m_pSceneSpine = std::move(scene);
 			}
 		}
 	}
@@ -138,10 +138,10 @@ int MainApp::init(const std::any& initialValue /* = */)
 		auto scene=std::make_unique<SceneSample2D>();
 		if(scene)
 		{
-			if(SUCCEEDED(scene->Init()))
-			{
-				m_pSceneSample = std::move(scene);
-			}
+			//if(SUCCEEDED(scene->Init()))
+			//{
+			//	m_pSceneSample = std::move(scene);
+			//}
 		}
 	}
 

@@ -75,9 +75,12 @@ int SceneSample2D::Destroy()
 	m_rscVtxGPU		.Reset();
 	m_rscIdxGPU		.Reset();
 
-	m_cnstMVP		->Unmap(0, nullptr);
-	m_cnstMVP		.Reset();
-	m_ptrMVP		= {};
+	if(m_ptrMVP)
+	{
+		m_cnstMVP	->Unmap(0, nullptr);
+		m_cnstMVP	.Reset();
+		m_ptrMVP	= {};
+		}
 	m_spineTextureRsc	.Reset();
 	m_spineTexture	= {};
 
@@ -226,7 +229,7 @@ int SceneSample2D::InitResource()
 		if(!shaderVtx)
 			return E_FAIL;
 		shaderPxl = G2::DXCompileShaderFromFile("Shaders/spine.hlsl", "ps_5_0", "main_ps");
-		if(FAILED(!shaderPxl))
+		if(!shaderPxl)
 			return E_FAIL;
 	}
 	// Create the pipeline state once the shaders are loaded.

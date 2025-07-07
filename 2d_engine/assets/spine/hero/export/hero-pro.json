@@ -101,7 +101,7 @@
 	{ "name": "upper-arm2", "bone": "upper-arm2", "attachment": "upper-arm2" },
 	{ "name": "sword", "bone": "root" },
 	{ "name": "hand2", "bone": "hand2", "attachment": "hand2" },
-	{ "name": "weapon-sword", "bone": "hand2", "attachment": "sword" },
+	{ "name": "weapon-sword", "bone": "weapon-sword", "attachment": "sword" },
 	{ "name": "handle", "bone": "weapon-morningstar", "attachment": "handle" },
 	{ "name": "fingers", "bone": "hand2", "attachment": "fingers" },
 	{ "name": "forearm2", "bone": "forearm2", "attachment": "forearm2" },
@@ -179,6 +179,30 @@
 					"width": 146,
 					"height": 159
 				}
+			},
+			"chain-ball": {
+				"chain-ball": { "x": 34.46, "scaleX": 1.0961, "scaleY": 1.0961, "width": 64, "height": 68 }
+			},
+			"chain-flat": {
+				"chain-flat": { "x": 7.5, "width": 16, "height": 5 }
+			},
+			"chain-flat2": {
+				"chain-flat": { "x": 7.5, "width": 16, "height": 5 }
+			},
+			"chain-flat3": {
+				"chain-flat": { "x": 7.5, "width": 16, "height": 5 }
+			},
+			"chain-flat4": {
+				"chain-flat": { "x": 7.5, "width": 16, "height": 5 }
+			},
+			"chain-round": {
+				"chain-round": { "x": 8, "width": 17, "height": 14 }
+			},
+			"chain-round2": {
+				"chain-round": { "x": 8, "width": 17, "height": 14 }
+			},
+			"chain-round3": {
+				"chain-round": { "x": 8, "width": 17, "height": 14 }
 			},
 			"eyes": {
 				"eyes": {

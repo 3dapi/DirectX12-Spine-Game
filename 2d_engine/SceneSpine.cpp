@@ -75,7 +75,7 @@ int SceneSpine::Destroy()
 int SceneSpine::Update(const std::any& t)
 {
 	GameTimer gt = std::any_cast<GameTimer>(t);
-	auto deltaTime = gt.DeltaTime();
+	auto deltaTime = gt.DeltaTime() * 0.3f;
 
 	float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
 
@@ -101,10 +101,33 @@ int SceneSpine::Update(const std::any& t)
 	m_spineSkeleton->update(deltaTime);
 
 	// Calculate the new pose
-	m_spineSkeleton->updateWorldTransform(spine::Physics_Update);
+	m_spineSkeleton->updateWorldTransform(spine::Physics_None);
 
 	// Update spine draw buffer
 	UpdateDrawBuffer();
+	spine::Slot* slot = m_spineSkeleton->findSlot("weapon-sword");
+	if (slot) {
+		//const char* slotName = slot->getData().getName().buffer();
+		//const char* boneName = slot->getBone().getData().getName().buffer();
+		//printf("[Slot '%s'] → [Bone '%s']\n", slotName, boneName);
+	}
+	spine::Bone* bone = m_spineSkeleton->findBone("weapon-sword");
+	//if (bone) {
+	//	printf("[Bone '%s'] local rotation: %.2f world rotation: %.2f\n",
+	//		bone->getData().getName().buffer(),
+	//		bone->getRotation(),
+	//		bone->getWorldRotationX());
+	//}
+
+	//spine::Bone* parent = m_spineSkeleton->findBone("weapon-sword")->getParent();
+	//if (parent)
+	//	printf("Parent bone: %s, world rotation: %.2f\n", parent->getData().getName().buffer(), parent->getWorldRotationX());
+
+	//spine::Bone* bone = m_spineSkeleton->findBone("weapon-sword");
+	//printf("inherit: %d\n", bone->getData().getInherit());
+
+	bone->updateWorldTransform(); // 단독 호출
+	printf("after update: world rotation = %.2f\n", bone->getWorldRotationX());
 
 	return S_OK;
 }
@@ -182,7 +205,7 @@ int SceneSpine::UpdateDrawBuffer()
 			int c = 0;
 			c = 0;
 		}
-		printf("order: %d  name %s\n", (int)i, name);
+		//printf("order: %d  name %s\n", (int)i, name);
 
 		if (isMesh)
 		{
@@ -407,9 +430,16 @@ int SceneSpine::InitSpine(const string& str_atlas, const string& str_skel)
 		printf("\t\t%s\n", n.c_str());
 	}
 	
+
+	m_spineSkeleton->setSkin("default");               // 스킨 변경
+	m_spineSkeleton->setSlotsToSetupPose();          // ← 슬롯(attachment) 갱신
+	m_spineSkeleton->updateWorldTransform(spine::Physics_None);         // ← 본 transform 계산
+
+
 	AnimationStateData animationStateData(m_spineSkeletonData);
 	animationStateData.setDefaultMix(0.2f);
 	m_spineAniState = new AnimationState(&animationStateData);
+
 	//m_spineAniState->setAnimation(0, "gun-holster", false);
 	//m_spineAniState->addAnimation(0, "roar", false, 0.8F);
 	//m_spineAniState->addAnimation(0, "walk", true, 0);

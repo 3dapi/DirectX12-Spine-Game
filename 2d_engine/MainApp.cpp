@@ -138,7 +138,7 @@ int MainApp::init(const std::any& initialValue /* = */)
 
 		//std::make_tuple(std::string("assets/spine/raptor/raptor.atlas")					, std::string("assets/spine/raptor/raptor-pro.json")),
 		//std::make_tuple(std::string("assets/spine/goblins/goblins-pma.atlas")				, std::string("assets/spine/goblins/goblins-pro.skel")),
-		std::make_tuple(std::string("assets/spine/hero/export/hero-pma.atlas")				, std::string("assets/spine/hero/export/hero-pro.json")),
+		std::make_tuple(std::string("assets/spine/hero/export/hero-pro.atlas")				, std::string("assets/spine/hero/export/hero-pro.json")),
 	};
 
 	for(const auto& rsc: spine_rsc)

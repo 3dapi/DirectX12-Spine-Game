@@ -1,6 +1,8 @@
 ﻿//--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // MainApp
 
+#include <string>
+#include <tuple>
 #include <d3d12.h>
 #include "MainApp.h"
 #include "DDSTextureLoader.h"
@@ -15,6 +17,8 @@
 #include "SceneXtkGame.h"
 #include "SceneSpine.h"
 #include "SceneSample2D.h"
+
+using namespace std;
 
 static MainApp* g_pMain{};
 G2::IG2AppFrame* G2::IG2AppFrame::instance()
@@ -124,13 +128,28 @@ int MainApp::init(const std::any& initialValue /* = */)
 			}
 		}
 	}
+
+	using SpineRsc = std::tuple<std::string, std::string>;
+
+	vector< SpineRsc> spine_rsc =
+	{
+		//std::make_tuple(std::string("assets/spine/celestial-circus/celestial-circus.atlas")	, std::string("assets/spine/celestial-circus/celestial-circus.skel")),
+		//std::make_tuple(std::string("assets/spine/dragon/dragon-pma.atlas")					, std::string("assets/spine/dragon/dragon-ess.skel")),
+
+		//std::make_tuple(std::string("assets/spine/raptor/raptor.atlas")					, std::string("assets/spine/raptor/raptor-pro.json")),
+		//std::make_tuple(std::string("assets/spine/goblins/goblins-pma.atlas")				, std::string("assets/spine/goblins/goblins-pro.skel")),
+		std::make_tuple(std::string("assets/spine/hero/export/hero-pma.atlas")				, std::string("assets/spine/hero/export/hero-pro.json")),
+	};
+
+	for(const auto& rsc: spine_rsc)
 	{
 		auto scene = std::make_unique<SceneSpine>();
 		if(scene)
 		{
-			if(SUCCEEDED(scene->Init()))
+			auto initArgs = rsc;
+			if(SUCCEEDED(scene->Init(initArgs)))
 			{
-				m_pSceneSpine = std::move(scene);
+				m_pSceneSpine.push_back(std::move(scene));
 			}
 		}
 	}
@@ -152,7 +171,8 @@ int MainApp::destroy()
 {
 	m_pSceneMesh	= {};
 	m_pSceneXKT		= {};
-	m_pSceneSpine	= {};
+	if(!m_pSceneSpine.empty())
+		m_pSceneSpine.clear();
 
 	FactoryPipelineState::instance()->UnLoadAll();
 	FactorySignature::instance()->UnLoadAll();
@@ -182,8 +202,10 @@ int MainApp::Update(const std::any& t)
 		m_pSceneMesh->Update(t);
 	if(m_pSceneXKT)
 		m_pSceneXKT->Update(t);
-	if(m_pSceneSpine)
-		m_pSceneSpine->Update(t);
+	for (auto& spine : m_pSceneSpine)
+	{
+		spine->Update(t);
+	}
 
 	if(m_pSceneSample)
 		m_pSceneSample->Update(t);
@@ -239,9 +261,10 @@ int MainApp::Render()
 		m_pSceneMesh->Render();
 	if(m_pSceneXKT)
 		m_pSceneXKT->Render();
-	if(m_pSceneSpine)
-		m_pSceneSpine->Render();
-
+	for (auto& spine : m_pSceneSpine)
+	{
+		spine->Render();
+	}
 	if(m_pSceneSample)
 		m_pSceneSample->Render();
 

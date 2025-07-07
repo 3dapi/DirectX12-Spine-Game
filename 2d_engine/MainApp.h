@@ -16,6 +16,7 @@
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
 
+using namespace std;
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 using namespace G2;
@@ -45,6 +46,6 @@ protected:
 
 	unique_ptr<IG2Scene>					m_pSceneMesh	{};
 	unique_ptr<IG2Scene>					m_pSceneXKT		{};
-	unique_ptr<IG2Scene>					m_pSceneSpine	{};
+	vector<unique_ptr<IG2Scene> >			m_pSceneSpine	;
 	unique_ptr<IG2Scene>					m_pSceneSample	{};
 };

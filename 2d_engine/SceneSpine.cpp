@@ -1,6 +1,7 @@
 ﻿
 #include <any>
 #include <filesystem>
+#include <tuple>
 #include <d3d12.h>
 #include "DDSTextureLoader.h"
 #include "Common/D12DDSTextureLoader.h"
@@ -19,6 +20,7 @@
 #include "GraphicsMemory.h"
 #include "SceneSpine.h"
 
+using namespace std;
 using std::any_cast;
 using namespace DirectX;
 using namespace spine;
@@ -34,10 +36,15 @@ SceneSpine::~SceneSpine()
 	Destroy();
 }
 
-int SceneSpine::Init(const std::any&)
+int SceneSpine::Init(const std::any& initial_value)
 {
 	HRESULT hr = S_OK;
-	hr = InitSpine("assets/spine/raptor/raptor-pma.atlas", "assets/spine/raptor/raptor-pro.json");
+	using RcvTuple = std::tuple<std::string, std::string>;
+	const auto& args = std::any_cast<const RcvTuple&>(initial_value);
+	decltype(auto) atlasPath = std::get<0>(args);
+	decltype(auto) jsonPath = std::get<1>(args);
+
+	hr = InitSpine(atlasPath, jsonPath);
 	if (FAILED(hr))
 		return hr;
 	hr = InitForDevice();
@@ -149,11 +156,15 @@ int SceneSpine::UpdateDrawBuffer()
 		return hr;
 	
 	m_drawCount = {};
+	//printf("------------------------------------------------------------\n\n");
 	const auto& drawOrder = m_spineSkeleton->getDrawOrder();
-	for(size_t i = 0; i < drawOrder.size(); ++i)
+	const auto slotCount = drawOrder.size();
+	for(size_t i = 0; i < slotCount; ++i)
 	{
 		auto* slot = drawOrder[i];
+		auto name = slot->getData().getName().buffer();
 		auto* attachment = slot->getAttachment();
+
 		if(!attachment)
 			continue;
 
@@ -165,6 +176,13 @@ int SceneSpine::UpdateDrawBuffer()
 		auto isResion = attachment->getRTTI().isExactly(spine::RegionAttachment::rtti);
 		if (!(isMesh || isResion))
 			continue;
+
+		if (0 == strcmp(name, "weapon-sword"))
+		{
+			int c = 0;
+			c = 0;
+		}
+		printf("order: %d  name %s\n", (int)i, name);
 
 		if (isMesh)
 		{
@@ -334,7 +352,7 @@ int SceneSpine::InitSpine(const string& str_atlas, const string& str_skel)
 
 	filesystem::path str_path(str_skel);
 	m_spineAtlas = new Atlas(str_atlas.c_str(),this);
-	if(str_path.extension().generic_string().compare("json"))
+	if(0 == str_path.extension().generic_string().compare(".json"))
 	{
 		SkeletonJson skl(m_spineAtlas);
 		m_spineSkeletonData = skl.readSkeletonDataFile(str_skel.c_str());
@@ -382,16 +400,28 @@ int SceneSpine::InitSpine(const string& str_atlas, const string& str_skel)
 	m_maxIdxCount = UINT( (maxIndexCount>8) ? maxIndexCount : 8 );
 	m_drawBuf.resize(size_t(3+ drawOrder.size() * 1.2), {});
 
+
+	printf("%s\n", str_atlas.c_str());
+	for(const auto& n: m_spineAnimations)
+	{
+		printf("\t\t%s\n", n.c_str());
+	}
+	
 	AnimationStateData animationStateData(m_spineSkeletonData);
 	animationStateData.setDefaultMix(0.2f);
 	m_spineAniState = new AnimationState(&animationStateData);
-	m_spineAniState->setAnimation(0, "gun-holster", false);
-	m_spineAniState->addAnimation(0, "roar", false, 0.8F);
-	m_spineAniState->addAnimation(0, "walk", true, 0);
+	//m_spineAniState->setAnimation(0, "gun-holster", false);
+	//m_spineAniState->addAnimation(0, "roar", false, 0.8F);
+	//m_spineAniState->addAnimation(0, "walk", true, 0);
+	m_spineAniState->setAnimation(0, "attack", true);
 
-	m_spineSkeleton->setPosition(0.0F, -300.0F);
-	m_spineSkeleton->setScaleX(0.6f);
-	m_spineSkeleton->setScaleY(0.6f);
+
+	m_spineSkeleton->setPosition(0, 0.0F);
+	//m_spineSkeleton->setScaleX(0.3f);
+	//m_spineSkeleton->setScaleY(0.3f);
+
+	m_spineAniState->update(0);
+	m_spineAniState->apply(*m_spineSkeleton);
 
 	return S_OK;
 }

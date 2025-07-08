@@ -132,7 +132,7 @@ namespace spine {
         ///
         /// See [World transforms](http://esotericsoftware.com/spine-runtime-skeletons#World-transforms) in the Spine
         /// Runtimes Guide.
-		void updateWorldTransform(Physics physics);
+		void updateWorldTransform(Physics physics= Physics_None);
 
 		void updateWorldTransform(Physics physics, Bone *parent);
 

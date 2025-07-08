@@ -75,7 +75,7 @@ int SceneSpine::Destroy()
 int SceneSpine::Update(const std::any& t)
 {
 	GameTimer gt = std::any_cast<GameTimer>(t);
-	auto deltaTime = gt.DeltaTime() * 0.3f;
+	auto deltaTime = gt.DeltaTime() * 1.1f;
 
 	float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
 
@@ -105,12 +105,15 @@ int SceneSpine::Update(const std::any& t)
 
 	// Update spine draw buffer
 	UpdateDrawBuffer();
+
+#if 0	// AFEW::D::
 	spine::Slot* slot = m_spineSkeleton->findSlot("weapon-sword");
 	if (slot) {
 		//const char* slotName = slot->getData().getName().buffer();
 		//const char* boneName = slot->getBone().getData().getName().buffer();
 		//printf("[Slot '%s'] → [Bone '%s']\n", slotName, boneName);
 	}
+
 	spine::Bone* bone = m_spineSkeleton->findBone("weapon-sword");
 	//if (bone) {
 	//	printf("[Bone '%s'] local rotation: %.2f world rotation: %.2f\n",
@@ -126,8 +129,9 @@ int SceneSpine::Update(const std::any& t)
 	//spine::Bone* bone = m_spineSkeleton->findBone("weapon-sword");
 	//printf("inherit: %d\n", bone->getData().getInherit());
 
-	bone->updateWorldTransform(); // 단독 호출
-	printf("after update: world rotation = %.2f\n", bone->getWorldRotationX());
+	//bone->updateWorldTransform(); // 단독 호출
+	//printf("after update: world rotation = %.2f\n", bone->getWorldRotationX());
+#endif
 
 	return S_OK;
 }
@@ -427,13 +431,54 @@ int SceneSpine::InitSpine(const string& str_atlas, const string& str_skel)
 	printf("%s\n", str_atlas.c_str());
 	for(const auto& n: m_spineAnimations)
 	{
-		printf("\t\t%s\n", n.c_str());
+		printf("\t%s\n", n.c_str());
+	}
+
+	// weapon-morningstar
+	if (true)
+	{
+		m_spineSkeleton->setSkin("weapon/morningstar");					// 스킨 변경
+		m_spineSkeleton->setSlotsToSetupPose();						// ← 슬롯(attachment) 갱신
+		m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// ← 본 transform 계산
+		// 기존 sword 제거
+		spine::Slot* slot = m_spineSkeleton->findSlot("weapon-sword");
+		if (slot)
+			slot->setAttachment(nullptr);
+	}
+
+	// weapon-sword
+	if (false)
+	{
+		m_spineSkeleton->setSkin("weapon/sword");					// 스킨 변경
+		m_spineSkeleton->setSlotsToSetupPose();						// ← 슬롯(attachment) 갱신
+		m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// ← 본 transform 계산
+		// 기존 weapon-morningstar 무기 제거
+
+		const char* weaponSlots[] = {
+			"weapon-morningstar-path",
+			"chain-ball", "chain-round", "chain-round2", "chain-round3",
+			"chain-flat", "chain-flat2", "chain-flat3", "chain-flat4", "handle"
+		};
+		for (const char* slotName : weaponSlots)
+		{
+			auto* slot = m_spineSkeleton->findSlot(slotName);
+			if (slot)
+				slot->setAttachment(nullptr);
+		}
 	}
 	
+	if (false)
+	{
+		m_spineSkeleton->setSkin("weapon/morningstar");					// 스킨 변경
+		m_spineSkeleton->setSlotsToSetupPose();						// ← 슬롯(attachment) 갱신
+		m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// ← 본 transform 계산
+		// 기존 sword 제거
+		spine::Slot* slot = m_spineSkeleton->findSlot("weapon-sword");
+		if (slot)
+			slot->setAttachment(nullptr);
+	}
 
-	m_spineSkeleton->setSkin("default");               // 스킨 변경
-	m_spineSkeleton->setSlotsToSetupPose();          // ← 슬롯(attachment) 갱신
-	m_spineSkeleton->updateWorldTransform(spine::Physics_None);         // ← 본 transform 계산
+
 
 
 	AnimationStateData animationStateData(m_spineSkeletonData);
@@ -443,12 +488,11 @@ int SceneSpine::InitSpine(const string& str_atlas, const string& str_skel)
 	//m_spineAniState->setAnimation(0, "gun-holster", false);
 	//m_spineAniState->addAnimation(0, "roar", false, 0.8F);
 	//m_spineAniState->addAnimation(0, "walk", true, 0);
-	m_spineAniState->setAnimation(0, "attack", true);
-
-
+	m_spineAniState->setAnimationByIndex(0, 0, true);
 	m_spineSkeleton->setPosition(0, 0.0F);
 	//m_spineSkeleton->setScaleX(0.3f);
 	//m_spineSkeleton->setScaleY(0.3f);
+	m_spineSkeleton->setScaleX(-1); // 좌우 반전
 
 	m_spineAniState->update(0);
 	m_spineAniState->apply(*m_spineSkeleton);
@@ -548,6 +592,8 @@ int SceneSpine::InitForDevice()
 		psoDesc.VS = CD3DX12_SHADER_BYTECODE(shaderVtx);
 		psoDesc.PS = CD3DX12_SHADER_BYTECODE(shaderPxl);
 		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+		psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;	// 우-> 좌 변경 대응.
+
 		psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 		// 추가 코드:알파 블렌딩 켜고 src-alpha inv-src-alpha
 		psoDesc.BlendState.RenderTarget[0].BlendEnable = TRUE;

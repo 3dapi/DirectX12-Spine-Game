@@ -565,6 +565,15 @@ TrackEntry *AnimationState::setAnimation(size_t trackIndex, const String &animat
 	return setAnimation(trackIndex, animation, loop);
 }
 
+TrackEntry* spine::AnimationState::setAnimationByIndex(size_t trackIndex, unsigned aniIndex, bool loop)
+{
+	auto animationList = _data->_skeletonData->getAnimations();
+	if (aniIndex > animationList.size())
+		return nullptr;
+	auto aniName = animationList[aniIndex]->getName();
+	return setAnimation(trackIndex, aniName, loop);
+}
+
 TrackEntry *AnimationState::setAnimation(size_t trackIndex, Animation *animation, bool loop) {
 	assert(animation != NULL);
 

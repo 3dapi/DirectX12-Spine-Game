@@ -386,6 +386,8 @@ namespace spine {
 
 		/// Sets an animation by name. setAnimation(int, Animation, bool)
 		TrackEntry *setAnimation(size_t trackIndex, const String &animationName, bool loop);
+		//AFEW::ADD::
+		TrackEntry* setAnimationByIndex(size_t trackIndex, unsigned aniIndex, bool loop);
 
 		/// Sets the current animation for a track, discarding any queued animations.
 		/// @param loop If true, the animation will repeat.

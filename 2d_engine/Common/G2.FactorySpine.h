@@ -56,6 +56,9 @@ public:
 protected:
 	void	load(spine::AtlasPage& page, const spine::String& path) override;
 	void	unload(void* texture) override;
+
+public:
+	static vector<string> getAnimationList(spine::Skeleton*);
 };
 
 
@@ -83,7 +86,6 @@ struct SPINE_DRAW_BUFFER {
 				, const CD3DX12_HEAP_PROPERTIES& heapPropsGPU, const CD3DX12_HEAP_PROPERTIES& heapPropsUpload
 				, const CD3DX12_RESOURCE_DESC& vtxBufDesc, const CD3DX12_RESOURCE_DESC& idxBufDesc);
 };
-
 
 } // namespace G2
 

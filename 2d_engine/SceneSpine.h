@@ -26,6 +26,23 @@ using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 using namespace G2;
 
+
+struct SPINE_ATTRIB
+{
+	string			spine_name	;
+	string			atlasPath	;
+	string			skelPath	;
+	float			aniBegin	{ 0.0F };	// animation begin time
+	float			aniSpeed	{ 1.0F };	// animation speed
+	float			vecDir		{ 1.0F };	// left : -1.0F right: 1.0F
+	float			vecScale	{ 1.0F };	// transform offset position
+	XMFLOAT2		vecOffset	{ };		// transform offset position
+
+	string			aniName		{};
+	string			skinName	{};
+	vector<string>	detachSlot	{};
+};
+
 class SceneSpine: public G2::IG2Scene
 {
 protected:
@@ -46,10 +63,12 @@ protected:
 
 	// spine resource
 	G2::TD3D_SPINE*				m_spineRsc			{};
-	vector<string>				m_spineAnimations	;
 	// spine rendering instance
 	spine::Skeleton*			m_spineSkeleton		{};
 	spine::AnimationState*		m_spineAniState		{};
+
+	vector<string>				m_spineAnimation;
+	SPINE_ATTRIB				m_attrib			{};
 
 public:
 	SceneSpine();
@@ -63,7 +82,7 @@ public:
 	int		Render()					override;
 
 protected:
-	int		InitSpine(const string& name, const string& str_atlas, const string& str_skel);
+	int		InitSpine();
 	int		InitD3DResource();
 	int		UpdateDrawBuffer();
 	void	SetupDrawBuffer();

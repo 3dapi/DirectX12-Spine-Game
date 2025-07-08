@@ -3,17 +3,12 @@
 #include <cstdint>
 #include <cstring>
 
-#include <comdef.h>
-
 #include <any>
-#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <memory>
-#include <tuple>
-#include <Windows.h>
+#include <comdef.h>
 #include <winerror.h>
-#include <d3d12.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <DirectXColors.h>

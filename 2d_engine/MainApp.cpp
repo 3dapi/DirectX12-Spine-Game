@@ -129,15 +129,20 @@ int MainApp::init(const std::any& initialValue /* = */)
 		}
 	}
 
-	using SpineRsc = std::tuple<std::string, std::string, std::string>;
 
-	vector< SpineRsc> spine_rsc =
+	vector<string> detachSlot = {
+		"weapon-morningstar-path",
+		"chain-ball", "chain-round", "chain-round2", "chain-round3",
+		"chain-flat", "chain-flat2", "chain-flat3", "chain-flat4", "handle"
+	};
+
+	vector< SPINE_ATTRIB> spine_rsc =
 	{
-		std::make_tuple(std::string("raptor")		, std::string("raptor/raptor.atlas")					, std::string("raptor/raptor-pro.json")),
-		std::make_tuple(std::string("goblins")		, std::string("goblins/goblins-pma.atlas")				, std::string("goblins/goblins-pro.json")),
-		std::make_tuple(std::string("hero")			, std::string("hero/hero-pro.atlas")					, std::string("hero/hero-pro.json")),
-		std::make_tuple(std::string("stretchyman")	, std::string("stretchyman-pma/stretchyman-pma.atlas")	, std::string("stretchyman-pma/stretchyman-pro.json")),
-		std::make_tuple(std::string("alien")		, std::string("alien/alien.atlas")						, std::string("alien/alien-pro.json")),
+		{"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {-600.0F, -300.0F}, "walk", "default", {} },
+		{"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {-300.0F, -300.0F}, "walk", "goblin" , {} },
+		{"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, {   0.0F, -300.0F}, "walk", "weapon / sword", detachSlot },
+		{"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.90F, { 300.0F, -300.0F}, "idle", "default", {} },
+		{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 600.0F, -300.0F}, "run", "default", {} },
 	};
 
 	for(const auto& rsc: spine_rsc)

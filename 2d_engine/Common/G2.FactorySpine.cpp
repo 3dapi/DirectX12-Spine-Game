@@ -123,6 +123,22 @@ TD3D_SPINE* FactorySpine::FindRes(const std::string& name) const
 	return {};
 }
 
+vector<string> FactorySpine::getAnimationList(spine::Skeleton* spineSkeleton)
+{
+	if (!spineSkeleton)
+		return {};
+	auto skeleton = spineSkeleton->getData();
+	if (!skeleton)
+		return {};
+	vector<string> ret;
+	auto& animations = skeleton->getAnimations();
+	for (int i = 0; i < animations.size(); ++i) {
+		spine::Animation* anim = animations[i];
+		ret.emplace_back(anim->getName().buffer());
+	}
+	return ret;
+}
+
 void FactorySpine::load(spine::AtlasPage& page, const spine::String& path) {
 	auto fileName = path.buffer();
 	TD3D_TEXTURE* texRes = FactoryTexture::instance()->Load(fileName, fileName);

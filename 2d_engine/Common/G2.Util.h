@@ -6,10 +6,15 @@
 #include <algorithm>
 #include <cstdarg>
 #include <cstdio>
+#include <random>
 #include <string>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 #include <Windows.h>
+#ifdef max
+  #undef max
+#endif
 #include <d3dcommon.h>
 #include <d3d12.h>
 #include <wrl.h>
@@ -74,8 +79,34 @@ inline void SAFE_RELEASE_VECTOR(std::vector<T*>& vec) {
 	vec.clear();
 }
 
+template<typename T>
+inline T randomRange(T begin, T end)
+{
+	static std::mt19937 rnd(std::random_device{}());
+	if (begin > end)
+		std::swap(begin, end);
+	if (begin == end)
+		return begin;
+	if constexpr (std::is_integral_v<T>)
+	{
+		std::uniform_int_distribution<T> dist(begin, end); // [begin, end]
+		return dist(rnd);
+	}
+	else if constexpr (std::is_floating_point_v<T>)
+	{
+		std::uniform_real_distribution<T> dist(begin, std::nextafter(end, std::numeric_limits<T>::max())); // [begin, end]
+		return dist(rnd);
+	}
+	else
+	{
+		static_assert(std::is_arithmetic_v<T>, "randomRange() only supports arithmetic types.");
+		return T{};
+	}
+}
+
 inline uint32_t rgba2uint32(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) { return (r) | (g<<8) | (b<<16) | (a<<24); }
 inline uint32_t bgra2uint32(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) { return (b) | (g<<8) | (r<<16) | (a<<24); }
+
 
 inline std::string toLower(const std::string& str_t) {
 	std::string ret = str_t;

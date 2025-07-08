@@ -39,14 +39,12 @@ SceneSpine::~SceneSpine()
 
 int SceneSpine::Init(const std::any& initial_value)
 {
+	if (!initial_value.has_value()) {
+		return E_FAIL;
+	}
 	HRESULT hr = S_OK;
-	using RcvTuple = std::tuple<std::string, std::string, std::string>;
-	const auto& args = std::any_cast<const RcvTuple&>(initial_value);
-	decltype(auto) spineName = std::get<0>(args);
-	decltype(auto) atlasPath = std::string("assets/spine/") + std::get<1>(args);
-	decltype(auto) jsonPath  = std::string("assets/spine/") + std::get<2>(args);
-
-	hr = InitSpine(spineName, atlasPath, jsonPath);
+	m_attrib = std::any_cast<const SPINE_ATTRIB&>(initial_value);
+	hr = InitSpine();
 	if (FAILED(hr))
 		return hr;
 	hr = InitD3DResource();
@@ -76,7 +74,7 @@ int SceneSpine::Destroy()
 int SceneSpine::Update(const std::any& t)
 {
 	GameTimer gt = std::any_cast<GameTimer>(t);
-	auto deltaTime = gt.DeltaTime() * 1.1f;
+	auto deltaTime = gt.DeltaTime() * m_attrib.aniSpeed;
 
 	float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
 
@@ -156,8 +154,6 @@ int SceneSpine::UpdateDrawBuffer()
 	if(FAILED(hr))
 		return hr;
 	
-	cmdList->ResourceBarrier(0, nullptr);  // <-- dummy지만 OK
-
 	m_drawCount = {};
 	//printf("------------------------------------------------------------\n\n");
 	const auto& drawOrder = m_spineSkeleton->getDrawOrder();
@@ -180,11 +176,7 @@ int SceneSpine::UpdateDrawBuffer()
 		if (!(isMesh || isResion))
 			continue;
 
-		if (0 == strcmp(name, "weapon-sword"))
-		{
-			int c = 0;
-			c = 0;
-		}
+
 		//printf("order: %d  name %s\n", (int)i, name);
 
 		if (isMesh)
@@ -349,86 +341,41 @@ int SceneSpine::UpdateDrawBuffer()
 	return S_OK;
 }
 
-int SceneSpine::InitSpine(const string& spine_name, const string& str_atlas, const string& str_skel)
+int SceneSpine::InitSpine()
 {
 	auto spineManager = FactorySpine::instance();
-	auto itemSpine = spineManager->Load(spine_name, str_atlas, str_skel);
+	auto resourceRoot = string("assets/spine/");
+	decltype(auto) atlasPath = resourceRoot + m_attrib.spine_name + string("/") + m_attrib.atlasPath;
+	decltype(auto) skelPath = resourceRoot + m_attrib.spine_name + string("/") + m_attrib.skelPath;
+	auto itemSpine = spineManager->Load(m_attrib.spine_name, atlasPath, skelPath);
 	if (!itemSpine)
 		return E_FAIL;
-	m_spineRsc = itemSpine;
 
+	m_spineRsc = itemSpine;
 	m_spineSkeleton = new Skeleton(m_spineRsc->skelData);
-	spine::SkeletonData* skelData = m_spineSkeleton->getData();
-	auto& animations = skelData->getAnimations();
-	// animation name
-	for(int i = 0; i < animations.size(); ++i) {
-		spine::Animation* anim = animations[i];
-		string animName = anim->getName().buffer();
-		m_spineAnimations.push_back(animName);
-	}
-	printf("%s\n", str_atlas.c_str());
-	for(const auto& n: m_spineAnimations)
+	m_spineAnimation = FactorySpine::getAnimationList(m_spineSkeleton);
+
+
+#if 1	//DEBUG_PRINT
+	printf("%s\n", m_attrib.spine_name.c_str());
+	for (const auto& n : m_spineAnimation)
 	{
 		printf("\t%s\n", n.c_str());
 	}
-
+#endif
 
 	//hero
-	if(false)
+	if (!m_attrib.skinName.empty())
 	{
-		// weapon-morningstar
-		if (false)
+		m_spineSkeleton->setSkin(m_attrib.skinName.c_str());		// 스킨 변경
+		m_spineSkeleton->setSlotsToSetupPose();						// 슬롯(attachment) 갱신
+		m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// 본 transform 계산
+		for (size_t i = 0; i < m_attrib.detachSlot.size(); ++i)
 		{
-			m_spineSkeleton->setSkin("weapon/morningstar");					// 스킨 변경
-			m_spineSkeleton->setSlotsToSetupPose();						// ← 슬롯(attachment) 갱신
-			m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// ← 본 transform 계산
-			// 기존 sword 제거
-			spine::Slot* slot = m_spineSkeleton->findSlot("weapon-sword");
+			const auto& slotName = m_attrib.detachSlot[i];
+			auto* slot = m_spineSkeleton->findSlot(slotName.c_str());
 			if (slot)
 				slot->setAttachment(nullptr);
-		}
-
-		// weapon-sword
-		if (false)
-		{
-			m_spineSkeleton->setSkin("weapon/sword");					// 스킨 변경
-			m_spineSkeleton->setSlotsToSetupPose();						// ← 슬롯(attachment) 갱신
-			m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// ← 본 transform 계산
-			// 기존 weapon-morningstar 무기 제거
-
-			const char* weaponSlots[] = {
-				"weapon-morningstar-path",
-				"chain-ball", "chain-round", "chain-round2", "chain-round3",
-				"chain-flat", "chain-flat2", "chain-flat3", "chain-flat4", "handle"
-			};
-			for (const char* slotName : weaponSlots)
-			{
-				auto* slot = m_spineSkeleton->findSlot(slotName);
-				if (slot)
-					slot->setAttachment(nullptr);
-			}
-		}
-
-		if (false)
-		{
-			m_spineSkeleton->setSkin("weapon/morningstar");					// 스킨 변경
-			m_spineSkeleton->setSlotsToSetupPose();						// ← 슬롯(attachment) 갱신
-			m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// ← 본 transform 계산
-			// 기존 sword 제거
-			spine::Slot* slot = m_spineSkeleton->findSlot("weapon-sword");
-			if (slot)
-				slot->setAttachment(nullptr);
-		}
-	}
-
-	// goblin
-	if(false)
-	{
-		if (true)
-		{
-			m_spineSkeleton->setSkin("goblin");
-			m_spineSkeleton->setSlotsToSetupPose();
-			m_spineSkeleton->updateWorldTransform(spine::Physics_None);
 		}
 	}
 
@@ -436,18 +383,21 @@ int SceneSpine::InitSpine(const string& spine_name, const string& str_atlas, con
 	animationStateData.setDefaultMix(0.2f);
 	m_spineAniState = new AnimationState(&animationStateData);
 
-	//m_spineAniState->setAnimation(0, "gun-holster", false);
-	//m_spineAniState->addAnimation(0, "roar", false, 0.8F);
-	//m_spineAniState->addAnimation(0, "walk", true, 0);
-	m_spineAniState->setAnimationByIndex(0, 0, true);
+	auto itr = std::find_if(m_spineAnimation.begin(), m_spineAnimation.end(), [&](const string& it)      { return m_attrib.aniName == it; });
+	// 애니메이션 못찾으면 0 번째 실행.
+	if(itr == m_spineAnimation.end())
+	{
+		m_spineAniState->setAnimationByIndex(0, 0, true);
+	}
+	else if (itr == m_spineAnimation.end())
+	{
+		m_spineAniState->setAnimation(0, m_attrib.aniName.c_str(), true);
+	}
 
-	float x = (-10.0F + rand() % 21) * 50.0f;
-	m_spineSkeleton->setPosition(x, -400.0F);
-	m_spineSkeleton->setScaleX(-0.3f);
-	m_spineSkeleton->setScaleY( 0.3f);
-	//m_spineSkeleton->setScaleX(-1); // 좌우 반전
-
-	m_spineAniState->update(0);
+	m_spineSkeleton->setPosition(m_attrib.vecOffset.x, m_attrib.vecOffset.y);
+	m_spineSkeleton->setScaleX(m_attrib.vecScale);
+	m_spineSkeleton->setScaleY(m_attrib.vecScale);
+	m_spineAniState->update(m_attrib.aniBegin);
 	m_spineAniState->apply(*m_spineSkeleton);
 
 	SetupDrawBuffer();

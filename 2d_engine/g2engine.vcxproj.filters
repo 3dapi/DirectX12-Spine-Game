@@ -16,8 +16,11 @@
     <Filter Include="assets">
       <UniqueIdentifier>{7c3405bb-5876-4a15-9d39-5194a7d4995a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders">
+    <Filter Include="assets\shaders">
       <UniqueIdentifier>{b614dd72-7e18-4d48-9df7-86ac17b967b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\testScene">
+      <UniqueIdentifier>{629e4a6b-2085-4733-844e-4f54b104a367}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -25,9 +28,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Common\D3DWinApp.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="Common\D12DDSTextureLoader.cpp">
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="Common\GameTimer.cpp">
@@ -63,19 +63,7 @@
     <ClCompile Include="Common\G2.FrameConsts.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="SceneGameMesh.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="MainApp.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneXtkGame.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneSpine.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneSample2D.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Common\G2.FactorySpine.cpp">
@@ -84,12 +72,33 @@
     <ClCompile Include="RenderSpine.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="SceneBegin.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneLobby.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ScenePlay.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="testScene\SceneXtkGame.cpp">
+      <Filter>src\testScene</Filter>
+    </ClCompile>
+    <ClCompile Include="testScene\SceneSample2D.cpp">
+      <Filter>src\testScene</Filter>
+    </ClCompile>
+    <ClCompile Include="testScene\SceneGameMesh.cpp">
+      <Filter>src\testScene</Filter>
+    </ClCompile>
+    <ClCompile Include="testScene\SceneSpine.cpp">
+      <Filter>src\testScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.Camera.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\D3DWinApp.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\D12DDSTextureLoader.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="Common\G2.Constants.h">
@@ -140,28 +149,13 @@
     <ClInclude Include="Common\UploadBuffer.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="SceneGameMesh.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderUploadChain.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="MainApp.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="Common\MathHelper.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="SceneXtkGame.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="AppCommonXTK.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneSpine.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneSample2D.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="Common\G2.FactorySpine.h">
@@ -170,22 +164,54 @@
     <ClInclude Include="RenderSpine.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="SceneBegin.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneLobby.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="ScenePlay.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderUploadChain.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="testScene\SceneXtkGame.h">
+      <Filter>src\testScene</Filter>
+    </ClInclude>
+    <ClInclude Include="testScene\SceneSample2D.h">
+      <Filter>src\testScene</Filter>
+    </ClInclude>
+    <ClInclude Include="testScene\SceneGameMesh.h">
+      <Filter>src\testScene</Filter>
+    </ClInclude>
+    <ClInclude Include="testScene\SceneSpine.h">
+      <Filter>src\testScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.Camera.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\LightingUtil.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="assets\shaders\2dsprite.hlsl">
+      <Filter>assets\shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\spine.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="assets\shaders\Default.hlsl">
+      <Filter>assets\shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\TreeSprite.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="assets\shaders\LightingUtil.hlsl">
+      <Filter>assets\shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\2dsprite.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="assets\shaders\spine.hlsl">
+      <Filter>assets\shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\Default.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="assets\shaders\TreeSprite.hlsl">
+      <Filter>assets\shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config">
+      <Filter>src</Filter>
+    </None>
   </ItemGroup>
 </Project>

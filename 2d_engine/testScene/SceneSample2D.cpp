@@ -1,6 +1,4 @@
 ﻿#include <d3d12.h>
-#include "DDSTextureLoader.h"
-#include "Common/D12DDSTextureLoader.h"
 #include "Common/G2.Geometry.h"
 #include "Common/GameTimer.h"
 #include <pix.h>
@@ -225,10 +223,10 @@ int SceneSample2D::InitResource()
 	ID3DBlob* shaderVtx = {};
 	ID3DBlob* shaderPxl = {};
 	{
-		shaderVtx = G2::DXCompileShaderFromFile("Shaders/spine.hlsl", "vs_5_0", "main_vs");
+		shaderVtx = G2::DXCompileShaderFromFile("assets/shaders/spine.hlsl", "vs_5_0", "main_vs");
 		if(!shaderVtx)
 			return E_FAIL;
-		shaderPxl = G2::DXCompileShaderFromFile("Shaders/spine.hlsl", "ps_5_0", "main_ps");
+		shaderPxl = G2::DXCompileShaderFromFile("assets/shaders/spine.hlsl", "ps_5_0", "main_ps");
 		if(!shaderPxl)
 			return E_FAIL;
 	}

@@ -3,8 +3,6 @@
 #include <filesystem>
 #include <tuple>
 #include <d3d12.h>
-#include "DDSTextureLoader.h"
-#include "Common/D12DDSTextureLoader.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
 #include "Common/G2.FactorySIgnature.h"
@@ -73,11 +71,16 @@ int SceneSpine::Init(const std::any& initial_value)
 
 	vector< SPINE_ATTRIB> spine_rsc =
 	{
-		{"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {randomRange(-800.0F, 800.0F), -300.0F}, "walk", "default", detachSlotSpineBoy },
-		{"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {randomRange(-800.0F, 800.0F), -300.0F}, "walk", "goblin" , {} },
-		{"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, {randomRange(-800.0F, 800.0F), -300.0F}, "walk", "weapon/sword", detachSlotHero },
-		{"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 6.0F, 1.0F, 0.90F, {randomRange(-800.0F, 800.0F), -300.0F}, "idle", "default", {} },
-		{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, {randomRange(-800.0F, 800.0F), -300.0F}, "run" , "default", {} },
+		//{"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {randomRange(-800.0F, 800.0F), -300.0F}, "walk", "default", detachSlotSpineBoy },
+		//{"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {randomRange(-800.0F, 800.0F), -300.0F}, "walk", "goblin" , {} },
+		//{"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, {randomRange(-800.0F, 800.0F), -300.0F}, "walk", "weapon/sword", detachSlotHero },
+		//{"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 6.0F, 1.0F, 0.90F, {randomRange(-800.0F, 800.0F), -300.0F}, "idle", "default", {} },
+		//{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, {randomRange(-800.0F, 800.0F), -300.0F}, "run" , "default", {} },
+		{"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {-800.0F, -300.0F}, "walk", "default", detachSlotSpineBoy },
+		{"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {-400.0F, -300.0F}, "walk", "goblin" , {} },
+		{"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, {   0.0F, -300.0F}, "walk", "weapon/sword", detachSlotHero },
+		{"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 6.0F, 1.0F, 0.90F, { 400.0F, -300.0F}, "idle", "default", {} },
+		{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 800.0F, -300.0F}, "run" , "default", {} },
 	};
 
 	for(const auto& rsc: spine_rsc)

@@ -5,8 +5,6 @@
 #include <tuple>
 #include <d3d12.h>
 #include "MainApp.h"
-#include "DDSTextureLoader.h"
-#include "Common/D12DDSTextureLoader.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
 #include "Common/G2.FactorySIgnature.h"
@@ -98,9 +96,9 @@ int MainApp::init(const std::any& initialValue /* = */)
 	};
 
 	auto shader_manager = FactoryShader::instance();
-	shader_manager->Load("standardVS"   , "Shaders/Default.hlsl"   , "vs_5_0", "VS"                  );
-	shader_manager->Load("opaquePS"     , "Shaders/Default.hlsl"   , "ps_5_0", "PS", defines         );
-	shader_manager->Load("alphaTestedPS", "Shaders/Default.hlsl"   , "ps_5_0", "PS", alphaTestDefines);
+	shader_manager->Load("standardVS"   , "assets/shaders/Default.hlsl"   , "vs_5_0", "VS"                  );
+	shader_manager->Load("opaquePS"     , "assets/shaders/Default.hlsl"   , "ps_5_0", "PS", defines         );
+	shader_manager->Load("alphaTestedPS", "assets/shaders/Default.hlsl"   , "ps_5_0", "PS", alphaTestDefines);
 
 	auto psoManager = FactoryPipelineState::instance();
 

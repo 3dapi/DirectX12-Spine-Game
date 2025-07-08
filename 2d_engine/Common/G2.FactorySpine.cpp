@@ -9,8 +9,6 @@
 #include <wrl/client.h>
 #include <spine/spine.h>
 
-#include "DDSTextureLoader.h"
-#include "WICTextureLoader.h"
 #include "ResourceUploadBatch.h"
 #include "GraphicsMemory.h"
 #include "G2.ConstantsWin.h"

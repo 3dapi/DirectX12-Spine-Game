@@ -1,8 +1,6 @@
 ﻿
 #include <any>
 #include <d3d12.h>
-#include "DDSTextureLoader.h"
-#include "Common/D12DDSTextureLoader.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
 #include "Common/G2.FactorySIgnature.h"
@@ -75,10 +73,10 @@ int RenderSpine::Update(const std::any& t)
 
 	float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
 
-	XMMATRIX tmPrj = XMMatrixPerspectiveFovLH(XM_PIDIV4 * 1.2F, aspectRatio, 1.0f, 5000.0f);
-	static const XMVECTORF32 eye = { 0.0f, 10.0f, -900.0f, 0.0f };
-	static const XMVECTORF32 at = { 0.0f, 0.0f, 0.0f, 0.0f };
-	static const XMVECTORF32 up = { 0.0f, 1.0f, 0.0f, 0.0f };
+	XMMATRIX tmPrj = XMMatrixPerspectiveFovLH(XM_PI/3.0F, aspectRatio, 1.0f, 5000.0f);
+	static const XMVECTORF32 eye = { 0.0f, 0.0f, -700.0f, 0.0f };
+	static const XMVECTORF32  at = { 0.0f, 0.0f, 0.0f, 0.0f };
+	static const XMVECTORF32  up = { 0.0f, 1.0f, 0.0f, 0.0f };
 	XMMATRIX tmViw = XMMatrixLookAtLH(eye, at, up);
 	XMMATRIX tmWld = XMMatrixIdentity();
 	XMMATRIX mtMVP = tmWld * tmViw * tmPrj;
@@ -502,8 +500,8 @@ int RenderSpine::InitD3DResource()
 	{
 		ID3D12PipelineState* pipelineState{};
 		auto shader_manager = FactoryShader::instance();
-		auto vs = shader_manager->Load("spine_shader_vertex", "Shaders/spine.hlsl", "vs_5_0", "main_vs");
-		auto ps = shader_manager->Load("spine_shader_pixel", "Shaders/spine.hlsl", "ps_5_0", "main_ps");
+		auto vs = shader_manager->Load("spine_shader_vertex", "assets/shaders/spine.hlsl", "vs_5_0", "main_vs");
+		auto ps = shader_manager->Load("spine_shader_pixel", "assets/shaders/spine.hlsl", "ps_5_0", "main_ps");
 		// Create the pipeline state once the shaders are loaded.
 		{
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};

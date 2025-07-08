@@ -178,7 +178,7 @@ TD3D_PIPELINESTATE* FactoryPipelineState::Add(std::string& name, ID3D12PipelineS
 	return item;
 }
 
-TD3D_PIPELINESTATE* FactoryPipelineState::ResourceFind(const string& name)
+TD3D_PIPELINESTATE* FactoryPipelineState::ResourceFind(const string& name) const
 {
 	auto itr = this->m_db.find(name);
 	if (itr != this->m_db.end())
@@ -188,7 +188,7 @@ TD3D_PIPELINESTATE* FactoryPipelineState::ResourceFind(const string& name)
 	return {};
 }
 
-ID3D12PipelineState* FactoryPipelineState::FindRes(const std::string& name)
+ID3D12PipelineState* FactoryPipelineState::FindRes(const std::string& name) const
 {
 	auto itr = this->m_db.find(name);
 	if (itr != this->m_db.end())

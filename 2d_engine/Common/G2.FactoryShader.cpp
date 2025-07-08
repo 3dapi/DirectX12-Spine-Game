@@ -43,7 +43,7 @@ TD3D_SHADER* FactoryShader::ResourceLoad(const string& name, const string& file,
 	auto ret = it->second.get();
 	return ret;
 }
-TD3D_SHADER* FactoryShader::ResourceFind(const string& name)
+TD3D_SHADER* FactoryShader::ResourceFind(const string& name) const
 {
 	auto itr = this->m_db.find(name);
 	if (itr != this->m_db.end())
@@ -64,7 +64,7 @@ int FactoryShader::ResourceUnLoad(const string& name)
 	return E_FAIL;
 }
 
-ID3DBlob* FactoryShader::FindRes(const std::string& name)
+ID3DBlob* FactoryShader::FindRes(const std::string& name) const
 {
 	auto itr = this->m_db.find(name);
 	if (itr != this->m_db.end())

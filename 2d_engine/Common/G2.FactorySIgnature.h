@@ -67,9 +67,9 @@ public:
 	static FactorySignature* instance();
 	TD3D_ROOTSIGNATURE* ResourceLoad();
 public:
-	TD3D_ROOTSIGNATURE* ResourceFind(const std::string& name) override;
+	TD3D_ROOTSIGNATURE* ResourceFind(const std::string& name) const override;
 	// find ID3D12Resource*
-	ID3D12RootSignature* FindRes(const std::string& name);
+	ID3D12RootSignature* FindRes(const std::string& name) const;
 protected:
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> samplerRegister();
 protected:

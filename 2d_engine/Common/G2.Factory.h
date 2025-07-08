@@ -42,7 +42,7 @@ public:
 
 public:
 	// 파생 클래스에서 오버라이드 가능하도록 virtual 유지
-	virtual TDB_RESOURCE* ResourceFind(const std::string& name)
+	virtual TDB_RESOURCE* ResourceFind(const std::string& name) const
 	{
 		auto it = m_db.find(name);
 		return (it != m_db.end()) ? it->second.get() : nullptr;

@@ -11,6 +11,7 @@
 #include "Common/G2.FactoryPipelineState.h"
 #include "Common/G2.Geometry.h"
 #include "Common/G2.Util.h"
+#include "Common/G2.FactorySpine.h"
 #include "Common/GameTimer.h"
 #include <pix.h>
 #include "CommonStates.h"
@@ -39,12 +40,13 @@ SceneSpine::~SceneSpine()
 int SceneSpine::Init(const std::any& initial_value)
 {
 	HRESULT hr = S_OK;
-	using RcvTuple = std::tuple<std::string, std::string>;
+	using RcvTuple = std::tuple<std::string, std::string, std::string>;
 	const auto& args = std::any_cast<const RcvTuple&>(initial_value);
-	decltype(auto) atlasPath = std::get<0>(args);
-	decltype(auto) jsonPath = std::get<1>(args);
+	decltype(auto) spineName = std::get<0>(args);
+	decltype(auto) atlasPath = std::string("assets/spine/") + std::get<1>(args);
+	decltype(auto) jsonPath  = std::string("assets/spine/") + std::get<2>(args);
 
-	hr = InitSpine(atlasPath, jsonPath);
+	hr = InitSpine(spineName, atlasPath, jsonPath);
 	if (FAILED(hr))
 		return hr;
 	hr = InitForDevice();
@@ -66,7 +68,6 @@ int SceneSpine::Destroy()
 	m_cnstMVP		->Unmap(0, nullptr);
 	m_cnstMVP		.Reset();
 	m_ptrMVP		= {};
-	m_textureRsc	.Reset();
 	m_textureHandle	= {};
 
 	return S_OK;
@@ -348,22 +349,15 @@ int SceneSpine::UpdateDrawBuffer()
 	return S_OK;
 }
 
-int SceneSpine::InitSpine(const string& str_atlas, const string& str_skel)
+int SceneSpine::InitSpine(const string& spine_name, const string& str_atlas, const string& str_skel)
 {
-	Bone::setYDown(false);
+	auto spineManager = FactorySpine::instance();
+	auto itemSpine = spineManager->Load(spine_name, str_atlas, str_skel);
+	if (!itemSpine)
+		return E_FAIL;
 
-	filesystem::path str_path(str_skel);
-	m_spineAtlas = new Atlas(str_atlas.c_str(),this);
-	if(0 == str_path.extension().generic_string().compare(".json"))
-	{
-		SkeletonJson skl(m_spineAtlas);
-		m_spineSkeletonData = skl.readSkeletonDataFile(str_skel.c_str());
-	}
-	else
-	{
-		SkeletonBinary skl(m_spineAtlas);
-		m_spineSkeletonData = skl.readSkeletonDataFile(str_skel.c_str());
-	}
+	m_spineAtlas		= itemSpine->atlas;
+	m_spineSkeletonData = itemSpine->skelData;
 
 	m_spineSkeleton = new Skeleton(m_spineSkeletonData);
 	spine::SkeletonData* skelData = m_spineSkeleton->getData();
@@ -630,54 +624,39 @@ int SceneSpine::InitForDevice()
 		CD3DX12_GPU_DESCRIPTOR_HANDLE hGpuSrv(m_cbvHeap->GetGPUDescriptorHandleForHeapStart(), baseSRVIndex, descriptorSize);
 
 		// texture viewer 생성
+		auto atlasPage = this->m_spineAtlas->getPages();
+		if(!m_textureName.empty())
 		{
-			hCpuSrv.Offset(0, descriptorSize);			//
-			hGpuSrv.Offset(0, descriptorSize);			//
-			m_textureHandle = hGpuSrv;					// CPU, GPU OFFSET을 이동후 Heap pointer 위치를 저장 이 핸들 값이 텍스처 핸들
+			m_textureName.clear();
 
-			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			srvDesc.Format = m_textureRsc->GetDesc().Format;
-			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-			srvDesc.Texture2D.MipLevels = 1;
-			device->CreateShaderResourceView(m_textureRsc.Get(), &srvDesc, hCpuSrv);
+		for (size_t i = 0; i < atlasPage.size(); ++i)
+		{
+			m_textureName.push_back(std::string(atlasPage[i]->texturePath.buffer()));
+		}
+		// AFEW::WARNING!!!!: 하나만 하자.. 귀찮다...
+		for (size_t i=0; i<1; ++i)
+		{
+			const auto& name = m_textureName[i];
+			auto textureRes = FactoryTexture::instance()->FindRes(name);
+			if (textureRes)
+			{
+				hCpuSrv.Offset((INT)i, descriptorSize);			//
+				hGpuSrv.Offset((INT)i, descriptorSize);			//
+				m_textureHandle = hGpuSrv;					// CPU, GPU OFFSET을 이동후 Heap pointer 위치를 저장 이 핸들 값이 텍스처 핸들
+
+				D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+				srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+				srvDesc.Format = textureRes->GetDesc().Format;
+				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+				srvDesc.Texture2D.MipLevels = 1;
+				device->CreateShaderResourceView(textureRes, &srvDesc, hCpuSrv);
+			}
 		}
 	}
 
 	d3d->command(CMD_WAIT_GPU);
 
 	return S_OK;
-}
-
-void* SceneSpine::TextureLoad(const string& fileName)
-{
-	auto d3d        =  IG2GraphicsD3D::instance();
-	auto device     = std::any_cast<ID3D12Device*             >(d3d->getDevice());
-	auto cmdQue     = std::any_cast<ID3D12CommandQueue*       >(d3d->getCommandQueue());
-
-	m_spineTextureName = fileName;
-	DirectX::ResourceUploadBatch resourceUpload(device);
-	{
-		resourceUpload.Begin();
-		auto wFile = ansiToWstr(fileName);
-		int hr = DirectX::CreateWICTextureFromFile(device, resourceUpload, wFile.c_str(), m_textureRsc.GetAddressOf());
-		if(FAILED(hr))
-			return {};
-		auto uploadOp = resourceUpload.End(cmdQue);
-		uploadOp.wait();  // GPU 업로드 완료 대기
-	}
-	// 뷰는 descriptor heap 생성 후에 만듦.
-	return m_textureRsc.Get();
-}
-
-void SceneSpine::TextureUnload(void* texture)
-{
-	auto textureRsc = m_textureRsc.Get();
-	if(texture != textureRsc)
-	{
-		// bad texture resource pointer
-		//
-	}
 }
 
 void SceneSpine::SetupRenderBuffer()
@@ -730,23 +709,6 @@ void SceneSpine::SetupRenderBuffer()
 	}
 }
 
-
-namespace spine {
-	spine::SpineExtension* getDefaultExtension()
-	{
-		static spine::SpineExtension* _default_spineExtension = new spine::DefaultSpineExtension;
-		return _default_spineExtension;
-	}
-}
-
-void SceneSpine::load(spine::AtlasPage& page, const spine::String& path) {
-	auto fileName = path.buffer();
-	page.texture = this->TextureLoad(fileName);
-}
-
-void SceneSpine::unload(void* texture) {
-	this->TextureUnload(texture);
-}
 
 DRAW_BUFFER::~DRAW_BUFFER()
 {

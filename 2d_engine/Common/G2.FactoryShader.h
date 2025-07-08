@@ -37,10 +37,10 @@ public:
 
 public:
 	// 필요 시 아래 함수들을 오버라이드 가능
-	TD3D_SHADER* ResourceFind(const std::string& name) override;
+	TD3D_SHADER* ResourceFind(const std::string& name) const override;
 	int ResourceUnLoad(const std::string& name) override;
 	// find ID3DBlob*
-	ID3DBlob* FindRes(const std::string& name);
+	ID3DBlob* FindRes(const std::string& name) const;
 };
 
 } // namespace G2

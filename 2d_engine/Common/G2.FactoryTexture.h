@@ -17,10 +17,8 @@ struct TD3D_TEXTURE
 	std::string				name;	// texture name
 	std::string				file;	// texture file
 	ComPtr<ID3D12Resource>	r{};	// resource
-	ComPtr<ID3D12Resource>	u{};	// upload heap
 	~TD3D_TEXTURE() {
 		r.Reset();
-		u.Reset();
 	}
 };
 
@@ -30,11 +28,11 @@ public:
 	static FactoryTexture* instance();
 public:
 	TD3D_TEXTURE* ResourceLoad(const std::string& name, const std::string& file);
-	TD3D_TEXTURE* ResourceFind(const std::string& name) override;
+	TD3D_TEXTURE* ResourceFind(const std::string& name) const override;
 	int ResourceUnLoad(const std::string& name)         override;
 	int ResourceUnLoadAll()                             override;
 	// find ID3D12Resource*
-	ID3D12Resource* FindRes(const std::string& name);
+	ID3D12Resource* FindRes(const std::string& name) const;
 };
 
 } // namespace G2

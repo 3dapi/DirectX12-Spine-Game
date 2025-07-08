@@ -44,8 +44,8 @@ public:
 	TD3D_PIPELINESTATE* ResourceLoad();
 	TD3D_PIPELINESTATE* Add(std::string& name, ID3D12PipelineState* pls, bool replace=false);
 public:
-	TD3D_PIPELINESTATE* ResourceFind(const std::string& name) override;
-	ID3D12PipelineState* FindRes(const std::string& name);
+	TD3D_PIPELINESTATE* ResourceFind(const std::string& name) const override;
+	ID3D12PipelineState* FindRes(const std::string& name) const;
 protected:
 	bool	m_isLoaded{};
 };

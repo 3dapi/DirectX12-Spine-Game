@@ -129,15 +129,15 @@ int MainApp::init(const std::any& initialValue /* = */)
 		}
 	}
 
-	using SpineRsc = std::tuple<std::string, std::string>;
+	using SpineRsc = std::tuple<std::string, std::string, std::string>;
 
 	vector< SpineRsc> spine_rsc =
 	{
-		std::make_tuple(std::string("assets/spine/raptor/raptor.atlas")						, std::string("assets/spine/raptor/raptor-pro.json")),
-		std::make_tuple(std::string("assets/spine/goblins/goblins-pma.atlas")				, std::string("assets/spine/goblins/goblins-pro.json")),
-		std::make_tuple(std::string("assets/spine/hero/export/hero-pro.atlas")				, std::string("assets/spine/hero/export/hero-pro.json")),
-		std::make_tuple(std::string("assets/spine/stretchyman-pma/stretchyman-pma.atlas")	, std::string("assets/spine/stretchyman-pma/stretchyman-pro.json")),
-		std::make_tuple(std::string("assets/spine/alien/alien.atlas")						, std::string("assets/spine/alien/alien-pro.json")),
+		std::make_tuple(std::string("raptor")		, std::string("raptor/raptor.atlas")					, std::string("raptor/raptor-pro.json")),
+		std::make_tuple(std::string("goblins")		, std::string("goblins/goblins-pma.atlas")				, std::string("goblins/goblins-pro.json")),
+		std::make_tuple(std::string("hero")			, std::string("hero/hero-pro.atlas")					, std::string("hero/hero-pro.json")),
+		std::make_tuple(std::string("stretchyman")	, std::string("stretchyman-pma/stretchyman-pma.atlas")	, std::string("stretchyman-pma/stretchyman-pro.json")),
+		std::make_tuple(std::string("alien")		, std::string("alien/alien.atlas")						, std::string("alien/alien-pro.json")),
 	};
 
 	for(const auto& rsc: spine_rsc)

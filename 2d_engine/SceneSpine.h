@@ -50,7 +50,7 @@ struct DRAW_BUFFER {
 				, const CD3DX12_RESOURCE_DESC& vtxBufDesc, const CD3DX12_RESOURCE_DESC& idxBufDesc);
 };
 
-class SceneSpine: public spine::TextureLoader,  public G2::IG2Scene
+class SceneSpine: public G2::IG2Scene
 {
 protected:
 	// Direct3D resources for cube geometry.
@@ -64,20 +64,19 @@ protected:
 
 	vector<DRAW_BUFFER>				m_drawBuf			;
 	int								m_drawCount			{};
-
-	ComPtr<ID3D12Resource>			m_textureRsc		{};		// spine texture resource
 	D3D12_GPU_DESCRIPTOR_HANDLE		m_textureHandle		{};		// spine texture handle
-
 	ComPtr<ID3D12Resource>			m_cnstMVP			{};
 	uint8_t*						m_ptrMVP			{};
 
+	// 텍스처 리스트
+	vector<string>				m_textureName		;
 	// spine instance
 	vector<string>				m_spineAnimations	;
-	string						m_spineTextureName	;
+	spine::Atlas*				m_spineAtlas		{};
+	spine::SkeletonData*		m_spineSkeletonData	{};
+
 	spine::Skeleton*			m_spineSkeleton		{};
 	spine::AnimationState*		m_spineAniState		{};
-	spine::SkeletonData*		m_spineSkeletonData	{};
-	spine::Atlas*				m_spineAtlas		{};
 
 public:
 	SceneSpine();
@@ -91,14 +90,10 @@ public:
 	int		Render()					override;
 
 protected:
-	int		InitSpine(const string& str_atlas, const string& str_skel);
+	int		InitSpine(const string& name, const string& str_atlas, const string& str_skel);
 	int		InitForDevice();
 	int		UpdateDrawBuffer();
-	void*	TextureLoad(const string& fileName);
-	void	TextureUnload(void* texture);
 	void	SetupRenderBuffer();
-	void	load(spine::AtlasPage& page, const spine::String& path) override;
-	void	unload(void* texture) override;
 };
 
 #endif

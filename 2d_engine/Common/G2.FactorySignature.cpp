@@ -100,7 +100,7 @@ TD3D_ROOTSIGNATURE* FactorySignature::ResourceLoad()
 	return ret;
 }
 
-TD3D_ROOTSIGNATURE* FactorySignature::ResourceFind(const string& name)
+TD3D_ROOTSIGNATURE* FactorySignature::ResourceFind(const string& name) const
 {
 	auto itr = this->m_db.find(name);
 	if (itr != this->m_db.end())
@@ -110,7 +110,7 @@ TD3D_ROOTSIGNATURE* FactorySignature::ResourceFind(const string& name)
 	return nullptr;
 }
 
-ID3D12RootSignature* FactorySignature::FindRes(const std::string& name)
+ID3D12RootSignature* FactorySignature::FindRes(const std::string& name) const
 {
 	auto itr = this->m_db.find(name);
 	if (itr != this->m_db.end())

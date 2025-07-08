@@ -130,8 +130,9 @@ namespace spine {
 	private:
 		Vector<AtlasPage *> _pages;
 		Vector<AtlasRegion *> _regions;
+	public:
 		TextureLoader *_textureLoader;
-
+	private:
 		void load(const char *begin, int length, const char *dir, bool createTexture);
 	};
 }

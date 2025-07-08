@@ -3,17 +3,32 @@
 #include <mutex>
 #include <tuple>
 #include <string>
+
+#include <Windows.h>
+#include <d3d12.h>
+#include <wrl/client.h>
+#include <spine/spine.h>
+
 #include "DDSTextureLoader.h"
 #include "WICTextureLoader.h"
 #include "ResourceUploadBatch.h"
 #include "GraphicsMemory.h"
 #include "G2.ConstantsWin.h"
-#include "G2.FactorySpine.h"
 #include "G2.FactoryTexture.h"
+#include "G2.FactorySpine.h"
 #include "G2.Util.h"
 
 using namespace std;
 namespace G2 {
+
+vector<string> TD3D_SPINE::GetTextureList()
+{
+	vector<string> ret;
+	auto atlasPage = atlas->getPages();
+	for (size_t i = 0; i < atlasPage.size(); ++i)
+		ret.push_back(std::string(atlasPage[i]->texturePath.buffer()));
+	return ret;
+}
 
 FactorySpine* FactorySpine::instance()
 {
@@ -119,6 +134,66 @@ void FactorySpine::unload(void* texture) {
 	TD3D_TEXTURE* texRes = reinterpret_cast<TD3D_TEXTURE*>(texture);
 	int c;
 	c = 0;
+}
+
+SPINE_DRAW_BUFFER::~SPINE_DRAW_BUFFER()
+{
+	rscPosGPU	.Reset();
+	rscPosCPU	.Reset();
+	vbvPos		= {};
+
+	rscDifGPU	.Reset();
+	rscDifCPU	.Reset();
+	vbvDif		= {};
+
+	rscTexGPU	.Reset();
+	rscTexCPU	.Reset();
+	vbvTex		= {};
+
+	rscIdxGPU	.Reset();
+	rscIdxCPU	.Reset();
+	ibv			= {};
+}
+
+int SPINE_DRAW_BUFFER::Setup(ID3D12Device* device, UINT widthVertex, UINT widthIndex
+				, const CD3DX12_HEAP_PROPERTIES& heapPropsGPU, const CD3DX12_HEAP_PROPERTIES& heapPropsUpload
+				, const CD3DX12_RESOURCE_DESC& vtxBufDesc, const CD3DX12_RESOURCE_DESC& idxBufDesc)
+{
+	int hr = S_OK;
+	// GPU position buffer
+	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &vtxBufDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&rscPosGPU));
+	if(FAILED(hr))
+		return hr;
+	// CPU upload position buffer
+	hr = device->CreateCommittedResource(&heapPropsUpload, D3D12_HEAP_FLAG_NONE, &vtxBufDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&rscPosCPU));
+	if(FAILED(hr))
+		return hr;
+	// GPU diffuse buffer
+	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &vtxBufDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&rscDifGPU));
+	if(FAILED(hr))
+		return hr;
+	// CPU upload diffuse buffer
+	hr = device->CreateCommittedResource(&heapPropsUpload, D3D12_HEAP_FLAG_NONE, &vtxBufDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&rscDifCPU));
+	if(FAILED(hr))
+		return hr;
+	// GPU texture coord buffer
+	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &vtxBufDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&rscTexGPU));
+	if(FAILED(hr))
+		return hr;
+	// CPU upload texture coord buffer
+	hr = device->CreateCommittedResource(&heapPropsUpload, D3D12_HEAP_FLAG_NONE, &vtxBufDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&rscTexCPU));
+	if(FAILED(hr))
+		return hr;
+	// GPU index buffer
+	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &idxBufDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&rscIdxGPU));
+	if(FAILED(hr))
+		return hr;
+	// CPU upload index buffer
+	hr = device->CreateCommittedResource(&heapPropsUpload, D3D12_HEAP_FLAG_NONE, &idxBufDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&rscIdxCPU));
+	if(FAILED(hr))
+		return hr;
+
+	return S_OK;
 }
 
 } // namespace G2

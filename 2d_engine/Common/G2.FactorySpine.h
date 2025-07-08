@@ -3,9 +3,19 @@
 #ifndef __G2_FACTORY_SPINE_H__
 #define __G2_FACTORY_SPINE_H__
 
+#include <string>
+#include <vector>
 #include <Windows.h>
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <d3dx12/d3dx12.h>
+#include <wrl/client.h>
 #include <spine/spine.h>
 #include "G2.Factory.h"
+
+using namespace std;
+using namespace DirectX;
+using Microsoft::WRL::ComPtr;
 
 namespace G2 {
 
@@ -28,6 +38,7 @@ struct TD3D_SPINE
 			skelData = {};
 		}
 	}
+	vector<string> GetTextureList();
 };
 
 class FactorySpine : public IG2Factory<FactorySpine, TD3D_SPINE>, public spine::TextureLoader
@@ -46,6 +57,33 @@ protected:
 	void	load(spine::AtlasPage& page, const spine::String& path) override;
 	void	unload(void* texture) override;
 };
+
+
+struct SPINE_DRAW_BUFFER {
+	UINT						numVb		{};		// vertex count
+	UINT						numIb		{};		// index count
+	ComPtr<ID3D12Resource>		rscPosGPU	{};		// position buffer default heap resource
+	ComPtr<ID3D12Resource>		rscPosCPU	{};		// position buffer upload heap resource
+	D3D12_VERTEX_BUFFER_VIEW	vbvPos		{};		// position buffer view
+
+	ComPtr<ID3D12Resource>		rscDifGPU	{};		// diffuse buffer default heap resource
+	ComPtr<ID3D12Resource>		rscDifCPU	{};		// diffuse buffer upload heap resource
+	D3D12_VERTEX_BUFFER_VIEW	vbvDif		{};		// diffuse buffer view
+
+	ComPtr<ID3D12Resource>		rscTexGPU	{};		// texture coord buffer default heap resource
+	ComPtr<ID3D12Resource>		rscTexCPU	{};		// texture coord buffer upload heap resource
+	D3D12_VERTEX_BUFFER_VIEW	vbvTex		{};		// texture buffer view
+
+	ComPtr<ID3D12Resource>		rscIdxGPU	{};		// index buffer default heap resource
+	ComPtr<ID3D12Resource>		rscIdxCPU	{};		// index buffer upload heap resource
+	D3D12_INDEX_BUFFER_VIEW		ibv			{};		// index buffer view
+
+	~SPINE_DRAW_BUFFER();
+	int Setup(ID3D12Device* d3dDevice, UINT widthVertex, UINT widthIndex
+				, const CD3DX12_HEAP_PROPERTIES& heapPropsGPU, const CD3DX12_HEAP_PROPERTIES& heapPropsUpload
+				, const CD3DX12_RESOURCE_DESC& vtxBufDesc, const CD3DX12_RESOURCE_DESC& idxBufDesc);
+};
+
 
 } // namespace G2
 

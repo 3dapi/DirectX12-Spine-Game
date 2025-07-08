@@ -65,8 +65,8 @@ protected:
 	vector<DRAW_BUFFER>				m_drawBuf			;
 	int								m_drawCount			{};
 
-	ComPtr<ID3D12Resource>			m_spineTextureRsc	{};		// spine texture resource
-	D3D12_GPU_DESCRIPTOR_HANDLE		m_spineTextureHandle{};		// spine texture handle
+	ComPtr<ID3D12Resource>			m_textureRsc		{};		// spine texture resource
+	D3D12_GPU_DESCRIPTOR_HANDLE		m_textureHandle		{};		// spine texture handle
 
 	ComPtr<ID3D12Resource>			m_cnstMVP			{};
 	uint8_t*						m_ptrMVP			{};
@@ -96,6 +96,7 @@ protected:
 	int		UpdateDrawBuffer();
 	void*	TextureLoad(const string& fileName);
 	void	TextureUnload(void* texture);
+	void	SetupRenderBuffer();
 	void	load(spine::AtlasPage& page, const spine::String& path) override;
 	void	unload(void* texture) override;
 };

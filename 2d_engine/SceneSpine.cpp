@@ -66,8 +66,8 @@ int SceneSpine::Destroy()
 	m_cnstMVP		->Unmap(0, nullptr);
 	m_cnstMVP		.Reset();
 	m_ptrMVP		= {};
-	m_spineTextureRsc	.Reset();
-	m_spineTextureHandle	= {};
+	m_textureRsc	.Reset();
+	m_textureHandle	= {};
 
 	return S_OK;
 }
@@ -106,33 +106,6 @@ int SceneSpine::Update(const std::any& t)
 	// Update spine draw buffer
 	UpdateDrawBuffer();
 
-#if 0	// AFEW::D::
-	spine::Slot* slot = m_spineSkeleton->findSlot("weapon-sword");
-	if (slot) {
-		//const char* slotName = slot->getData().getName().buffer();
-		//const char* boneName = slot->getBone().getData().getName().buffer();
-		//printf("[Slot '%s'] → [Bone '%s']\n", slotName, boneName);
-	}
-
-	spine::Bone* bone = m_spineSkeleton->findBone("weapon-sword");
-	//if (bone) {
-	//	printf("[Bone '%s'] local rotation: %.2f world rotation: %.2f\n",
-	//		bone->getData().getName().buffer(),
-	//		bone->getRotation(),
-	//		bone->getWorldRotationX());
-	//}
-
-	//spine::Bone* parent = m_spineSkeleton->findBone("weapon-sword")->getParent();
-	//if (parent)
-	//	printf("Parent bone: %s, world rotation: %.2f\n", parent->getData().getName().buffer(), parent->getWorldRotationX());
-
-	//spine::Bone* bone = m_spineSkeleton->findBone("weapon-sword");
-	//printf("inherit: %d\n", bone->getData().getInherit());
-
-	//bone->updateWorldTransform(); // 단독 호출
-	//printf("after update: world rotation = %.2f\n", bone->getWorldRotationX());
-#endif
-
 	return S_OK;
 }
 
@@ -149,7 +122,7 @@ int SceneSpine::Render()
 
 	CD3DX12_GPU_DESCRIPTOR_HANDLE cbvHandle(m_cbvHeap->GetGPUDescriptorHandleForHeapStart(), frameIndex, m_descriptorSize);
 	cmdList->SetGraphicsRootDescriptorTable(0, cbvHandle);
-	cmdList->SetGraphicsRootDescriptorTable(1, m_spineTextureHandle);
+	cmdList->SetGraphicsRootDescriptorTable(1, m_textureHandle);
 	cmdList->SetPipelineState(m_pipelineState.Get());
 
 	for(int i=0; i<m_drawCount; ++i)
@@ -182,6 +155,8 @@ int SceneSpine::UpdateDrawBuffer()
 	if(FAILED(hr))
 		return hr;
 	
+	cmdList->ResourceBarrier(0, nullptr);  // <-- dummy지만 OK
+
 	m_drawCount = {};
 	//printf("------------------------------------------------------------\n\n");
 	const auto& drawOrder = m_spineSkeleton->getDrawOrder();
@@ -399,87 +374,71 @@ int SceneSpine::InitSpine(const string& str_atlas, const string& str_skel)
 		string animName = anim->getName().buffer();
 		m_spineAnimations.push_back(animName);
 	}
-
-	// 최대 버퍼 길이 찾기
-	size_t maxVertexCount = 0;
-	size_t maxIndexCount = 0;
-	auto drawOrder = m_spineSkeleton->getDrawOrder();
-	for(size_t i = 0; i < drawOrder.size(); ++i)
-	{
-		spine::Slot* slot = drawOrder[i];
-		spine::Attachment* attachment = slot->getAttachment();
-		if(!attachment)
-			continue;
-		if(attachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
-		{
-			auto* mesh = static_cast<spine::MeshAttachment*>(attachment);
-			size_t vtxCount = mesh->getWorldVerticesLength() / 2;
-			if(vtxCount > maxVertexCount)
-				maxVertexCount = vtxCount;
-
-			size_t idxCount = mesh->getTriangles().size();
-			if(idxCount > maxIndexCount)
-				maxIndexCount = idxCount;
-		}
-	}
-	// buffer 최댓값으로 설정.
-	m_maxVtxCount = UINT( (maxVertexCount>8) ? maxVertexCount : 8 );
-	m_maxIdxCount = UINT( (maxIndexCount>8) ? maxIndexCount : 8 );
-	m_drawBuf.resize(size_t(3+ drawOrder.size() * 1.2), {});
-
-
 	printf("%s\n", str_atlas.c_str());
 	for(const auto& n: m_spineAnimations)
 	{
 		printf("\t%s\n", n.c_str());
 	}
 
-	// weapon-morningstar
-	if (true)
-	{
-		m_spineSkeleton->setSkin("weapon/morningstar");					// 스킨 변경
-		m_spineSkeleton->setSlotsToSetupPose();						// ← 슬롯(attachment) 갱신
-		m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// ← 본 transform 계산
-		// 기존 sword 제거
-		spine::Slot* slot = m_spineSkeleton->findSlot("weapon-sword");
-		if (slot)
-			slot->setAttachment(nullptr);
-	}
 
-	// weapon-sword
-	if (false)
+	//hero
+	if(false)
 	{
-		m_spineSkeleton->setSkin("weapon/sword");					// 스킨 변경
-		m_spineSkeleton->setSlotsToSetupPose();						// ← 슬롯(attachment) 갱신
-		m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// ← 본 transform 계산
-		// 기존 weapon-morningstar 무기 제거
-
-		const char* weaponSlots[] = {
-			"weapon-morningstar-path",
-			"chain-ball", "chain-round", "chain-round2", "chain-round3",
-			"chain-flat", "chain-flat2", "chain-flat3", "chain-flat4", "handle"
-		};
-		for (const char* slotName : weaponSlots)
+		// weapon-morningstar
+		if (false)
 		{
-			auto* slot = m_spineSkeleton->findSlot(slotName);
+			m_spineSkeleton->setSkin("weapon/morningstar");					// 스킨 변경
+			m_spineSkeleton->setSlotsToSetupPose();						// ← 슬롯(attachment) 갱신
+			m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// ← 본 transform 계산
+			// 기존 sword 제거
+			spine::Slot* slot = m_spineSkeleton->findSlot("weapon-sword");
+			if (slot)
+				slot->setAttachment(nullptr);
+		}
+
+		// weapon-sword
+		if (false)
+		{
+			m_spineSkeleton->setSkin("weapon/sword");					// 스킨 변경
+			m_spineSkeleton->setSlotsToSetupPose();						// ← 슬롯(attachment) 갱신
+			m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// ← 본 transform 계산
+			// 기존 weapon-morningstar 무기 제거
+
+			const char* weaponSlots[] = {
+				"weapon-morningstar-path",
+				"chain-ball", "chain-round", "chain-round2", "chain-round3",
+				"chain-flat", "chain-flat2", "chain-flat3", "chain-flat4", "handle"
+			};
+			for (const char* slotName : weaponSlots)
+			{
+				auto* slot = m_spineSkeleton->findSlot(slotName);
+				if (slot)
+					slot->setAttachment(nullptr);
+			}
+		}
+
+		if (false)
+		{
+			m_spineSkeleton->setSkin("weapon/morningstar");					// 스킨 변경
+			m_spineSkeleton->setSlotsToSetupPose();						// ← 슬롯(attachment) 갱신
+			m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// ← 본 transform 계산
+			// 기존 sword 제거
+			spine::Slot* slot = m_spineSkeleton->findSlot("weapon-sword");
 			if (slot)
 				slot->setAttachment(nullptr);
 		}
 	}
-	
-	if (false)
+
+	// goblin
+	if(false)
 	{
-		m_spineSkeleton->setSkin("weapon/morningstar");					// 스킨 변경
-		m_spineSkeleton->setSlotsToSetupPose();						// ← 슬롯(attachment) 갱신
-		m_spineSkeleton->updateWorldTransform(spine::Physics_None);	// ← 본 transform 계산
-		// 기존 sword 제거
-		spine::Slot* slot = m_spineSkeleton->findSlot("weapon-sword");
-		if (slot)
-			slot->setAttachment(nullptr);
+		if (true)
+		{
+			m_spineSkeleton->setSkin("goblin");
+			m_spineSkeleton->setSlotsToSetupPose();
+			m_spineSkeleton->updateWorldTransform(spine::Physics_None);
+		}
 	}
-
-
-
 
 	AnimationStateData animationStateData(m_spineSkeletonData);
 	animationStateData.setDefaultMix(0.2f);
@@ -489,14 +448,17 @@ int SceneSpine::InitSpine(const string& str_atlas, const string& str_skel)
 	//m_spineAniState->addAnimation(0, "roar", false, 0.8F);
 	//m_spineAniState->addAnimation(0, "walk", true, 0);
 	m_spineAniState->setAnimationByIndex(0, 0, true);
-	m_spineSkeleton->setPosition(0, 0.0F);
-	//m_spineSkeleton->setScaleX(0.3f);
-	//m_spineSkeleton->setScaleY(0.3f);
-	m_spineSkeleton->setScaleX(-1); // 좌우 반전
+
+	float x = (-10.0F + rand() % 21) * 50.0f;
+	m_spineSkeleton->setPosition(x, -400.0F);
+	m_spineSkeleton->setScaleX(-0.3f);
+	m_spineSkeleton->setScaleY( 0.3f);
+	//m_spineSkeleton->setScaleX(-1); // 좌우 반전
 
 	m_spineAniState->update(0);
 	m_spineAniState->apply(*m_spineSkeleton);
 
+	SetupRenderBuffer();
 	return S_OK;
 }
 
@@ -567,30 +529,18 @@ int SceneSpine::InitForDevice()
 	}
 	// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 	// 2. pipe line 설정
-	// compile shader
-	ID3DBlob* shaderVtx{}, *shaderPxl{};
-	{
-		shaderVtx = G2::DXCompileShaderFromFile("Shaders/spine.hlsl", "vs_5_0", "main_vs");
-		if(!shaderVtx)
-			return E_FAIL;
-		shaderPxl = G2::DXCompileShaderFromFile("Shaders/spine.hlsl", "ps_5_0", "main_ps");
-		if(!shaderPxl)
-			return E_FAIL;
-	}
+	
+	auto shader_manager = FactoryShader::instance();
+	auto vs = shader_manager->Load("spine_shader_vertex", "Shaders/spine.hlsl"   , "vs_5_0", "main_vs");
+	auto ps = shader_manager->Load("spine_shader_pixel"	, "Shaders/spine.hlsl"   , "ps_5_0", "main_ps");
+	
 	// Create the pipeline state once the shaders are loaded.
 	{
-		const D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
-		{
-			{"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT    , 0, 0 , D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-			{"COLOR"   , 0, DXGI_FORMAT_R8G8B8A8_UNORM  , 1, 0 , D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT    , 2, 0 , D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		};
-
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.InputLayout = {inputElementDescs, _countof(inputElementDescs)};
+		psoDesc.InputLayout = {(D3D12_INPUT_ELEMENT_DESC*)VTX2D_DT::INPUT_LAYOUT_SPLIT.data(), (UINT)VTX2D_DT::INPUT_LAYOUT_SPLIT.size()};
 		psoDesc.pRootSignature = m_rootSignature.Get();
-		psoDesc.VS = CD3DX12_SHADER_BYTECODE(shaderVtx);
-		psoDesc.PS = CD3DX12_SHADER_BYTECODE(shaderPxl);
+		psoDesc.VS = CD3DX12_SHADER_BYTECODE(vs->r.Get());
+		psoDesc.PS = CD3DX12_SHADER_BYTECODE(ps->r.Get());
 		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 		psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;	// 우-> 좌 변경 대응.
 
@@ -683,28 +633,15 @@ int SceneSpine::InitForDevice()
 		{
 			hCpuSrv.Offset(0, descriptorSize);			//
 			hGpuSrv.Offset(0, descriptorSize);			//
-			m_spineTextureHandle = hGpuSrv;					// CPU, GPU OFFSET을 이동후 Heap pointer 위치를 저장 이 핸들 값이 텍스처 핸들
+			m_textureHandle = hGpuSrv;					// CPU, GPU OFFSET을 이동후 Heap pointer 위치를 저장 이 핸들 값이 텍스처 핸들
 
 			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			srvDesc.Format = m_spineTextureRsc->GetDesc().Format;
+			srvDesc.Format = m_textureRsc->GetDesc().Format;
 			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 			srvDesc.Texture2D.MipLevels = 1;
-			device->CreateShaderResourceView(m_spineTextureRsc.Get(), &srvDesc, hCpuSrv);
+			device->CreateShaderResourceView(m_textureRsc.Get(), &srvDesc, hCpuSrv);
 		}
-	}
-
-	// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	// 7. vertex, index buffer uploader 생성
-	const UINT widthVertex = m_maxVtxCount * sizeof(XMFLOAT2);
-	const UINT widthIndex  = m_maxIdxCount * sizeof(uint16_t);
-	CD3DX12_HEAP_PROPERTIES heapPropsGPU	(D3D12_HEAP_TYPE_DEFAULT);
-	CD3DX12_HEAP_PROPERTIES heapPropsUpload	(D3D12_HEAP_TYPE_UPLOAD);
-	CD3DX12_RESOURCE_DESC   vtxBufDesc		= CD3DX12_RESOURCE_DESC::Buffer(widthVertex);
-	CD3DX12_RESOURCE_DESC	idxBufDesc		= CD3DX12_RESOURCE_DESC::Buffer(widthIndex);
-	for(size_t i=0; i<m_drawBuf.size(); ++i)
-	{
-		m_drawBuf[i].Setup(device, widthVertex, widthIndex, heapPropsGPU, heapPropsUpload, vtxBufDesc, idxBufDesc);
 	}
 
 	d3d->command(CMD_WAIT_GPU);
@@ -723,25 +660,76 @@ void* SceneSpine::TextureLoad(const string& fileName)
 	{
 		resourceUpload.Begin();
 		auto wFile = ansiToWstr(fileName);
-		int hr = DirectX::CreateWICTextureFromFile(device, resourceUpload, wFile.c_str(), m_spineTextureRsc.GetAddressOf());
+		int hr = DirectX::CreateWICTextureFromFile(device, resourceUpload, wFile.c_str(), m_textureRsc.GetAddressOf());
 		if(FAILED(hr))
 			return {};
 		auto uploadOp = resourceUpload.End(cmdQue);
 		uploadOp.wait();  // GPU 업로드 완료 대기
 	}
 	// 뷰는 descriptor heap 생성 후에 만듦.
-	return m_spineTextureRsc.Get();
+	return m_textureRsc.Get();
 }
 
 void SceneSpine::TextureUnload(void* texture)
 {
-	auto textureRsc = m_spineTextureRsc.Get();
+	auto textureRsc = m_textureRsc.Get();
 	if(texture != textureRsc)
 	{
 		// bad texture resource pointer
 		//
 	}
 }
+
+void SceneSpine::SetupRenderBuffer()
+{
+	// 최대 버퍼 길이 찾기
+	size_t maxVertexCount = 0;
+	size_t maxIndexCount = 0;
+	auto drawOrder = m_spineSkeleton->getDrawOrder();
+	for (size_t i = 0; i < drawOrder.size(); ++i)
+	{
+		spine::Slot* slot = drawOrder[i];
+		spine::Attachment* attachment = slot->getAttachment();
+		if (!attachment)
+			continue;
+		if (attachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
+		{
+			auto* mesh = static_cast<spine::MeshAttachment*>(attachment);
+			size_t vtxCount = mesh->getWorldVerticesLength() / 2;
+			if (vtxCount > maxVertexCount)
+				maxVertexCount = vtxCount;
+
+			size_t idxCount = mesh->getTriangles().size();
+			if (idxCount > maxIndexCount)
+				maxIndexCount = idxCount;
+		}
+	}
+
+	// buffer 최댓값으로 설정.
+	m_maxVtxCount = UINT((maxVertexCount > 8) ? maxVertexCount : 8);
+	m_maxIdxCount = UINT((maxIndexCount > 8) ? maxIndexCount : 8);
+
+	if (!m_drawBuf.empty())
+		m_drawBuf.clear();
+
+	m_drawBuf.resize(drawOrder.size(), {});
+
+	// 7. vertex, index buffer uploader 생성
+	const UINT widthVertex = m_maxVtxCount * sizeof(XMFLOAT2);
+	const UINT widthIndex = m_maxIdxCount * sizeof(uint16_t);
+	CD3DX12_HEAP_PROPERTIES heapPropsGPU(D3D12_HEAP_TYPE_DEFAULT);
+	CD3DX12_HEAP_PROPERTIES heapPropsUpload(D3D12_HEAP_TYPE_UPLOAD);
+	CD3DX12_RESOURCE_DESC   vtxBufDesc = CD3DX12_RESOURCE_DESC::Buffer(widthVertex);
+	CD3DX12_RESOURCE_DESC	idxBufDesc = CD3DX12_RESOURCE_DESC::Buffer(widthIndex);
+
+	auto d3d = IG2GraphicsD3D::instance();
+	auto device = std::any_cast<ID3D12Device*>(d3d->getDevice());
+	for (size_t i = 0; i < m_drawBuf.size(); ++i)
+	{
+		m_drawBuf[i].Setup(device, widthVertex, widthIndex, heapPropsGPU, heapPropsUpload, vtxBufDesc, idxBufDesc);
+	}
+}
+
 
 namespace spine {
 	spine::SpineExtension* getDefaultExtension()
@@ -819,3 +807,4 @@ int DRAW_BUFFER::Setup(ID3D12Device* device, UINT widthVertex, UINT widthIndex
 
 	return S_OK;
 }
+

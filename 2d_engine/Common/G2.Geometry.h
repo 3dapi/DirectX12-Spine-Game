@@ -39,6 +39,12 @@ struct VTX2D_DT			// P:position, D: diffuse T: texture coord
 		{ "COLOR"    , 0, DXGI_FORMAT_R8G8B8A8_UNORM , 0, 0+sizeof(XMFLOAT2)                                    , D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD" , 0, DXGI_FORMAT_R32G32_FLOAT   , 0, 0+sizeof(XMFLOAT2)+sizeof(uint32_t)                   , D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 	}};
+	inline static const std::array<const D3D12_INPUT_ELEMENT_DESC, 3> INPUT_LAYOUT_SPLIT
+	{{
+		{"POSITION", 0, DXGI_FORMAT_R32G32_FLOAT    , 0, 0 , D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{"COLOR"   , 0, DXGI_FORMAT_R8G8B8A8_UNORM  , 1, 0 , D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT    , 2, 0 , D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+	}};
 };
 
 struct VTX2D_DTI		// P:position, D: diffuse T: texture I:seperate texture index

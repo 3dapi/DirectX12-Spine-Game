@@ -198,7 +198,7 @@ void SceneGameMesh::DrawBox()
 	auto cmdList    = std::any_cast<ID3D12GraphicsCommandList* >(d3d->getCommandList());
 
 	UINT srvDescSize    = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	auto pls_manager    = FactoryPipelineState::instance();
+	auto psoManager    = FactoryPipelineState::instance();
 
 	// root signature
 	auto signature = FactorySignature::instance()->FindRes("TEX_1");
@@ -209,7 +209,7 @@ void SceneGameMesh::DrawBox()
 	ID3D12DescriptorHeap* descriptorHeaps[] = { m_boxSrvDesc.Get() };
 	cmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
-	auto pls = pls_manager->FindRes("PLS_ALPHATEST");
+	auto pls = psoManager->FindRes("PLS_ALPHATEST");
 	cmdList->SetPipelineState(pls);
 
 

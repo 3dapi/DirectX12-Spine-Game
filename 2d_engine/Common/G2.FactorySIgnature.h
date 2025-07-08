@@ -58,6 +58,7 @@ struct TD3D_ROOTSIGNATURE
 	inline static const char* keys[]
 	{
 		"TEX_0", "TEX_1", "TEX_2", "TEX_3", "TEX_4", "TEX_5", "TEX_6", "TEX_7", "TEX_8", "TEX_9", "TEX_A", "TEX_B",
+		"PLS2D_SPINE0",
 	};
 };
 
@@ -66,6 +67,7 @@ class FactorySignature : public IG2Factory<FactorySignature, TD3D_ROOTSIGNATURE 
 public:
 	static FactorySignature* instance();
 	TD3D_ROOTSIGNATURE* ResourceLoad();
+	TD3D_ROOTSIGNATURE* Add(const std::string& name, ID3D12RootSignature* rso, bool replace = false);
 public:
 	TD3D_ROOTSIGNATURE* ResourceFind(const std::string& name) const override;
 	// find ID3D12Resource*

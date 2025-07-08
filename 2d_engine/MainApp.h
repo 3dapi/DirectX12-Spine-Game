@@ -41,11 +41,11 @@ public:
 	void	OnKeyboardInput(const GameTimer& gt);
 
 protected:
-	std::unique_ptr<GraphicsMemory>			m_graphicsMemory;
-	std::unique_ptr<XTK_BATCH>				m_batch;
+	unique_ptr<GraphicsMemory>		m_graphicsMemory;
+	unique_ptr<XTK_BATCH>			m_batch;
 
-	unique_ptr<IG2Scene>					m_pSceneMesh	{};
-	unique_ptr<IG2Scene>					m_pSceneXKT		{};
-	vector<unique_ptr<IG2Scene> >			m_pSceneSpine	;
-	unique_ptr<IG2Scene>					m_pSceneSample	{};
+	unique_ptr<IG2Scene>			m_pSceneMesh	{};
+	unique_ptr<IG2Scene>			m_pSceneXKT		{};
+	unique_ptr<IG2Scene>			m_pSceneSpine	{};
+	unique_ptr<IG2Scene>			m_pSceneSample	{};
 };

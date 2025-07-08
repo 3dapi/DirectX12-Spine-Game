@@ -11,6 +11,7 @@
 #include "Common/G2.FactoryShader.h"
 #include "Common/G2.FactorySIgnature.h"
 #include "Common/G2.FactoryPipelineState.h"
+#include "Common/G2.FactorySpine.h"
 #include "Common/G2.Geometry.h"
 #include "Common/G2.Util.h"
 #include "SceneGameMesh.h"
@@ -101,7 +102,7 @@ int MainApp::init(const std::any& initialValue /* = */)
 	shader_manager->Load("opaquePS"     , "Shaders/Default.hlsl"   , "ps_5_0", "PS", defines         );
 	shader_manager->Load("alphaTestedPS", "Shaders/Default.hlsl"   , "ps_5_0", "PS", alphaTestDefines);
 
-	auto pls_manager = FactoryPipelineState::instance();
+	auto psoManager = FactoryPipelineState::instance();
 
 	d3d->command(CMD_COMMAND_END);
 
@@ -128,52 +129,24 @@ int MainApp::init(const std::any& initialValue /* = */)
 			}
 		}
 	}
-
-	vector<string> detachSlotSpineBoy = {
-		"spineboy-torso", "head", "eyes-open", "mouth-smile", "visor",
-		"gun", "front-arm", "front-bracer", "front-hand",
-		"back-arm", "back-hand", "back-bracer", "back-knee",
-		"lower-leg", "front-thigh",
-		"stirrup-front", "stirrup-back", "stirrup-strap",
-		"raptor-saddle",
-		"raptor-saddle-strap-front",
-		"raptor-saddle-strap-back",
-	};
-	vector<string> detachSlotHero = {
-		"weapon-morningstar-path",
-		"chain-ball", "chain-round", "chain-round2", "chain-round3",
-		"chain-flat", "chain-flat2", "chain-flat3", "chain-flat4", "handle"
-	};
-
-	vector< SPINE_ATTRIB> spine_rsc =
 	{
-		{"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {-700.0F, -300.0F}, "walk", "default", detachSlotSpineBoy },
-		{"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {-300.0F, -300.0F}, "walk", "goblin" , {} },
-		{"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, {   0.0F, -300.0F}, "walk", "weapon/sword", detachSlotHero },
-		{"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.90F, { 300.0F, -300.0F}, "idle", "default", {} },
-		{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 600.0F, -300.0F}, "run" , "default", {} },
-	};
-
-	for(const auto& rsc: spine_rsc)
-	{
-		auto scene = std::make_unique<SceneSpine>();
-		if(scene)
-		{
-			auto initArgs = rsc;
-			if(SUCCEEDED(scene->Init(initArgs)))
-			{
-				m_pSceneSpine.push_back(std::move(scene));
-			}
-		}
-	}
-	{
-		auto scene=std::make_unique<SceneSample2D>();
-		if(scene)
+		auto scene = std::make_unique<SceneSample2D>();
+		if (scene)
 		{
 			//if(SUCCEEDED(scene->Init()))
 			//{
 			//	m_pSceneSample = std::move(scene);
 			//}
+		}
+	}
+	{
+		auto scene=std::make_unique<SceneSpine>();
+		if(scene)
+		{
+			if(SUCCEEDED(scene->Init()))
+			{
+				m_pSceneSpine = std::move(scene);
+			}
 		}
 	}
 
@@ -184,9 +157,9 @@ int MainApp::destroy()
 {
 	m_pSceneMesh	= {};
 	m_pSceneXKT		= {};
-	if(!m_pSceneSpine.empty())
-		m_pSceneSpine.clear();
+	m_pSceneSpine	= {};
 
+	FactorySpine::instance()->UnLoadAll();
 	FactoryPipelineState::instance()->UnLoadAll();
 	FactorySignature::instance()->UnLoadAll();
 	FactoryShader::instance()->UnLoadAll();
@@ -215,11 +188,8 @@ int MainApp::Update(const std::any& t)
 		m_pSceneMesh->Update(t);
 	if(m_pSceneXKT)
 		m_pSceneXKT->Update(t);
-	for (auto& spine : m_pSceneSpine)
-	{
-		spine->Update(t);
-	}
-
+	if (m_pSceneSpine)
+		m_pSceneSpine->Update(t);
 	if(m_pSceneSample)
 		m_pSceneSample->Update(t);
 
@@ -239,7 +209,7 @@ int MainApp::Render()
 	auto d3dBackBuffer   = std::any_cast<ID3D12Resource*            >(d3d->getCurrentBackBuffer());
 	auto d3dBackBufferV  = std::any_cast<CD3DX12_CPU_DESCRIPTOR_HANDLE>(d3d->getBackBufferView());
 	auto d3dDepthV       = std::any_cast<D3D12_CPU_DESCRIPTOR_HANDLE>(d3d->getDepthStencilView());
-	auto pls_manager     = FactoryPipelineState::instance();
+	auto psoManager      = FactoryPipelineState::instance();
 
 	// 0. d3d 작업 완료 대기.
 	hr = d3d->command(EG2GRAPHICS_D3D::CMD_FENCE_WAIT);
@@ -274,10 +244,10 @@ int MainApp::Render()
 		m_pSceneMesh->Render();
 	if(m_pSceneXKT)
 		m_pSceneXKT->Render();
-	for (auto& spine : m_pSceneSpine)
-	{
-		spine->Render();
-	}
+	if (m_pSceneXKT)
+		m_pSceneXKT->Render();
+	if (m_pSceneSpine)
+		m_pSceneSpine->Render();
 	if(m_pSceneSample)
 		m_pSceneSample->Render();
 

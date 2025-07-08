@@ -154,7 +154,7 @@ TD3D_PIPELINESTATE* FactoryPipelineState::ResourceLoad()
 	return ret;
 }
 
-TD3D_PIPELINESTATE* FactoryPipelineState::Add(std::string& name, ID3D12PipelineState* pls, bool replace)
+TD3D_PIPELINESTATE* FactoryPipelineState::Add(const std::string& name, ID3D12PipelineState* pls, bool replace)
 {
 	auto itr = this->m_db.find(name);
 	if (itr != this->m_db.end())

@@ -22,6 +22,8 @@ inline static const char* D3D_PIPELINESTATE[] = {
 	"PLS2D_OPAQUE",
 	"PLS2D_TRANSPARENT",
 	"PLS2D_ALPHATEST",
+	// for spine
+	"PLS2D_SPINE0",
 	// ...
 };
 
@@ -42,7 +44,7 @@ class FactoryPipelineState : public IG2Factory<FactoryPipelineState, TD3D_PIPELI
 public:
 	static FactoryPipelineState* instance();
 	TD3D_PIPELINESTATE* ResourceLoad();
-	TD3D_PIPELINESTATE* Add(std::string& name, ID3D12PipelineState* pls, bool replace=false);
+	TD3D_PIPELINESTATE* Add(const std::string& name, ID3D12PipelineState* pls, bool replace=false);
 public:
 	TD3D_PIPELINESTATE* ResourceFind(const std::string& name) const override;
 	ID3D12PipelineState* FindRes(const std::string& name) const;

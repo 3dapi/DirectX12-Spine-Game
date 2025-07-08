@@ -100,6 +100,30 @@ TD3D_ROOTSIGNATURE* FactorySignature::ResourceLoad()
 	return ret;
 }
 
+TD3D_ROOTSIGNATURE* FactorySignature::Add(const std::string& name, ID3D12RootSignature* rso, bool replace)
+{
+	auto itr = this->m_db.find(name);
+	if (itr != this->m_db.end())
+	{
+		// 있으면 리턴
+		if (!replace)
+		{
+			return {};
+		}
+		else
+		{
+			// 삭제.
+			m_db.erase(itr);
+		}
+	}
+	// 저장.
+	m_db[name] = std::make_unique<TD3D_ROOTSIGNATURE>();
+	m_db[name]->n = name;
+	m_db[name]->r = rso;
+	auto item = this->Find(name);
+	return item;
+}
+
 TD3D_ROOTSIGNATURE* FactorySignature::ResourceFind(const string& name) const
 {
 	auto itr = this->m_db.find(name);

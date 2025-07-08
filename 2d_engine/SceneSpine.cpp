@@ -364,7 +364,6 @@ int SceneSpine::InitSpine()
 	}
 #endif
 
-	//hero
 	if (!m_attrib.skinName.empty())
 	{
 		m_spineSkeleton->setSkin(m_attrib.skinName.c_str());		// 스킨 변경
@@ -389,7 +388,7 @@ int SceneSpine::InitSpine()
 	{
 		m_spineAniState->setAnimationByIndex(0, 0, true);
 	}
-	else if (itr == m_spineAnimation.end())
+	else
 	{
 		m_spineAniState->setAnimation(0, m_attrib.aniName.c_str(), true);
 	}

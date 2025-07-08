@@ -129,8 +129,17 @@ int MainApp::init(const std::any& initialValue /* = */)
 		}
 	}
 
-
-	vector<string> detachSlot = {
+	vector<string> detachSlotSpineBoy = {
+		"spineboy-torso", "head", "eyes-open", "mouth-smile", "visor",
+		"gun", "front-arm", "front-bracer", "front-hand",
+		"back-arm", "back-hand", "back-bracer", "back-knee",
+		"lower-leg", "front-thigh",
+		"stirrup-front", "stirrup-back", "stirrup-strap",
+		"raptor-saddle",
+		"raptor-saddle-strap-front",
+		"raptor-saddle-strap-back",
+	};
+	vector<string> detachSlotHero = {
 		"weapon-morningstar-path",
 		"chain-ball", "chain-round", "chain-round2", "chain-round3",
 		"chain-flat", "chain-flat2", "chain-flat3", "chain-flat4", "handle"
@@ -138,11 +147,11 @@ int MainApp::init(const std::any& initialValue /* = */)
 
 	vector< SPINE_ATTRIB> spine_rsc =
 	{
-		{"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {-600.0F, -300.0F}, "walk", "default", {} },
+		{"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {-700.0F, -300.0F}, "walk", "default", detachSlotSpineBoy },
 		{"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {-300.0F, -300.0F}, "walk", "goblin" , {} },
-		{"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, {   0.0F, -300.0F}, "walk", "weapon / sword", detachSlot },
+		{"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, {   0.0F, -300.0F}, "walk", "weapon/sword", detachSlotHero },
 		{"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.90F, { 300.0F, -300.0F}, "idle", "default", {} },
-		{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 600.0F, -300.0F}, "run", "default", {} },
+		{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 600.0F, -300.0F}, "run" , "default", {} },
 	};
 
 	for(const auto& rsc: spine_rsc)

@@ -24,6 +24,7 @@
 
 void GameCharacter::Model(EAPP_MODEL v)
 {
+	// find model 
 	m_model = v;
 }
 EAPP_MODEL GameCharacter::Model() const

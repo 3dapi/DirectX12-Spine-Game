@@ -46,14 +46,14 @@ int SceneBegin::Init(const std::any& initial_value)
 	auto cmdList = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	vector<string>	charModel
+	vector<EAPP_MODEL>	charModel
 	{
-		"raptor",
-		"goblins",
-		"hero",
-		"spineboy",
-		"stretchyman",
-		"alien",
+		EMODEL_RAPTOR	,
+		EMODEL_GOBLIN	,
+		EMODEL_KNIGHT	,
+		EMODEL_BOY		,
+		EMODEL_STMAN	,
+		EMODEL_ALIEN	,
 	};
 
 	for(size_t i = 0; i < charModel.size(); ++i)

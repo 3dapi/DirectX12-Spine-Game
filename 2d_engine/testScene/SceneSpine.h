@@ -29,7 +29,7 @@ using namespace G2;
 class SceneSpine: public G2::IG2Scene
 {
 protected:
-	vector<unique_ptr<IG2RenderObject> >	m_objSpine	{};
+	vector<unique_ptr<IG2Object> >	m_objSpine	{};
 protected:
 public:
 	SceneSpine();

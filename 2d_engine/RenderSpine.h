@@ -43,7 +43,7 @@ struct SPINE_ATTRIB
 	vector<string>	detachSlot	{};
 };
 
-class RenderSpine: public G2::IG2RenderObject
+class RenderSpine: public G2::IG2Object
 {
 protected:
 	// spine resource
@@ -70,6 +70,10 @@ protected:
 	ComPtr<ID3D12Resource>			m_cnstMVP			{};
 	uint8_t*						m_ptrMVP			{};
 
+protected:
+	float		m_dir	{ 1.0F	};
+	XMFLOAT2	m_pos	{ 0.0F, 0.0f};
+
 public:
 	RenderSpine();
 	virtual ~RenderSpine();
@@ -82,6 +86,7 @@ public:
 	int		Render()					override;
 
 	void	Look(float direction);
+	void	Scale(float direction);
 
 protected:
 	int		InitSpine();
@@ -90,6 +95,6 @@ protected:
 	void	SetupDrawBuffer();
 };
 
-SPINE_ATTRIB* FindSpineAttribute(const std::string& spineName);
+SPINE_ATTRIB* FindSpineAttribute(EAPP_MODEL model);
 
 #endif

@@ -61,16 +61,16 @@ struct IG2Scene
 };
 typedef IG2Scene*			PG2SCENE;
 
-struct IG2RenderObject
+struct IG2Object
 {
-	virtual ~IG2RenderObject() = default;
+	virtual ~IG2Object() = default;
 	virtual int		Type()									= 0;
 	virtual int		Init(const std::any& initialValue = {}) = 0;
 	virtual int		Destroy()								= 0;
 	virtual int		Update(const std::any& t)				= 0;
 	virtual int		Render()								= 0;
 };
-typedef IG2RenderObject*	PG2OBJECT;
+typedef IG2Object*	PG2OBJECT;
 
 } // namespace G2 {
 

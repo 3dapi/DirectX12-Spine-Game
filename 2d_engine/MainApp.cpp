@@ -146,7 +146,7 @@ int MainApp::init(const std::any& initialValue /* = */)
 
 
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE_LOBBY);
+	this->ChangeScene(EAPP_SCENE_BEGIN);
 
 
 	// create XTK Instance

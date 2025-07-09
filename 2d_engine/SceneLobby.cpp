@@ -119,8 +119,6 @@ int SceneLobby::Render()
 
 int SceneLobby::Notify(const std::string& name, const std::any& t)
 {
-	printf("SceneLobby: Notify: %s\n", name.c_str());
-
 	if(name == "MouseUp")
 	{
 		auto mousePos = any_cast<const ::POINT&>(t);

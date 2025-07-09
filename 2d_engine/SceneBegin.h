@@ -22,7 +22,6 @@
 #include "RenderSpine.h"
 #include "UiBegin.h"
 
-
 using namespace std;
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
@@ -45,10 +44,6 @@ public:
 	int		Update(const std::any& t)	override;
 	int		Render()					override;
 	int		Notify(const std::string& name, const std::any& t)	override;
-
-protected:
-	void	CheckSelectCharacter(const ::POINT& mousePos);
-
 };
 
 #endif

@@ -114,6 +114,12 @@
     <ClCompile Include="SpineAnimation.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="UiEnd.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="UiPlay.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\D3DWinApp.h">
@@ -225,6 +231,12 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="UiBegin.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="UiEnd.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="UiPlay.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

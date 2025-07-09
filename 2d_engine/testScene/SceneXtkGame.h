@@ -48,7 +48,7 @@ protected:
 
 	// DirectXTK objects.
 	std::unique_ptr<DirectX::CommonStates>                                  m_states;
-	std::unique_ptr<DirectX::DescriptorHeap>                                m_resourceDescriptors;
+	std::unique_ptr<DirectX::DescriptorHeap>                                m_xtkDescHeap;
 	std::unique_ptr<DirectX::BasicEffect>                                   m_lineEffect;
 	std::unique_ptr<DirectX::BasicEffect>                                   m_shapeEffect;
 	std::unique_ptr<DirectX::Model>                                         m_model;

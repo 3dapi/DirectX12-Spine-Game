@@ -19,6 +19,7 @@ using namespace G2;
 enum EAPP_CONST
 {
 	EAPP_FRAME_RESOURCE_CHAIN_NUMBER	= 2,		// Cycle through the circular frame resource array.
+	EAPP_DESC_HEAP_SIZE					= 1024,		// Descriptor heap size
 };
 
 enum EAPP_ATTRIB
@@ -26,7 +27,8 @@ enum EAPP_ATTRIB
 	EAPP_ATT_WIN_HWND					= 0x0101,	// window handle
 	EAPP_ATT_WIN_HINST					,			//
 	EAPP_ATT_XTK_SPRITE					,			// Sprite Batch
-	EAPP_ATT_XTK_GRAPHICS_MEMORY		,			//
+	EAPP_ATT_XTK_GRAPHIC_MEM			,			//
+	EAPP_ATT_XTK_DESC_HEAP				,			//
 	EAPP_ATT_XTK_BATCH					,			//
 	EAPP_ATT_CUR_CB						= 0x0301,	// current const buffer
 };

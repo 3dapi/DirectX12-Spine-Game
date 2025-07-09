@@ -184,13 +184,13 @@ int SceneXtkGame::Render()
 	DrawGrid(xaxis,yaxis,g_XMZero,20,20,Colors::Gray);
 
 	// Set the descriptor heaps
-	ID3D12DescriptorHeap* heaps[] ={ (ID3D12DescriptorHeap*)m_resourceDescriptors->Heap(),(ID3D12DescriptorHeap*)m_states->Heap()};
+	ID3D12DescriptorHeap* heaps[] ={ (ID3D12DescriptorHeap*)m_xtkDescHeap->Heap(),(ID3D12DescriptorHeap*)m_states->Heap()};
 	commandList->SetDescriptorHeaps(_countof(heaps),heaps);
 
 	// Draw sprite
 	PIXBeginEvent(commandList,PIX_COLOR_DEFAULT,L"Draw sprite");
 	sprite->Begin(commandList);
-	sprite->Draw(m_resourceDescriptors->GetGpuHandle(Descriptors::WindowsLogo), DirectX::GetTextureSize(m_checkerRsc.Get()), XMFLOAT2(10,75));
+	sprite->Draw(m_xtkDescHeap->GetGpuHandle(Descriptors::WindowsLogo), DirectX::GetTextureSize(m_checkerRsc.Get()), XMFLOAT2(10,75));
 
 	m_font->DrawString(sprite,L"DirectXTK12 Simple Sample",XMFLOAT2(100,10),Colors::Yellow);
 	sprite->End();
@@ -287,10 +287,10 @@ void SceneXtkGame::CreateDeviceDependentResources()
 	auto formatBackBuffer  = *any_cast<DXGI_FORMAT*>(d3d->getAttrib(ATT_DEVICE_BACKBUFFER_FORAT));
 	auto formatDepthBuffer = *any_cast<DXGI_FORMAT*>(d3d->getAttrib(ATT_DEVICE_DEPTH_STENCIL_FORAT));
 
-	auto pGraphicsMemory   = std::any_cast<GraphicsMemory* >(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_GRAPHICS_MEMORY));
+	auto pGraphicsMemory   = std::any_cast<GraphicsMemory* >(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_GRAPHIC_MEM));
 
 	m_states = std::make_unique<CommonStates>(device);
-	m_resourceDescriptors = std::make_unique<DescriptorHeap>(device, Descriptors::Count);
+	m_xtkDescHeap = std::make_unique<DescriptorHeap>(device, Descriptors::Count);
 	m_shape = GeometricPrimitive::CreateTeapot(4.f,8);
 
 	// SDKMESH has to use clockwise winding with right-handed coordinates, so textures are flipped in U
@@ -302,7 +302,7 @@ void SceneXtkGame::CreateDeviceDependentResources()
 		resourceUpload.Begin();
 
 		ThrowIfFailed( CreateWICTextureFromFileEx(device,resourceUpload,L"assets/texture/res_checker.png", 0, D3D12_RESOURCE_FLAG_NONE, WIC_LOADER_DEFAULT, m_checkerRsc.ReleaseAndGetAddressOf()) );
-		CreateShaderResourceView(device,m_checkerRsc.Get(),m_resourceDescriptors->GetCpuHandle(Descriptors::WindowsLogo));
+		CreateShaderResourceView(device,m_checkerRsc.Get(),m_xtkDescHeap->GetCpuHandle(Descriptors::WindowsLogo));
 
 
 

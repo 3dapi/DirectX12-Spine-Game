@@ -7,30 +7,30 @@
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
 #include "GameInfo.h"
-#include "UiBegin.h"
+#include "UiPlay.h"
 
 using std::any_cast;
 using namespace std;
 using namespace DirectX;
 using namespace G2;
 
-UiBegin::UiBegin()
+UiPlay::UiPlay()
 {
 }
 
-UiBegin::~UiBegin()
+UiPlay::~UiPlay()
 {
 	Destroy();
 }
 
-int UiBegin::Destroy()
+int UiPlay::Destroy()
 {
 	m_srvHeapUI.Reset();
 	m_uiTex.clear();
 	return S_OK;
 }
 
-int UiBegin::Init()
+int UiPlay::Init()
 {
 	auto d3d        = IG2GraphicsD3D::instance();
 	auto device     = std::any_cast<ID3D12Device*             >(d3d->getDevice());
@@ -39,7 +39,7 @@ int UiBegin::Init()
 
 	auto texManager = FactoryTexture::instance();
 	{
-		auto r = texManager->Load("ui/ui_big_title", "assets/ui/ui_big_title.png");
+		auto r = texManager->Load("ui/ui_select_char", "assets/ui/ui_select_char.png");
 		r->name;
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r.Get(), r->size, {} }));
 	}
@@ -74,12 +74,12 @@ int UiBegin::Init()
 	return S_OK;
 }
 
-int UiBegin::Update(float)
+int UiPlay::Update(float)
 {
 	return S_OK;
 }
 
-int UiBegin::Draw()
+int UiPlay::Draw()
 {
 	auto d3d          =  IG2GraphicsD3D::instance();
 	auto cmdList      = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
@@ -90,13 +90,24 @@ int UiBegin::Draw()
 	cmdList->SetDescriptorHeaps(1, heaps);
 	sprite->Begin(cmdList);
 	{
-		auto& tex = m_uiTex["ui/ui_big_title"];
-		XMFLOAT2 position = { screenSize.cx / 2.0F - tex.size.x / 2.0F + 100.0F, 20.0F };
-		XMFLOAT2 origin   = { 0, 0 };
-		XMFLOAT2 scale    = { 0.6F, 0.6F };
-		sprite->Draw(tex.hCpu, tex.size, position, nullptr, XMVECTORF32{ { { 1.f, 1.f, 0.f, 0.7f } } } , 0.0f, origin, scale );
+		float alpha = (g_gameInfo->m_player->Model() == EMODEL_KNIGHT)? 1.0F : 0.3F;
+		{
+			auto& tex = m_uiTex["ui/ui_select_char"];
+			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 20.0F), DirectX::XMVectorSet(1.0F, 0.9F, 0.0F, 0.8F));
+		}
+		{
+			auto& tex = m_uiTex["ui/ui_box"];
+			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(320, 150), DirectX::XMVectorSet(1.0F, 0.0F, 1.0F, alpha));
+			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(710, 150), DirectX::XMVectorSet(0.0F, 0.0F, 1.0F, 0.2F));
+		}
+
+		if(g_gameInfo->m_player->Model() == EMODEL_KNIGHT)
+		{
+			auto& tex = m_uiTex["ui/ui_game_start"];
+			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 500), DirectX::XMVectorSet(1.0F, 1.0F, 1.0F, 1.0F));
+		}
+		sprite->End();
 	}
-	sprite->End();
 
 	return S_OK;
 }

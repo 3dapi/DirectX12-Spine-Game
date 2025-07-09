@@ -39,12 +39,17 @@ SceneEnd::~SceneEnd()
 
 int SceneEnd::Init(const std::any& initial_value)
 {
+	m_pUi = new UiEnd;
+	if (m_pUi)
+		m_pUi->Init();
+
 	printf("SceneEnd: Init\n");
 	return S_OK;
 }
 
 int SceneEnd::Destroy()
 {
+	SAFE_DELETE(m_pUi);
 	printf("SceneEnd: Destroy\n");
 	return S_OK;
 }
@@ -53,18 +58,33 @@ int SceneEnd::Update(const std::any& t)
 {
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto deltaTime = gt.DeltaTime();
-	printf("SceneEnd: %f\n", deltaTime);
+	if (m_pUi)
+		m_pUi->Update(deltaTime);
 	return S_OK;
 }
 
 int SceneEnd::Render()
 {
-	printf("SceneEnd: Render\n");
+	if (m_pUi)
+	{
+		m_pUi->Draw();
+	}
 	return S_OK;
 }
 
 int SceneEnd::Notify(const std::string& name, const std::any& t)
 {
-	printf("SceneEnd: Notify\n");
+	printf("SceneBegin: Notify: %s\n", name.c_str());
+
+	if (name == "MouseUp")
+	{
+		auto mousePos = any_cast<const ::POINT&>(t);
+
+		if (chckPointInRect(mousePos.x, mousePos.y, 400, 160, 900, 550))
+		{
+			IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE_LOBBY);
+		}
+	}
+
 	return S_OK;
 }

@@ -13,6 +13,7 @@
 #include "AppConst.h"
 #include "ShaderUploadChain.h"
 
+#include "ResourceUploadBatch.h"
 #include "VertexTypes.h"
 #include "PrimitiveBatch.h"
 #include "Effects.h"				// BasicEffect

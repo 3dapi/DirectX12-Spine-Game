@@ -20,6 +20,7 @@
 #include "common/G2.Util.h"
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
+#include "UiEnd.h"
 
 using namespace std;
 using namespace DirectX;
@@ -29,7 +30,8 @@ using namespace G2;
 class SceneEnd: public G2::IG2Scene
 {
 protected:
-protected:
+	UiEnd*								m_pUi	{};
+
 public:
 	SceneEnd();
 	virtual ~SceneEnd();

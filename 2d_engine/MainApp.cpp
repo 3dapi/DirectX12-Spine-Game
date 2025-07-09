@@ -20,6 +20,7 @@
 #include "SceneBegin.h"
 #include "SceneLobby.h"
 #include "ScenePlay.h"
+#include "SceneEnd.h"
 
 using namespace std;
 
@@ -48,8 +49,9 @@ std::any MainApp::getAttrib(int nAttrib)
 	{
 		case EAPP_ATTRIB::EAPP_ATT_WIN_HWND:					return mhMainWnd;
 		case EAPP_ATTRIB::EAPP_ATT_WIN_HINST:					return mhAppInst;
-		case EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE:						return m_sprite.get();
-		case EAPP_ATTRIB::EAPP_ATT_XTK_GRAPHICS_MEMORY:			return m_graphicsMemory.get();
+		case EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE:					return m_xtkSprite.get();
+		case EAPP_ATTRIB::EAPP_ATT_XTK_GRAPHIC_MEM:				return m_xtkGraphicMem.get();
+		case EAPP_ATTRIB::EAPP_ATT_XTK_DESC_HEAP:				return m_xtkDescHeap.get();
 		case EAPP_ATTRIB::EAPP_ATT_XTK_BATCH:					return m_batch.get();
 	}
 	return D3DWinApp::getAttrib(nAttrib);
@@ -129,21 +131,22 @@ int MainApp::init(const std::any& initialValue /* = */)
 		SpriteBatchPipelineStateDescription pd(rtState);
 
 		resourceUpload.Begin();
-		m_sprite = std::make_unique<SpriteBatch>(device, resourceUpload, pd);
+		m_xtkSprite = std::make_unique<SpriteBatch>(device, resourceUpload, pd);
 		auto uploadOp = resourceUpload.End(cmdQue);
 		uploadOp.wait();
 
 		//setup viewport
 		auto vpt = *std::any_cast<D3D12_VIEWPORT*>(d3d->getAttrib(ATT_DEVICE_VIEWPORT));
-		m_sprite->SetViewport(vpt);
+		m_xtkSprite->SetViewport(vpt);
 	}
 
-	m_graphicsMemory = std::make_unique<GraphicsMemory>(device);
+	m_xtkGraphicMem = std::make_unique<GraphicsMemory>(device);
+	m_xtkDescHeap   = std::make_unique<DescriptorHeap>(device, EAPP_DESC_HEAP_SIZE);
 	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(device);
 
 
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE_BEGIN);
+	this->ChangeScene(EAPP_SCENE_LOBBY);
 
 
 	// create XTK Instance
@@ -275,7 +278,7 @@ int MainApp::Render()
 	d3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(d3dBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 	// Clear the back buffer and depth buffer.
-	XMFLOAT4 clearColor = { 0.0f, 0.4f, 0.6f, 1.0f };
+	XMFLOAT4 clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 	d3dCommandList->ClearRenderTargetView(d3dBackBufferV, (float*)&clearColor, 0, nullptr);
 	d3dCommandList->ClearDepthStencilView(d3dDepthV, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 	// Specify the buffers we are going to render to.
@@ -287,8 +290,6 @@ int MainApp::Render()
 
 	if(m_pSceneMesh)
 		m_pSceneMesh->Render();
-	if(m_pSceneXKT)
-		m_pSceneXKT->Render();
 	if (m_pSceneXKT)
 		m_pSceneXKT->Render();
 	if (m_pSceneSpine)
@@ -296,6 +297,8 @@ int MainApp::Render()
 	if(m_pSceneSample)
 		m_pSceneSample->Render();
 
+
+	m_xtkGraphicMem->Commit(commandQue);
 
 	// Indicate a state transition on the resource usage.
 	d3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(d3dBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -363,9 +366,10 @@ void MainApp::ChangeScene(EAPP_SCENE target)
 	{
 		switch (target)
 		{
-		case EAPP_SCENE_BEGIN:	m_scene[m_sceneIdxCur] = std::make_unique<SceneBegin>();	break;
-		case EAPP_SCENE_LOBBY:	m_scene[m_sceneIdxCur] = std::make_unique<SceneLobby>();	break;
-		case EAPP_SCENE_PLAY:	m_scene[m_sceneIdxCur] = std::make_unique<ScenePlay>();		break;
+			case EAPP_SCENE_BEGIN:	m_scene[m_sceneIdxCur] = std::make_unique<SceneBegin>();	break;
+			case EAPP_SCENE_LOBBY:	m_scene[m_sceneIdxCur] = std::make_unique<SceneLobby>();	break;
+			case EAPP_SCENE_PLAY:	m_scene[m_sceneIdxCur] = std::make_unique<ScenePlay>();		break;
+			case EAPP_SCENE_END:	m_scene[m_sceneIdxCur] = std::make_unique<SceneEnd>();		break;
 		}
 	}
 	m_scene[m_sceneIdxCur]->Init();

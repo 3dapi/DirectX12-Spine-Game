@@ -41,8 +41,9 @@ public:
 	void	OnKeyboardInput(const GameTimer& gt);
 
 protected:
-	unique_ptr<SpriteBatch>				m_sprite		{};
-	unique_ptr<GraphicsMemory>			m_graphicsMemory;
+	unique_ptr<SpriteBatch>				m_xtkSprite			{};
+	unique_ptr<GraphicsMemory>			m_xtkGraphicMem		{};		// 꼭 필요함.
+	unique_ptr<DescriptorHeap>			m_xtkDescHeap		{};
 	unique_ptr<XTK_BATCH>				m_batch			;
 
 protected:

@@ -182,7 +182,9 @@
     <ClCompile Include="MainApp.cpp" />
     <ClCompile Include="testScene\SceneGameMesh.cpp" />
     <ClCompile Include="UiBegin.cpp" />
+    <ClCompile Include="UiEnd.cpp" />
     <ClCompile Include="UiLobby.cpp" />
+    <ClCompile Include="UiPlay.cpp" />
     <ClCompile Include="_main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -222,7 +224,9 @@
     <ClInclude Include="testScene\SceneGameMesh.h" />
     <ClInclude Include="UiBase.h" />
     <ClInclude Include="UiBegin.h" />
+    <ClInclude Include="UiEnd.h" />
     <ClInclude Include="UiLobby.h" />
+    <ClInclude Include="UiPlay.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="assets\shaders\2dsprite.hlsl">

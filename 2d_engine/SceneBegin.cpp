@@ -128,38 +128,12 @@ int SceneBegin::Notify(const std::string& name, const std::any& t)
 	if (name == "MouseUp")
 	{
 		auto mousePos = any_cast<const ::POINT&>(t);
-		CheckSelectCharacter(mousePos);
+
+		if (chckPointInRect(mousePos.x, mousePos.y, 400, 160, 900, 550))
+		{
+			IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE_LOBBY);
+		}
 	}
 
 	return S_OK;
-}
-
-void SceneBegin::CheckSelectCharacter(const ::POINT& mousePos)
-{
-	// character knight 선택
-	if (chckPointInRect(mousePos.x, mousePos.y, 340, 170, 600, 430))
-	{
-		g_gameInfo->m_player->Model(EMODEL_KNIGHT);
-		return;
-	}
-	else
-	{
-		if (g_gameInfo->m_player->Model() == EMODEL_KNIGHT)
-		{
-			if (chckPointInRect(mousePos.x, mousePos.y, 450, 500, 830, 560))
-			{
-				IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE_PLAY);
-				return;
-			}
-			else
-			{
-				g_gameInfo->m_player->Model(EMODEL_NONE);
-				return;
-			}
-		}
-		else
-		{
-			return;
-		}
-	}
 }

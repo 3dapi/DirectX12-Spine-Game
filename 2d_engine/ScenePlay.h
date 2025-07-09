@@ -20,6 +20,7 @@
 #include "common/G2.Util.h"
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
+#include "GameInfo.h"
 
 using namespace std;
 using namespace DirectX;
@@ -30,7 +31,7 @@ using namespace G2;
 class ScenePlay: public G2::IG2Scene
 {
 protected:
-protected:
+	std::vector<GameMob*>		m_vecMob{ GameInfo::MAX_MOB };
 public:
 	ScenePlay();
 	virtual ~ScenePlay();
@@ -41,6 +42,12 @@ public:
 	int		Destroy()					override;
 	int		Update(const std::any& t)	override;
 	int		Render()					override;
+	int		Notify(const std::string& name, const std::any& t)	override;
+
+	void	CreatePlayerCharModel();
+	void	CreateMobCharModel();
+	void	DeletePlayCharModel();
+	void	DeleteMobCharModel();
 };
 
 #endif

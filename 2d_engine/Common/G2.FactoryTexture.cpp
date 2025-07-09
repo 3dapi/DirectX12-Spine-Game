@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <tuple>
 #include <string>
+#include "DirectXHelpers.h"
 #include "DDSTextureLoader.h"
 #include "WICTextureLoader.h"
 #include "ResourceUploadBatch.h"
@@ -21,48 +22,22 @@ FactoryTexture* FactoryTexture::instance()
 
 TD3D_TEXTURE* FactoryTexture::ResourceLoad(const std::string& name, const std::string& file)
 {
-	auto d3d    =  IG2GraphicsD3D::instance();
-	auto device = std::any_cast<ID3D12Device*       >(d3d->getDevice());
-	auto cmdQue = std::any_cast<ID3D12CommandQueue* >(d3d->getCommandQueue());
-
 	auto itr = this->m_db.find(name);
 	if (itr != this->m_db.end())
 	{
 		return itr->second.get();
 	}
 
+	auto tex = DXCreateTextureFromFile(file);
+	if (!tex)
+		return {};
+
 	// load
+	ComPtr<ID3D12Resource> rs_tx = tex;
 	auto pItem = std::make_unique<TD3D_TEXTURE>();
 	pItem->name = name;
 	pItem->file = file;
-
-	ComPtr<ID3D12Resource> rs_tx{};
-	std::wstring wFile = ansiToWstr(file);
-
-	DirectX::ResourceUploadBatch resourceUpload(device);
-	{
-		resourceUpload.Begin();
-
-		int hr = S_OK;
-		filesystem::path str_path(file);
-		auto ext = toLower(str_path.extension().generic_string());
-		if(0 == ext.compare(".dds"))
-		{
-			hr = DirectX::CreateDDSTextureFromFile(device, resourceUpload, wFile.c_str(), rs_tx.GetAddressOf());
-		}
-		else
-		{
-			hr = DirectX::CreateWICTextureFromFile(device, resourceUpload, wFile.c_str(), rs_tx.GetAddressOf());
-		}
-		ThrowIfFailed(hr);
-		if(FAILED(hr))
-			return {};
-
-		auto uploadOp = resourceUpload.End(cmdQue);
-		uploadOp.wait();  // GPU 업로드 완료 대기
-		// 뷰는 descriptor heap 생성 후에 만듦.
-	}
-
+	pItem->size = DirectX::GetTextureSize(tex);
 	pItem->r = std::move(rs_tx);
 
 	//c++17

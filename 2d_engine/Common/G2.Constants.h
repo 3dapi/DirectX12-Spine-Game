@@ -57,6 +57,7 @@ struct IG2Scene
 	virtual int		Destroy()								= 0;
 	virtual int		Update(const std::any& t)				= 0;
 	virtual int		Render()								= 0;
+	virtual int		Notify(const std::string&, const std::any&) = 0;
 };
 typedef IG2Scene*			PG2SCENE;
 

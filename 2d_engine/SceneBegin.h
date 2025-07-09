@@ -40,6 +40,7 @@ public:
 	int		Destroy()					override;
 	int		Update(const std::any& t)	override;
 	int		Render()					override;
+	int		Notify(const std::string& name, const std::any& t)	override;
 };
 
 #endif

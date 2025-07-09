@@ -29,6 +29,7 @@ using namespace G2;
 
 SceneBegin::SceneBegin()
 {
+	printf("SceneBegin: Create\n");
 }
 
 SceneBegin::~SceneBegin()
@@ -38,20 +39,32 @@ SceneBegin::~SceneBegin()
 
 int SceneBegin::Init(const std::any& initial_value)
 {
+	printf("SceneBegin: Init\n");
 	return S_OK;
 }
 
 int SceneBegin::Destroy()
 {
+	printf("SceneBegin: Destroy\n");
 	return S_OK;
 }
 
 int SceneBegin::Update(const std::any& t)
 {
+	GameTimer gt = std::any_cast<GameTimer>(t);
+	auto deltaTime = gt.DeltaTime();
+	printf("SceneBegin: %f\n", deltaTime);
 	return S_OK;
 }
 
 int SceneBegin::Render()
 {
+	printf("SceneBegin: Render\n");
+	return S_OK;
+}
+
+int SceneBegin::Notify(const std::string& name, const std::any& t)
+{
+	printf("SceneBegin: Notify\n");
 	return S_OK;
 }

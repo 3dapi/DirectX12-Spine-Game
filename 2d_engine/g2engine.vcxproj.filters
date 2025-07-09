@@ -96,6 +96,15 @@
     <ClCompile Include="Common\G2.Camera.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="SceneEnd.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="GameInfo.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneNone.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\D3DWinApp.h">
@@ -190,6 +199,15 @@
     </ClInclude>
     <ClInclude Include="Common\G2.Camera.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneEnd.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="GameInfo.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneNone.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

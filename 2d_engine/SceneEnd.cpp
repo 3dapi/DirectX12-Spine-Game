@@ -13,11 +13,11 @@
 #include "Common/GameTimer.h"
 #include <pix.h>
 #include "CommonStates.h"
-#include "ScenePlay.h"
+#include "SceneEnd.h"
 #include "DirectXHelpers.h"
 #include "ResourceUploadBatch.h"
 #include "GraphicsMemory.h"
-#include "ScenePlay.h"
+#include "SceneEnd.h"
 #include "RenderSpine.h"
 
 using namespace std;
@@ -27,68 +27,44 @@ using namespace spine;
 using namespace G2;
 
 
-ScenePlay::ScenePlay()
+SceneEnd::SceneEnd()
 {
-	printf("ScenePlay: Create\n");
+	printf("SceneEnd: Create\n");
 }
 
-ScenePlay::~ScenePlay()
+SceneEnd::~SceneEnd()
 {
 	Destroy();
 }
 
-int ScenePlay::Init(const std::any& initial_value)
+int SceneEnd::Init(const std::any& initial_value)
 {
-	CreatePlayerCharModel();
-	CreateMobCharModel();
-
+	printf("SceneEnd: Init\n");
 	return S_OK;
 }
 
-int ScenePlay::Destroy()
+int SceneEnd::Destroy()
 {
-	printf("ScenePlay: Destroy\n");
-
-	DeletePlayCharModel();
-	DeleteMobCharModel();
+	printf("SceneEnd: Destroy\n");
 	return S_OK;
 }
 
-int ScenePlay::Update(const std::any& t)
+int SceneEnd::Update(const std::any& t)
 {
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto deltaTime = gt.DeltaTime();
-	
-
-	// 죽음이 끝난 몹을 재생
-
+	printf("SceneEnd: %f\n", deltaTime);
 	return S_OK;
 }
 
-int ScenePlay::Render()
+int SceneEnd::Render()
 {
-	printf("ScenePlay: Render\n");
+	printf("SceneEnd: Render\n");
 	return S_OK;
 }
 
-int ScenePlay::Notify(const std::string& name, const std::any& t)
+int SceneEnd::Notify(const std::string& name, const std::any& t)
 {
-	printf("ScenePplay: Notify\n");
+	printf("SceneEnd: Notify\n");
 	return S_OK;
-}
-
-void ScenePlay::CreatePlayerCharModel()
-{
-}
-
-void ScenePlay::CreateMobCharModel()
-{
-}
-
-void ScenePlay::DeletePlayCharModel()
-{
-}
-
-void ScenePlay::DeleteMobCharModel()
-{
 }

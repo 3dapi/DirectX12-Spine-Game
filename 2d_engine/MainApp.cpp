@@ -5,6 +5,7 @@
 #include <tuple>
 #include <d3d12.h>
 #include "MainApp.h"
+#include "ResourceUploadBatch.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
 #include "Common/G2.FactorySIgnature.h"
@@ -16,6 +17,9 @@
 #include "SceneXtkGame.h"
 #include "SceneSpine.h"
 #include "SceneSample2D.h"
+#include "SceneBegin.h"
+#include "SceneLobby.h"
+#include "ScenePlay.h"
 
 using namespace std;
 
@@ -44,6 +48,7 @@ std::any MainApp::getAttrib(int nAttrib)
 	{
 		case EAPP_ATTRIB::EAPP_ATT_WIN_HWND:					return mhMainWnd;
 		case EAPP_ATTRIB::EAPP_ATT_WIN_HINST:					return mhAppInst;
+		case EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE:						return m_sprite.get();
 		case EAPP_ATTRIB::EAPP_ATT_XTK_GRAPHICS_MEMORY:			return m_graphicsMemory.get();
 		case EAPP_ATTRIB::EAPP_ATT_XTK_BATCH:					return m_batch.get();
 	}
@@ -57,6 +62,21 @@ int MainApp::setAttrib(int nAttrib,const std::any& v)
 
 int MainApp::command(int nCmd,const std::any& v)
 {
+	switch ((EAPP_CMD)nCmd)
+	{
+		case EAPP_CMD::EAPP_CMD_CHANGE_SCENE:
+		{
+			m_sceneIdxNew = any_cast<EAPP_SCENE>(v);
+			if(m_sceneIdxCur != m_sceneIdxNew)
+			{
+				m_bChangeScene = true;
+			}
+			return S_OK;
+		}
+	}
+
+	IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE_PLAY);
+
 	return D3DWinApp::command(nCmd, v);
 }
 
@@ -72,87 +92,110 @@ int MainApp::init(const std::any& initialValue /* = */)
 	if (FAILED(hr))
 		return hr;
 
-	auto d3d = IG2GraphicsD3D::instance();
-	auto d3dDevice       = std::any_cast<ID3D12Device*              >(d3d->getDevice());
-	
+	auto d3d    =  IG2GraphicsD3D::instance();
+	auto device = std::any_cast<ID3D12Device*       >(d3d->getDevice());
+	auto cmdQue = std::any_cast<ID3D12CommandQueue* >(d3d->getCommandQueue());
+
 	d3d->command(CMD_COMMAND_BEGIN);
-
-	// 1. load texutre
-	auto tex_manager = FactoryTexture::instance();
-	tex_manager->Load("grassTex", "assets/texture/grass.dds");
-	tex_manager->Load("fenceTex", "assets/texture/WireFence.dds");
-
-	// 3. Build Shaders And Input Layouts
-	const D3D_SHADER_MACRO defines[] =
-	{
-		"FOG", "1",
-		NULL, NULL
-	};
-	const D3D_SHADER_MACRO alphaTestDefines[] =
-	{
-		"FOG", "1",
-		"ALPHA_TEST", "1",
-		NULL, NULL
-	};
-
-	auto shader_manager = FactoryShader::instance();
-	shader_manager->Load("standardVS"   , "assets/shaders/Default.hlsl"   , "vs_5_0", "VS"                  );
-	shader_manager->Load("opaquePS"     , "assets/shaders/Default.hlsl"   , "ps_5_0", "PS", defines         );
-	shader_manager->Load("alphaTestedPS", "assets/shaders/Default.hlsl"   , "ps_5_0", "PS", alphaTestDefines);
-
-	auto psoManager = FactoryPipelineState::instance();
-
+		// 1. load texutre
+		auto tex_manager = FactoryTexture::instance();
+		tex_manager->Load("grassTex", "assets/texture/grass.dds");
+		tex_manager->Load("fenceTex", "assets/texture/WireFence.dds");
+		// 3. Build Shaders And Input Layouts
+		const D3D_SHADER_MACRO defines[] =
+		{
+			"FOG", "1",
+			NULL, NULL
+		};
+		const D3D_SHADER_MACRO alphaTestDefines[] =
+		{
+			"FOG", "1",
+			"ALPHA_TEST", "1",
+			NULL, NULL
+		};
+		auto shader_manager = FactoryShader::instance();
+		shader_manager->Load("standardVS"   , "assets/shaders/Default.hlsl"   , "vs_5_0", "VS"                  );
+		shader_manager->Load("opaquePS"     , "assets/shaders/Default.hlsl"   , "ps_5_0", "PS", defines         );
+		shader_manager->Load("alphaTestedPS", "assets/shaders/Default.hlsl"   , "ps_5_0", "PS", alphaTestDefines);
+		auto psoManager = FactoryPipelineState::instance();
 	d3d->command(CMD_COMMAND_END);
 
 	// create XTK Instance
-	m_graphicsMemory = std::make_unique<GraphicsMemory>(d3dDevice);
-	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(d3dDevice);
+	DirectX::ResourceUploadBatch resourceUpload(device);
 	{
-		auto scene = std::make_unique<SceneGameMesh>();
-		if (scene)
-		{
-			//if (SUCCEEDED(scene->Init()))
-			{
-				//m_pSceneMesh = std::move(scene);
-			}
-		}
+		auto formatBackBuffer  = *std::any_cast<DXGI_FORMAT*>(d3d->getAttrib(ATT_DEVICE_BACKBUFFER_FORAT));
+		auto formatDepthBuffer = *std::any_cast<DXGI_FORMAT*>(d3d->getAttrib(ATT_DEVICE_DEPTH_STENCIL_FORAT));
+		const RenderTargetState rtState(formatBackBuffer, formatDepthBuffer);
+		SpriteBatchPipelineStateDescription pd(rtState);
+
+		resourceUpload.Begin();
+		m_sprite = std::make_unique<SpriteBatch>(device, resourceUpload, pd);
+		auto uploadOp = resourceUpload.End(cmdQue);
+		uploadOp.wait();
+
+		//setup viewport
+		auto vpt = *std::any_cast<D3D12_VIEWPORT*>(d3d->getAttrib(ATT_DEVICE_VIEWPORT));
+		m_sprite->SetViewport(vpt);
 	}
-	{
-		auto scene = std::make_unique<SceneXtkGame>();
-		if(scene)
-		{
-			//if(SUCCEEDED(scene->Init()))
-			{
-				//m_pSceneXKT = std::move(scene);
-			}
-		}
-	}
-	{
-		auto scene = std::make_unique<SceneSample2D>();
-		if (scene)
-		{
-			//if(SUCCEEDED(scene->Init()))
-			//{
-			//	m_pSceneSample = std::move(scene);
-			//}
-		}
-	}
-	{
-		auto scene=std::make_unique<SceneSpine>();
-		if(scene)
-		{
-			if(SUCCEEDED(scene->Init()))
-			{
-				m_pSceneSpine = std::move(scene);
-			}
-		}
-	}
+
+	m_graphicsMemory = std::make_unique<GraphicsMemory>(device);
+	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(device);
+
+
+	//AFEW::WORK
+	this->ChangeScene(EAPP_SCENE_LOBBY);
+
+
+
+	// create XTK Instance
+	//{
+	//	auto scene = std::make_unique<SceneGameMesh>();
+	//	if (scene)
+	//	{
+	//		//if (SUCCEEDED(scene->Init()))
+	//		{
+	//			//m_pSceneMesh = std::move(scene);
+	//		}
+	//	}
+	//}
+	//{
+	//	auto scene = std::make_unique<SceneXtkGame>();
+	//	if(scene)
+	//	{
+	//		if(SUCCEEDED(scene->Init()))
+	//		{
+	//			m_pSceneXKT = std::move(scene);
+	//		}
+	//	}
+	//}
+	//{
+	//	auto scene = std::make_unique<SceneSample2D>();
+	//	if (scene)
+	//	{
+	//		//if(SUCCEEDED(scene->Init()))
+	//		//{
+	//		//	m_pSceneSample = std::move(scene);
+	//		//}
+	//	}
+	//}
+	//{
+	//	auto scene=std::make_unique<SceneSpine>();
+	//	if(scene)
+	//	{
+	//		if(SUCCEEDED(scene->Init()))
+	//		{
+	//			m_pSceneSpine = std::move(scene);
+	//		}
+	//	}
+	//}
 
 	return S_OK;
 }
 
 int MainApp::destroy()
 {
+	if(!m_scene.empty())
+		m_scene.clear();
 	m_pSceneMesh	= {};
 	m_pSceneXKT		= {};
 	m_pSceneSpine	= {};
@@ -173,14 +216,16 @@ int MainApp::Resize(bool up)
 
 int MainApp::Update(const std::any& t)
 {
-	// Cycle through the circular frame resource array.
-	//UpdateUploadChain();
-
 	int hr = S_OK;
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	OnKeyboardInput(gt);
-	//UpdateCamera(gt);
-	//UpdateBox(gt);
+
+	if (m_bChangeScene)
+		this->ChangeScene(m_sceneIdxNew);
+
+	if (m_scene[m_sceneIdxCur])
+		m_scene[m_sceneIdxCur]->Update(t);
+
 
 	if(m_pSceneMesh)
 		m_pSceneMesh->Update(t);
@@ -237,6 +282,9 @@ int MainApp::Render()
 	// Specify the buffers we are going to render to.
 	d3dCommandList->OMSetRenderTargets(1, &d3dBackBufferV, true, &d3dDepthV);
 
+	if (m_scene[m_sceneIdxCur])
+		m_scene[m_sceneIdxCur]->Render();
+
 
 	if(m_pSceneMesh)
 		m_pSceneMesh->Render();
@@ -277,6 +325,12 @@ void MainApp::OnMouseDown(WPARAM btnState, const ::POINT& p)
 void MainApp::OnMouseUp(WPARAM btnState, const ::POINT& p)
 {
 	ReleaseCapture();
+
+	if (m_scene[m_sceneIdxCur])
+	{
+		m_scene[m_sceneIdxCur]->Notify("MouseUp", p);
+	}
+	printf("MainApp::OnMouseUp: %d %d\n", p.x, p.y);
 }
 
 void MainApp::OnMouseMove(WPARAM btnState, const ::POINT& p)
@@ -291,4 +345,29 @@ void MainApp::OnMouseMove(WPARAM btnState, const ::POINT& p)
 
 void MainApp::OnKeyboardInput(const GameTimer& gt)
 {
+}
+
+void MainApp::ChangeScene(EAPP_SCENE target)
+{
+	if (EAPP_SCENE_BEGIN > target || target > EAPP_SCENE_COUNT)
+		return;
+
+	if (m_scene.empty())
+		m_scene.resize(EAPP_SCENE_COUNT);
+
+	if(m_scene[m_sceneIdxCur])
+		m_scene[m_sceneIdxCur]->Destroy();
+
+	m_sceneIdxCur = target;
+	m_bChangeScene = false;
+	if(!m_scene[m_sceneIdxCur])
+	{
+		switch (target)
+		{
+		case EAPP_SCENE_BEGIN:	m_scene[m_sceneIdxCur] = std::make_unique<SceneBegin>();	break;
+		case EAPP_SCENE_LOBBY:	m_scene[m_sceneIdxCur] = std::make_unique<SceneLobby>();	break;
+		case EAPP_SCENE_PLAY:	m_scene[m_sceneIdxCur] = std::make_unique<ScenePlay>();		break;
+		}
+	}
+	m_scene[m_sceneIdxCur]->Init();
 }

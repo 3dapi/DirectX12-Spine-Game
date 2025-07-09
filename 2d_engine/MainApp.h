@@ -8,7 +8,7 @@
 #include <Windows.h>
 #include <wrl.h>
 #include <d3d12.h>
-
+#include <SpriteBatch.h>
 #include "Common/MathHelper.h"
 #include "Common/UploadBuffer.h"
 #include "Common/GeometryGenerator.h"
@@ -41,9 +41,22 @@ public:
 	void	OnKeyboardInput(const GameTimer& gt);
 
 protected:
-	unique_ptr<GraphicsMemory>		m_graphicsMemory;
-	unique_ptr<XTK_BATCH>			m_batch;
+	unique_ptr<SpriteBatch>				m_sprite		{};
+	unique_ptr<GraphicsMemory>			m_graphicsMemory;
+	unique_ptr<XTK_BATCH>				m_batch			;
 
+protected:
+	EAPP_SCENE							m_sceneIdxCur	{ EAPP_SCENE_BEGIN};
+	EAPP_SCENE							m_sceneIdxNew	{ EAPP_SCENE_BEGIN };
+	vector<unique_ptr<IG2Scene> >		m_scene			{ EAPP_SCENE_COUNT};
+	bool								m_bChangeScene	{false};
+public:
+	void	ChangeScene(EAPP_SCENE target);
+
+
+protected:
+	// test scene
+	
 	unique_ptr<IG2Scene>			m_pSceneMesh	{};
 	unique_ptr<IG2Scene>			m_pSceneXKT		{};
 	unique_ptr<IG2Scene>			m_pSceneSpine	{};

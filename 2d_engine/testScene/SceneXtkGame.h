@@ -55,7 +55,6 @@ protected:
 	DirectX::Model::EffectCollection                                        m_modelEffects;
 	std::unique_ptr<DirectX::EffectTextureFactory>                          m_modelResources;
 	std::unique_ptr<DirectX::GeometricPrimitive>                            m_shape;
-	std::unique_ptr<DirectX::SpriteBatch>                                   m_sprites;
 	std::unique_ptr<DirectX::SpriteFont>                                    m_font;
 
 	std::unique_ptr<DirectX::AudioEngine>                                   m_audEngine;

@@ -166,6 +166,8 @@ int SceneXtkGame::Render()
 	auto device       = std::any_cast<ID3D12Device*>(d3d->getDevice());
 	auto commandList  = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 
+	auto sprite = std::any_cast<SpriteBatch*>(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE));
+
 	// Don't try to render anything before the first Update.
 	if(isFirstRender)
 	{
@@ -187,11 +189,11 @@ int SceneXtkGame::Render()
 
 	// Draw sprite
 	PIXBeginEvent(commandList,PIX_COLOR_DEFAULT,L"Draw sprite");
-	m_sprites->Begin(commandList);
-	m_sprites->Draw(m_resourceDescriptors->GetGpuHandle(Descriptors::WindowsLogo), DirectX::GetTextureSize(m_checkerRsc.Get()), XMFLOAT2(10,75));
+	sprite->Begin(commandList);
+	sprite->Draw(m_resourceDescriptors->GetGpuHandle(Descriptors::WindowsLogo), DirectX::GetTextureSize(m_checkerRsc.Get()), XMFLOAT2(10,75));
 
-	m_font->DrawString(m_sprites.get(),L"DirectXTK12 Simple Sample",XMFLOAT2(100,10),Colors::Yellow);
-	m_sprites->End();
+	m_font->DrawString(sprite,L"DirectXTK12 Simple Sample",XMFLOAT2(100,10),Colors::Yellow);
+	sprite->End();
 	PIXEndEvent(commandList);
 
 	// Draw 3D object
@@ -320,7 +322,6 @@ void SceneXtkGame::CreateDeviceDependentResources()
 void SceneXtkGame::CreateWindowSizeDependentResources()
 {
 	auto d3d = IG2GraphicsD3D::instance();
-	auto d3dViewport     = *std::any_cast<D3D12_VIEWPORT*>(d3d->getAttrib(ATT_DEVICE_VIEWPORT));
 	float aspectRatio    = *any_cast<float*             >(d3d->getAttrib(ATT_ASPECTRATIO));
 
 	float fovAngleY = 70.0f * XM_PI / 180.0f;
@@ -337,8 +338,6 @@ void SceneXtkGame::CreateWindowSizeDependentResources()
 
 	m_lineEffect->SetProjection(m_projection);
 	m_shapeEffect->SetProjection(m_projection);
-
-	m_sprites->SetViewport(d3dViewport);
 }
 
 #pragma endregion

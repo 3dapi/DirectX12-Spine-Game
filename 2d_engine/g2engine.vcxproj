@@ -168,8 +168,11 @@
     <ClCompile Include="Common\GameTimer.cpp" />
     <ClCompile Include="Common\GeometryGenerator.cpp" />
     <ClCompile Include="Common\G2.EngineD3D.cpp" />
+    <ClCompile Include="GameInfo.cpp" />
     <ClCompile Include="RenderSpine.cpp" />
+    <ClCompile Include="SceneEnd.cpp" />
     <ClCompile Include="SceneLobby.cpp" />
+    <ClCompile Include="SceneNone.cpp" />
     <ClCompile Include="ScenePlay.cpp" />
     <ClCompile Include="testScene\SceneSample2D.cpp" />
     <ClCompile Include="testScene\SceneSpine.cpp" />
@@ -201,8 +204,11 @@
     <ClInclude Include="Common\G2.EngineD3D.h" />
     <ClInclude Include="Common\MathHelper.h" />
     <ClInclude Include="Common\UploadBuffer.h" />
+    <ClInclude Include="GameInfo.h" />
     <ClInclude Include="RenderSpine.h" />
+    <ClInclude Include="SceneEnd.h" />
     <ClInclude Include="SceneLobby.h" />
+    <ClInclude Include="SceneNone.h" />
     <ClInclude Include="ScenePlay.h" />
     <ClInclude Include="testScene\SceneSample2D.h" />
     <ClInclude Include="testScene\SceneSpine.h" />

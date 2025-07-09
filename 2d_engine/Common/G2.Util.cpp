@@ -5,13 +5,22 @@
 
 #include <any>
 #include <cassert>
+#include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <memory>
+#include <string>
+#include <tuple>
 #include <comdef.h>
 #include <winerror.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <DirectXColors.h>
+#include "DDSTextureLoader.h"
+#include "WICTextureLoader.h"
+#include "ResourceUploadBatch.h"
+#include "G2.ConstantsWin.h"
+#include "GraphicsMemory.h"
 #include "G2.Util.h"
 
 namespace G2 {
@@ -92,6 +101,42 @@ ID3DBlob* DXCompileShaderFromFile(const std::string& fileName, const std::string
 		return {};
 	}
 	return pBlobRet;
+}
+
+ID3D12Resource* DXCreateTextureFromFile(const std::string& szFileName)
+{
+	auto d3d    =  IG2GraphicsD3D::instance();
+	auto device = std::any_cast<ID3D12Device*       >(d3d->getDevice());
+	auto cmdQue = std::any_cast<ID3D12CommandQueue* >(d3d->getCommandQueue());
+
+	ID3D12Resource* ret{};
+	std::wstring wFile = ansiToWstr(szFileName);
+	
+	std::filesystem::path str_path(szFileName);
+	auto ext = toLower(str_path.extension().generic_string());
+
+	DirectX::ResourceUploadBatch resourceUpload(device);
+	{
+		resourceUpload.Begin();
+
+		int hr = S_OK;
+		if (0 == ext.compare(".dds"))
+		{
+			hr = DirectX::CreateDDSTextureFromFile(device, resourceUpload, wFile.c_str(), &ret);
+		}
+		else
+		{
+			hr = DirectX::CreateWICTextureFromFile(device, resourceUpload, wFile.c_str(), &ret);
+		}
+		ThrowIfFailed(hr);
+		if (FAILED(hr))
+			return {};
+
+		auto uploadOp = resourceUpload.End(cmdQue);
+		uploadOp.wait();  // GPU 업로드 완료 대기
+		// 뷰는 descriptor heap 생성 후에 만듦.
+	}
+	return ret;
 }
 
 std::pair<std::vector<uint8_t>,int> readFileBinary(const std::string& fileName)

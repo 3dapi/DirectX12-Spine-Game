@@ -107,6 +107,22 @@ inline T randomRange(T begin, T end)
 inline uint32_t rgba2uint32(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) { return (r) | (g<<8) | (b<<16) | (a<<24); }
 inline uint32_t bgra2uint32(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) { return (b) | (g<<8) | (r<<16) | (a<<24); }
 
+inline bool chckPointInRect(int pointX, int pointY, int x0, int y0, int x1, int y1) {
+	if (x0 > x1)
+		std::swap(x0, x1);
+	if (y0 > y1)
+		std::swap(y0, y1);
+
+	if (x0 > pointX || pointX > x1
+		||
+		y0 > pointY || pointY > y1
+		)
+	{
+		return false;
+	}
+	return true;
+}
+
 
 inline std::string toLower(const std::string& str_t) {
 	std::string ret = str_t;
@@ -174,8 +190,8 @@ inline UINT alignTo256(UINT byteSize)
 	return (byteSize + 255) & ~255;
 }
 
-ID3DBlob* DXCompileShaderFromFile(const std::string& fileName, const std::string& shaderModel, const std::string& entryPoint, const void* macros = {});
-//HRESULT		DXCreateDDSTextureFromFile(ID3D12Device* device , ID3D12GraphicsCommandList* cmdList, const std::string& szFileName , ComPtr<ID3D12Resource>& texture, ComPtr<ID3D12Resource>& uploadHeap);
+ID3DBlob*           DXCompileShaderFromFile(const std::string& fileName, const std::string& shaderModel, const std::string& entryPoint, const void* macros = {});
+ID3D12Resource*     DXCreateTextureFromFile(const std::string& szFileName);
 
 std::pair<std::vector<uint8_t>, int>	// buffer, result
 readFileBinary(const std::string& fileName);

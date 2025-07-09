@@ -23,7 +23,6 @@
 using namespace std;
 using std::any_cast;
 using namespace DirectX;
-using namespace spine;
 using namespace G2;
 
 
@@ -71,24 +70,20 @@ int SceneSpine::Init(const std::any& initial_value)
 
 	vector< SPINE_ATTRIB> spine_rsc =
 	{
-		//{"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {randomRange(-800.0F, 800.0F), -300.0F}, "walk", "default", detachSlotSpineBoy },
-		//{"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {randomRange(-800.0F, 800.0F), -300.0F}, "walk", "goblin" , {} },
-		//{"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, {randomRange(-800.0F, 800.0F), -300.0F}, "walk", "weapon/sword", detachSlotHero },
-		//{"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 6.0F, 1.0F, 0.90F, {randomRange(-800.0F, 800.0F), -300.0F}, "idle", "default", {} },
-		//{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, {randomRange(-800.0F, 800.0F), -300.0F}, "run" , "default", {} },
 		{"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {-800.0F, -300.0F}, "walk", "default", detachSlotSpineBoy },
-		{"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {-400.0F, -300.0F}, "walk", "goblin" , {} },
-		{"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, {   0.0F, -300.0F}, "walk", "weapon/sword", detachSlotHero },
-		{"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 6.0F, 1.0F, 0.90F, { 400.0F, -300.0F}, "idle", "default", {} },
+		{"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {-450.0F, -300.0F}, "walk", "goblin" , {} },
+		{"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, {-100.0F, -300.0F}, "walk", "weapon/sword", detachSlotHero },
+		{"spineboy"     , "spineboy-pma.atlas"     , "spineboy-pro.json"     , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.49F, { 100.0F, -300.0F}, "walk", "default", {} },
+		{"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 6.0F, 1.0F, 0.90F, { 450.0F, -300.0F}, "walk", "default", {} },
 		{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 800.0F, -300.0F}, "run" , "default", {} },
 	};
 
-	for(const auto& rsc: spine_rsc)
+	for(size_t i=0; i< spine_rsc.size(); ++i)
 	{
 		auto scene = std::make_unique<RenderSpine>();
 		if(scene)
 		{
-			auto initArgs = rsc;
+			const auto& initArgs = spine_rsc[i];
 			if(SUCCEEDED(scene->Init(initArgs)))
 			{
 				m_objSpine.push_back(std::move(scene));

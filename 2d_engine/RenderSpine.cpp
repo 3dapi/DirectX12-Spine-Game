@@ -139,6 +139,11 @@ int RenderSpine::Render()
 	return S_OK;
 }
 
+void RenderSpine::Look(float direction)
+{
+	m_spineSkeleton->setScaleX(m_attrib.vecScale * direction);
+}
+
 int RenderSpine::UpdateDrawBuffer()
 {
 	int hr = S_OK;

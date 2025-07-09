@@ -1,7 +1,7 @@
 ﻿
 #pragma once
-#ifndef _SceneSpine_H_
-#define _SceneSpine_H_
+#ifndef _SceneNone_H_
+#define _SceneNone_H_
 
 #include <map>
 #include <vector>
@@ -11,11 +11,8 @@
 #include <DirectXMath.h>
 #include <DirectXColors.h>
 #include <wrl/client.h>
-
 #include "Common/G2.Constants.h"
-#include "Common/G2.Geometry.h"
 #include "common/G2.ConstantsWin.h"
-#include "common/G2.FactorySpine.h"
 #include "common/G2.Util.h"
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
@@ -26,21 +23,21 @@ using Microsoft::WRL::ComPtr;
 using namespace G2;
 
 
-class SceneSpine: public G2::IG2Scene
+class SceneNone: public G2::IG2Scene
 {
 protected:
-	vector<unique_ptr<IG2RenderObject> >	m_objSpine	{};
 protected:
 public:
-	SceneSpine();
-	virtual ~SceneSpine();
+	SceneNone();
+	virtual ~SceneNone();
 
 	// IG2Scene
-	int		Type()						override { return EAPP_SCENE::EAPP_SCENE_SPINE; }
+	int		Type()						override { return EAPP_SCENE::EAPP_SCENE_NONE; }
 	int		Init(const std::any& ={})	override;
 	int		Destroy()					override;
 	int		Update(const std::any& t)	override;
 	int		Render()					override;
+	int		Notify(const std::string& name, const std::any& t)	override;
 };
 
 #endif

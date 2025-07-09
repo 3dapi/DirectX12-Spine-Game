@@ -81,6 +81,8 @@ public:
 	int		Update(const std::any& t)	override;
 	int		Render()					override;
 
+	void	Look(float direction);
+
 protected:
 	int		InitSpine();
 	int		InitD3DResource();

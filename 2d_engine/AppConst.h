@@ -25,24 +25,50 @@ enum EAPP_ATTRIB
 {
 	EAPP_ATT_WIN_HWND					= 0x0101,	// window handle
 	EAPP_ATT_WIN_HINST					,			//
+	EAPP_ATT_XTK_SPRITE					,			// Sprite Batch
 	EAPP_ATT_XTK_GRAPHICS_MEMORY		,			//
 	EAPP_ATT_XTK_BATCH					,			//
-	EAPP_ATT_CUR_CB			= 0x0301	,			// current const buffer
+	EAPP_ATT_CUR_CB						= 0x0301,	// current const buffer
 };
 enum EAPP_CMD
 {
+	EAPP_CMD_CHANGE_SCENE				= 0x4001,	// change scene
 };
-
 
 enum EAPP_SCENE
 {
-	EAPP_SCENE_NONE			= 0,
-	EAPP_SCENE_MESH,
-	EAPP_SCENE_XTK,
-	EAPP_SCENE_SPINE,
-	EAPP_SCENE_BEGIN		=11,
-	EAPP_SCENE_LOBBY		,
-	EAPP_SCENE_PLAY			,
+	EAPP_SCENE_NONE		= 0,
+	EAPP_SCENE_BEGIN	= 1,
+	EAPP_SCENE_LOBBY	,
+	EAPP_SCENE_PLAY		,
+	EAPP_SCENE_END		,
+	EAPP_SCENE_COUNT	,
+
+	EAPP_SCENE_MESH		= 0x1001,
+	EAPP_SCENE_XTK		,
+	EAPP_SCENE_SPINE	,
+};
+
+enum EAPP_MODEL
+{
+	EMODEL_NONE		= 0,		// nothing
+	EMODEL_KNIGHT	= 1,		// hero
+	EMODEL_BOY		,			// spine boy
+	EMODEL_RAPTOR	,			// raptor
+	EMODEL_GOBLIN	,			// goblin
+	EMODEL_ALIEN	,			// alien
+	EMODEL_STMAN	,			// stretchyman
+	EMODEL_COUNT	,
+};
+
+enum EAPP_CHAR_STATE
+{
+	ESTATE_CHAR_NONE		= 0,
+	ESTATE_CHAR_IDLE		= 1,
+	ESTATE_CHAR_MOVE		,
+	ESTATE_CHAR_ATTACK		,
+	ESTATE_CHAR_DYING		,
+	ESTATE_CHAR_DEATH		,
 };
 
 #endif __APPCONST_H__

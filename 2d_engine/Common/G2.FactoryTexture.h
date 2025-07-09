@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include <wrl.h>
 #include <d3d12.h>
+#include <DirectXMath.h>
 #include "G2.Factory.h"
 
 using namespace Microsoft::WRL;
@@ -16,6 +17,7 @@ struct TD3D_TEXTURE
 {
 	std::string				name;	// texture name
 	std::string				file;	// texture file
+	DirectX::XMUINT2		size;	// texture size
 	ComPtr<ID3D12Resource>	r{};	// resource
 	~TD3D_TEXTURE() {
 		r.Reset();

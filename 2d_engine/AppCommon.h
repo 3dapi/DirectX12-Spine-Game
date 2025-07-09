@@ -11,7 +11,6 @@
 #include <DirectXMath.h>
 #include <d3dx12/d3dx12.h>
 #include "AppConst.h"
-#include "ShaderUploadChain.h"
 
 using std::vector;
 using std::unique_ptr;

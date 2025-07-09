@@ -90,4 +90,6 @@ protected:
 	void	SetupDrawBuffer();
 };
 
+SPINE_ATTRIB* FindSpineAttribute(const std::string& spineName);
+
 #endif

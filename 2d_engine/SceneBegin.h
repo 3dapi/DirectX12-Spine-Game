@@ -1,5 +1,4 @@
-﻿
-#pragma once
+﻿#pragma once
 #ifndef _SceneBegin_H_
 #define _SceneBegin_H_
 
@@ -20,6 +19,9 @@
 #include "common/G2.Util.h"
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
+#include "RenderSpine.h"
+#include "UiBegin.h"
+
 
 using namespace std;
 using namespace DirectX;
@@ -29,7 +31,9 @@ using namespace G2;
 class SceneBegin: public G2::IG2Scene
 {
 protected:
-protected:
+	vector<unique_ptr<RenderSpine> >	m_char	;
+	UiBegin*							m_pUi	{};
+
 public:
 	SceneBegin();
 	virtual ~SceneBegin();
@@ -41,6 +45,10 @@ public:
 	int		Update(const std::any& t)	override;
 	int		Render()					override;
 	int		Notify(const std::string& name, const std::any& t)	override;
+
+protected:
+	void	CheckSelectCharacter(const ::POINT& mousePos);
+
 };
 
 #endif

@@ -105,6 +105,15 @@
     <ClCompile Include="SceneNone.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="UiLobby.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="UiBegin.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="SpineAnimation.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\D3DWinApp.h">
@@ -182,9 +191,6 @@
     <ClInclude Include="ScenePlay.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderUploadChain.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="testScene\SceneXtkGame.h">
       <Filter>src\testScene</Filter>
     </ClInclude>
@@ -207,6 +213,18 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="SceneNone.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="testScene\ShaderUploadChain.h">
+      <Filter>src\testScene</Filter>
+    </ClInclude>
+    <ClInclude Include="UiLobby.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="UiBase.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="UiBegin.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

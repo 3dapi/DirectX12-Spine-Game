@@ -64,16 +64,16 @@ int ScenePlay::Update(const std::any& t)
 {
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto deltaTime = gt.DeltaTime();
-	
 
-	// 죽음이 끝난 몹을 재생
+	m_mainPlayer->Update(gt);
+	
 
 	return S_OK;
 }
 
 int ScenePlay::Render()
 {
-	printf("ScenePlay: Render\n");
+	m_mainPlayer->Render();
 	return S_OK;
 }
 
@@ -85,15 +85,29 @@ int ScenePlay::Notify(const std::string& name, const std::any& t)
 
 int ScenePlay::CreateMainPlayerModel()
 {
-	auto mainPlayer = g_gameInfo->MainPlayer();
-	if (!mainPlayer)
+	m_mainPlayer = g_gameInfo->MainPlayer();
+	if (!m_mainPlayer)
 		return E_FAIL;
-	m_mainPlayer = mainPlayer;
 
-	//SpineFactgory
-	//m_mainPlayer->Init();
-	// new char model
-	//PG2OBJECT newSpine = 
+	//           model type  positgion scale  direction
+	tuple<EAPP_MODEL, XMFLOAT2, float, float> charModel
+	{
+		EAPP_MODEL::EMODEL_KNIGHT	, { 0.0F, -300.0F}, 0.5F,  1.0F,
+	};
+	const auto& [model, pos, scale, direction] = charModel;
+	
+	SPINE_ATTRIB* att = FactorySpineObject::FindSpineAttribute(model);
+	if (!att)
+		return E_FAIL;
+	auto spineChar = new(std::nothrow) SpineRender;
+	if (!spineChar)
+		return E_FAIL;
+
+	if (FAILED(spineChar->Init(*att)))
+		return E_FAIL;
+
+	m_mainPlayer->Init(model, spineChar);
+
 	return S_OK;
 }
 

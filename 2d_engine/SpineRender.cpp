@@ -50,6 +50,10 @@ int SpineRender::Init(const std::any& initial_value)
 
 int SpineRender::Destroy()
 {
+	SAFE_DELETE(	m_spineSkeleton		);
+	SAFE_DELETE(	m_spineAniStateData	);
+	SAFE_DELETE(	m_spineAniState		);
+
 	m_cbvHeap		.Reset();
 	m_maxVtxCount	= {};
 	m_maxIdxCount	= {};
@@ -178,6 +182,19 @@ void SpineRender::Color(const XMFLOAT4& v)
 XMFLOAT4 SpineRender::Color() const
 {
 	return m_color;
+}
+
+void SpineRender::Animation(const string& aniName)
+{
+	auto itr = std::find_if(m_spineAnimation.begin(), m_spineAnimation.end(), [&](const string& it) { return aniName == it; });
+	if (itr == m_spineAnimation.end())
+		return;
+	m_spineAniState->setAnimation(0, aniName.c_str(), true);
+}
+
+string SpineRender::Animation() const
+{
+	return m_ani;
 }
 
 int SpineRender::UpdateDrawBuffer()
@@ -420,9 +437,9 @@ int SpineRender::InitSpine()
 		}
 	}
 
-	AnimationStateData animationStateData(m_spineRsc->skelData);
-	animationStateData.setDefaultMix(0.2f);
-	m_spineAniState = new AnimationState(&animationStateData);
+	m_spineAniStateData = new AnimationStateData(m_spineRsc->skelData);
+	m_spineAniState = new AnimationState(m_spineAniStateData);
+	m_spineAniStateData->setDefaultMix(0.2f);
 
 	auto itr = std::find_if(m_spineAnimation.begin(), m_spineAnimation.end(), [&](const string& it)      { return m_attrib.aniName == it; });
 	// 애니메이션 못찾으면 0 번째 실행.

@@ -14,6 +14,7 @@
 #include <DirectXColors.h>
 #include <wrl/client.h>
 #include "AppConst.h"
+#include "Common/GameTimer.h"
 
 using std::vector;
 using std::unique_ptr;

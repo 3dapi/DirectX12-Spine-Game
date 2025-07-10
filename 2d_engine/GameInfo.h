@@ -19,20 +19,26 @@ using namespace DirectX;
 class GameCharacter
 {
 protected:
-	EAPP_CHAR_STATE	m_st	{ EAPP_CHAR_STATE::ESTATE_CHAR_IDLE };
+	EAPP_CHAR_STATE	m_state	{ EAPP_CHAR_STATE::ESTATE_CHAR_IDLE };
 	int				m_hp	{100};
-	float			m_speed	{5.0F};
 	XMFLOAT2		m_pos	{};			// position
 	float			m_dir	{ 1.0F };	// direction: left: -1, right:1
-	XMVECTOR 		m_dif	{1.0F, 1.0F, 1.0F, 1.0F};	// color
+	float			m_scale	{ 1.0F };	// model scale
+	float			m_speed	{ 5.0F };	// move speed
+	XMVECTOR 		m_dif	{1.0F, 1.0F, 1.0F, 1.0F};	// model color
 
 	EAPP_MODEL		m_modelType	{ EAPP_MODEL::EMODEL_NONE };
 	PG2OBJECT		m_modelObj	{};
 public:
+	virtual	void			State(EAPP_CHAR_STATE v);
+	virtual	EAPP_CHAR_STATE	State() const;
+
 	virtual	void		Position(XMFLOAT2 v);
 	virtual	XMFLOAT2	Position() const;
 	virtual	void		Direction(float v);
 	virtual	float		Direction() const;
+	virtual	void		Scale(float v);
+	virtual	float		Scale() const;
 	virtual	void		Speed(float v);
 	virtual	float		Speed() const;
 
@@ -51,7 +57,9 @@ class GamePlayer : public GameCharacter
 {
 protected:
 public:
-	void		Init(EAPP_MODEL modelType, PG2OBJECT modelObj);
+	int		Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE state= EAPP_CHAR_STATE::ESTATE_CHAR_IDLE);
+	int		Update(const GameTimer& gt);
+	int		Render();
 };
 
 class GameMob : public GameCharacter

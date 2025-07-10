@@ -31,7 +31,6 @@ using namespace G2;
 
 SceneLobby::SceneLobby()
 {
-	printf("SceneLobby: Create\n");
 }
 
 SceneLobby::~SceneLobby()
@@ -77,14 +76,12 @@ int SceneLobby::Init(const std::any& initial_value)
 	if (m_pUi)
 		m_pUi->Init();
 
-	printf("SceneLobby: Init\n");
 	return S_OK;
 }
 
 int SceneLobby::Destroy()
 {
 	SAFE_DELETE(m_pUi);
-	printf("SceneLobby: Destroy\n");
 	return S_OK;
 }
 
@@ -92,7 +89,6 @@ int SceneLobby::Update(const std::any& t)
 {
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto deltaTime = gt.DeltaTime();
-	//printf("SceneLobby: %f\n", deltaTime);
 
 	for (size_t i = 0; i < m_char.size(); ++i)
 	{

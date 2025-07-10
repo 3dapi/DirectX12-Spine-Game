@@ -132,7 +132,8 @@ vector<string> FactorySpine::getAnimationList(spine::Skeleton* spineSkeleton)
 	auto& animations = skeleton->getAnimations();
 	for (int i = 0; i < animations.size(); ++i) {
 		spine::Animation* anim = animations[i];
-		ret.emplace_back(anim->getName().buffer());
+		string name = anim->getName().buffer();
+		ret.push_back(name);
 	}
 	return ret;
 }

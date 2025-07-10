@@ -50,9 +50,10 @@ protected:
 	G2::TD3D_SPINE*				m_spineRsc			{};
 	// spine rendering instance
 	spine::Skeleton*			m_spineSkeleton		{};
+	spine::AnimationStateData*	m_spineAniStateData	{};
 	spine::AnimationState*		m_spineAniState		{};
 
-	vector<string>				m_spineAnimation;
+	vector<string>				m_spineAnimation	;
 	SPINE_ATTRIB				m_attrib			{};
 
 protected:
@@ -71,10 +72,11 @@ protected:
 	uint8_t*						m_ptrMVP			{};
 
 protected:
-	XMFLOAT2	m_pos	{ 0.0F, 0.0F};
-	float		m_dir	{ 1.0F };
-	float		m_scale	{ 1.0F };
-	XMFLOAT4	m_color { 1.0F, 1.0F, 1.0F, 1.0F };		// x->r, y->g, z->b, w->a
+	XMFLOAT2	m_pos		{ 0.0F, 0.0F};
+	float		m_dir		{ 1.0F };
+	float		m_scale		{ 1.0F };
+	XMFLOAT4	m_color		{ 1.0F, 1.0F, 1.0F, 1.0F };		// x->r, y->g, z->b, w->a
+	string		m_ani		= "idle";
 
 public:
 	SpineRender();
@@ -95,6 +97,8 @@ public:
 	float		Scale			() const;
 	void		Color			(const XMFLOAT4&);		// x->r, y->g, z->b, w->a
 	XMFLOAT4	Color			() const;				// x->r, y->g, z->b, w->a
+	void		Animation		(const string& aniName);
+	string		Animation		() const;
 
 protected:
 	int		InitSpine();

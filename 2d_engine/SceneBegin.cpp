@@ -75,6 +75,7 @@ int SceneBegin::Init(const std::any& initial_value)
 		m_char.push_back(std::move(spineChar));
 	}
 
+	SAFE_DELETE(m_pUi);
 	m_pUi = new UiBegin;
 	if (m_pUi)
 		m_pUi->Init();

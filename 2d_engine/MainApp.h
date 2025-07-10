@@ -65,9 +65,5 @@ protected:
 public:
 	void	ChangeScene(EAPP_SCENE target);
 
-
 protected:
-
-	// test scene
-	unique_ptr<IG2Scene>			m_pSceneSpine	{};
 };

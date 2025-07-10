@@ -72,6 +72,7 @@ int SceneLobby::Init(const std::any& initial_value)
 
 	m_char[1]->Direction(-1);
 
+	SAFE_DELETE(m_pUi);
 	m_pUi = new UiLobby;
 	if (m_pUi)
 		m_pUi->Init();

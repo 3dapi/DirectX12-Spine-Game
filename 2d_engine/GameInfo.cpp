@@ -9,6 +9,28 @@
 #include "GameInfo.h"
 #include "SpineFactory.h"
 
+GameInfo* g_gameInfo = new GameInfo;
+
+void GameCharacter::HP(float v)
+{
+	m_hp = v;
+}
+
+float GameCharacter::HP() const
+{
+	return m_hp;
+}
+
+void GameCharacter::Damage(int v)
+{
+	m_damage = v;
+}
+
+int GameCharacter::Damage() const
+{
+	return m_damage;
+}
+
 void GameCharacter::Position(XMFLOAT2 v)
 {
 	m_pos = v;
@@ -172,10 +194,14 @@ EAPP_CHAR_STATE	GameCharacter::State() const
 	return m_state;
 }
 
+GamePlayer::GamePlayer()
+{
+}
+
 int GamePlayer::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE state)
 {
 	m_hp    = 100;
-	m_speed = 1000.0F;
+	m_speed = 400.0F;
 	m_pos   = XMFLOAT2{ 0.0F, 0.0F };
 	m_dir   = 1.0F;
 	m_dif   = XMVectorSet( 1.0F, 1.0F, 1.0F, 1.0F );
@@ -219,7 +245,66 @@ GameMob::GameMob()
 	m_speed = 3.0F;
 }
 
-GameInfo* g_gameInfo = new GameInfo;
+int GameMob::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE state)
+{
+	m_hp = 0;
+	m_damage = 4;
+	m_speed = 70.0F * G2::randomRange(1.5F, 2.5F);
+	m_pos = XMFLOAT2{ 0.0F, 0.0F };
+	m_dir = 1.0F;
+	m_dif = XMVectorSet(1.0F, 1.0F, 1.0F, 1.0F);
+	m_modelType = modelType;
+	m_modelObj = modelObj;
+
+	this->State(state);
+	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
+	if (spineObj)
+	{
+		if (m_state == EAPP_CHAR_STATE::ESTATE_CHAR_MOVE)
+		{
+			auto cur_ani = spineObj->Animation();
+			if (cur_ani != "walk")
+			{
+				spineObj->Animation("walk");
+			}
+		}
+	}
+	return S_OK;
+}
+
+int GameMob::Update(const GameTimer& t)
+{
+	GameTimer gt = std::any_cast<GameTimer>(t);
+	auto dt = gt.DeltaTime();
+
+	if (!g_gameInfo->IsCollisionPlayer(this))
+	{
+		if (-1000 > this->m_pos.x)
+		{
+			m_dir = +1.0;
+		}
+		else if (1000 < this->m_pos.x)
+		{
+			m_dir = -1.0;
+		}
+
+		if (0 > m_dir)
+			MoveLeft(dt);
+		else
+			MoveRight(dt);
+	}
+	if (m_modelObj)
+		return m_modelObj->Update(gt);
+
+	return S_OK;
+}
+
+int GameMob::Render()
+{
+	if (m_modelObj)
+		return m_modelObj->Render();
+	return S_OK;
+}
 
 GameInfo::GameInfo()
 {
@@ -229,4 +314,30 @@ GameInfo::GameInfo()
 GamePlayer* GameInfo::MainPlayer()
 {
 	return m_player;
+}
+
+
+bool GameInfo::IsCollisionPlayer(GameCharacter* p)
+{
+	float p0_w = m_player->m_boundBox.x;
+	float p0_h = m_player->m_boundBox.y;
+	float p1_w = p->m_boundBox.x;
+	float p1_h = p->m_boundBox.y;
+
+	float p0_x = m_player->m_pos.x - p0_w * 0.5F;
+	float p0_y = m_player->m_pos.y - p0_h * 0.5F;
+	float p1_x = p->m_pos.x - p0_w * 0.5F;
+	float p1_y = p->m_pos.y - p0_h * 0.5F;
+
+	auto ret =	p0_x        <= p1_x + p1_w &&	// left   <= v_right
+				p0_x + p0_w >= p1_x        &&	// right  >= v_left
+				p0_y        <= p1_y + p1_h &&	// top    <= v_bottom
+				p0_y + p0_h >= p1_y;			// bottom >= v_top
+		
+	return ret;
+}
+
+void GameInfo::IncreaseScore(int score)
+{
+	m_gameScore += score;
 }

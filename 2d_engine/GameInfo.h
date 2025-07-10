@@ -15,23 +15,32 @@ using namespace G2;
 using namespace std;
 using namespace DirectX;
 
-
+class GameInfo;
 class GameCharacter
 {
+	friend GameInfo;
 protected:
 	EAPP_CHAR_STATE	m_state	{ EAPP_CHAR_STATE::ESTATE_CHAR_IDLE };
-	int				m_hp	{100};
+	float			m_hp		{100};
+	int				m_damage	{50};
 	XMFLOAT2		m_pos	{};			// position
 	float			m_dir	{ 1.0F };	// direction: left: -1, right:1
 	float			m_scale	{ 1.0F };	// model scale
-	float			m_speed	{ 1000.0F };	// move speed
+	float			m_speed	{ 400.0F };	// move speed
 	XMVECTOR 		m_dif	{1.0F, 1.0F, 1.0F, 1.0F};	// model color
+
+	XMFLOAT2		m_boundBox{ 240.0F, 180.0F };
 
 	EAPP_MODEL		m_modelType	{ EAPP_MODEL::EMODEL_NONE };
 	PG2OBJECT		m_modelObj	{};
 public:
 	virtual	void			State(EAPP_CHAR_STATE v);
 	virtual	EAPP_CHAR_STATE	State() const;
+
+	virtual	void		HP(float v);
+	virtual	float		HP() const;
+	virtual	void		Damage(int v);
+	virtual	int			Damage() const;
 
 	virtual	void		Position(XMFLOAT2 v);
 	virtual	XMFLOAT2	Position() const;
@@ -59,6 +68,7 @@ class GamePlayer : public GameCharacter
 {
 protected:
 public:
+	GamePlayer();
 	int		Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE state= EAPP_CHAR_STATE::ESTATE_CHAR_IDLE);
 	int		Update(const GameTimer& gt);
 	int		Render();
@@ -66,18 +76,20 @@ public:
 
 class GameMob : public GameCharacter
 {
+protected:
 public:
 	GameMob();
+	int		Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE state = EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
+	int		Update(const GameTimer& gt);
+	int		Render();
 };
 
 
 class GameInfo
 {
 public:
-	static const int	MAX_MOB = 32;
-
-public:
 	int				m_gameScore{};
+	bool			m_enablePlay{ true };
 
 protected:
 	GamePlayer*		m_player	{};
@@ -86,6 +98,9 @@ protected:
 public:
 	GameInfo();
 	GamePlayer*		MainPlayer();
+
+	bool	IsCollisionPlayer(GameCharacter* p);
+	void	IncreaseScore(int score);
 };
 
 extern GameInfo* g_gameInfo;

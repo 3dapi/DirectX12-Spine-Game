@@ -39,6 +39,7 @@ SceneEnd::~SceneEnd()
 
 int SceneEnd::Init(const std::any& initial_value)
 {
+	SAFE_DELETE(m_pUi);
 	m_pUi = new UiEnd;
 	if (m_pUi)
 		m_pUi->Init();

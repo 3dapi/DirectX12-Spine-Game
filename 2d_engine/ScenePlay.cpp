@@ -1,4 +1,5 @@
 ﻿
+#include <algorithm>
 #include <any>
 #include <filesystem>
 #include <tuple>
@@ -41,10 +42,19 @@ ScenePlay::~ScenePlay()
 int ScenePlay::Init(const std::any& initial_value)
 {
 	int hr = S_OK;
+
+	g_gameInfo->m_gameScore  = 0;
+	g_gameInfo->m_enablePlay = true;
+
+	SAFE_DELETE(m_pUi);
+	m_pUi = new UiPlay;
+	if (m_pUi)
+		m_pUi->Init();
+
 	hr = CreateMainPlayerModel();
 	if (FAILED(hr))
 		return hr;
-	hr = CreateMobCharModel();
+	hr = GenerateMob();
 	if (FAILED(hr))
 		return hr;
 
@@ -53,10 +63,8 @@ int ScenePlay::Init(const std::any& initial_value)
 
 int ScenePlay::Destroy()
 {
-	printf("ScenePlay: Destroy\n");
+	SAFE_DELETE(m_pUi);
 
-	DeletePlayCharModel();
-	DeleteMobCharModel();
 	return S_OK;
 }
 
@@ -65,53 +73,154 @@ int ScenePlay::Update(const std::any& t)
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto dt = gt.DeltaTime();
 
-	bool isKeyEvent = false;
-	// 이동.
-	if (m_keyEvent[VK_LEFT] == EAPP_INPUT_PRESS)
+	auto playerState = m_mainPlayer->State();
+	auto playerPos   = m_mainPlayer->Position();
+
+	if (g_gameInfo->m_enablePlay && 0 >= m_mainPlayer->HP())
 	{
-		isKeyEvent = true;
-		m_mainPlayer->MoveLeft(dt);
+		g_gameInfo->m_enablePlay = false;
 	}
 
-	if (m_keyEvent[VK_RIGHT] == EAPP_INPUT_PRESS)
+
+	// 지난 시간만큼 HP를 채운다.
+	if (g_gameInfo->m_enablePlay)
 	{
-		isKeyEvent = true;
-		m_mainPlayer->MoveRight(dt);
+		auto newHp = m_mainPlayer->HP() + dt * 100;
+		if (100 < newHp)
+			newHp = 100;
+		m_mainPlayer->HP(newHp);
 	}
 
-	if (m_keyEvent[VK_UP] == EAPP_INPUT_PRESS)
+
+	for (size_t i = 0; i < m_vecMob.size(); ++i)
 	{
-		isKeyEvent = true;
-		m_mainPlayer->MoveUp(dt);
+		auto* mob = m_vecMob[i];
+		if(!mob)
+			continue;
+
+		auto mobPosition = mob->Position();
+		if (EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK == playerState && g_gameInfo->IsCollisionPlayer(mob))
+		{
+			g_gameInfo->IncreaseScore(100);
+
+			auto newHp = mob->HP() - m_mainPlayer->Damage();
+			if (0 > newHp)
+				newHp = 0;
+			mob->HP(newHp);
+		}
+
+		if (EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK != playerState && 0< mob->HP() && g_gameInfo->IsCollisionPlayer(mob))
+		{
+			auto newHp = m_mainPlayer->HP() - mob->Damage();
+			if (0 > newHp)
+				newHp = 0;
+			m_mainPlayer->HP(newHp);
+		}
+
+		mob->Update(gt);
 	}
 
-	if (m_keyEvent[VK_DOWN] == EAPP_INPUT_PRESS)
+	// regen Mob
+	for (size_t i = 0; i < m_vecMob.size(); ++i)
 	{
-		isKeyEvent = true;
-		m_mainPlayer->MoveDown(dt);
+		auto* mob = m_vecMob[i];
+		if (!mob)
+			continue;
+		auto mob_hp = mob->HP();
+		if (0< mob_hp)
+			continue;
+
+		SetupMobMovemoent(mob);
 	}
 
-	// attack.
-	if (m_keyEvent['A'] == EAPP_INPUT_PRESS)
+
+	if (g_gameInfo->m_enablePlay)
 	{
-		isKeyEvent = true;
-		m_mainPlayer->State(EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK);
+		bool isKeyEvent = false;
+		// 이동.
+		if (m_keyEvent[VK_LEFT] == EAPP_INPUT_PRESS)
+		{
+			isKeyEvent = true;
+			m_mainPlayer->MoveLeft(dt);
+		}
+
+		if (m_keyEvent[VK_RIGHT] == EAPP_INPUT_PRESS)
+		{
+			isKeyEvent = true;
+			m_mainPlayer->MoveRight(dt);
+		}
+
+		if (m_keyEvent[VK_UP] == EAPP_INPUT_PRESS)
+		{
+			isKeyEvent = true;
+			m_mainPlayer->MoveUp(dt);
+		}
+
+		if (m_keyEvent[VK_DOWN] == EAPP_INPUT_PRESS)
+		{
+			isKeyEvent = true;
+			m_mainPlayer->MoveDown(dt);
+		}
+
+		// attack.
+		if (m_keyEvent['A'] == EAPP_INPUT_PRESS)
+		{
+			isKeyEvent = true;
+			m_mainPlayer->State(EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK);
+		}
+
+		//printf("Key event : %s \n", isKeyEvent ? "true" : "false");
+
+		auto curSt = m_mainPlayer->State();
+		EAPP_CHAR_STATE st = isKeyEvent ? curSt : EAPP_CHAR_STATE::ESTATE_CHAR_IDLE;
+		m_mainPlayer->State(st);
 	}
 
-	printf("Key event : %s \n", isKeyEvent ? "true" : "false");
-
-	auto curSt = m_mainPlayer->State();
-	EAPP_CHAR_STATE st = isKeyEvent ?curSt : EAPP_CHAR_STATE::ESTATE_CHAR_IDLE;
-	m_mainPlayer->State(st);
 	m_mainPlayer->Update(gt);
 	
-
+	// update ui
+	if (m_pUi)
+		m_pUi->Update(dt);
 	return S_OK;
 }
 
 int ScenePlay::Render()
 {
-	m_mainPlayer->Render();
+	if (m_pUi)
+	{
+		m_pUi->Draw();
+	}
+
+	vector<SpineRender*> objRender;
+	for (size_t i = 0; i < m_vecMob.size(); ++i)
+	{
+		auto* mob = m_vecMob[i];
+		if (mob && 0 < mob->HP())
+		{
+			auto model = dynamic_cast<SpineRender*>(mob->ModelObject());
+			if(model)
+				objRender.push_back(model);
+		}
+	}
+	if (g_gameInfo->m_enablePlay)
+	{
+		auto model = dynamic_cast<SpineRender*>(m_mainPlayer->ModelObject());
+		if (model)
+			objRender.push_back(model);
+	}
+
+	std::sort(objRender.begin(), objRender.end(), [](SpineRender* a, SpineRender* b)
+	{
+		auto p0 = a->Position();
+		auto p1 = b->Position();
+		return p1.y < p0.y;
+	});
+
+	for (size_t i = 0; i < objRender.size(); ++i)
+	{
+		auto& obj = objRender[i];
+		obj->Render();
+	}
 	return S_OK;
 }
 
@@ -125,6 +234,7 @@ int ScenePlay::Notify(const std::string& name, const std::any& t)
 	else if (name == "MouseUp")
 	{
 		auto mousePos = any_cast<const ::POINT&>(t);
+		IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_END);
 	}
 
 	return S_OK;
@@ -137,55 +247,95 @@ int ScenePlay::CreateMainPlayerModel()
 		return E_FAIL;
 
 	//           model type  positgion scale  direction
-	tuple<EAPP_MODEL, XMFLOAT2, float, float> charModel
+	tuple<EAPP_MODEL, float, float> charModel
 	{
-		EAPP_MODEL::EMODEL_KNIGHT	, { 0.0F, -300.0F}, 0.5F,  1.0F,
+		EAPP_MODEL::EMODEL_KNIGHT, 0.5F,  1.0F,
 	};
-	const auto& [model, pos, scale, direction] = charModel;
+	const auto& [model, scale, direction] = charModel;
 	
 	SPINE_ATTRIB* att = FactorySpineObject::FindSpineAttribute(model);
 	if (!att)
 		return E_FAIL;
-	auto spineChar = new(std::nothrow) SpineRender;
-	if (!spineChar)
+	auto spineModel = new(std::nothrow) SpineRender;
+	if (!spineModel)
 		return E_FAIL;
-
-	if (FAILED(spineChar->Init(*att)))
+	if (FAILED(spineModel->Init(*att)))
+	{
+		delete spineModel;
 		return E_FAIL;
+	}
 
-	m_mainPlayer->Init(model, spineChar);
+	m_mainPlayer->Init(model, spineModel);
+	m_mainPlayer->Scale(0.7F);
 
 	return S_OK;
 }
 
-int ScenePlay::CreateMobCharModel()
+int ScenePlay::GenerateMob()
 {
+	vector<EAPP_MODEL> charModel
+	{
+		EAPP_MODEL::EMODEL_RAPTOR,
+		EAPP_MODEL::EMODEL_GOBLIN,
+		EAPP_MODEL::EMODEL_ALIEN,
+	};
+
+	for (size_t i = 0; i < m_vecMob.size(); ++i)
+	{
+		int modelIndex = G2::randomRange((int)0, (int)charModel.size()-1);
+		auto model = charModel[modelIndex];
+		SPINE_ATTRIB* att_p = FactorySpineObject::FindSpineAttribute(model);
+		if(!att_p)
+			continue;
+		auto spineModel = new(std::nothrow) SpineRender;
+		if (!spineModel)
+			continue;
+
+		SPINE_ATTRIB att = *att_p;
+		att.aniBegin = (float)G2::randomRange(0.0F, 2.0F);
+		if (FAILED(spineModel->Init(att)))
+		{
+			delete spineModel;
+			continue;
+		}
+		auto mob = new GameMob;
+		if (!mob)
+		{
+			delete spineModel;
+			continue;
+		}
+		if (FAILED(mob->Init(model, spineModel)))
+		{
+			continue;
+		};
+
+		SetupMobMovemoent(mob);
+		m_vecMob[i] = mob;
+	}
+
 	int hr = S_OK;
 	return S_OK;
 }
 
-int ScenePlay::DeletePlayCharModel()
+int ScenePlay::SetupMobMovemoent(GameMob* mob)
 {
-	int hr = S_OK;
+	auto mainPlayerPos = m_mainPlayer->Position();
+
+	float posx_plus   = G2::randomRange( 600.0F,  900.0F);
+	float posx_minus  = G2::randomRange(-900.0F, -600.0F);
+	int   posx_choise = G2::randomRange(0, 1);
+	float posx = posx_choise ? posx_plus : posx_minus;
+
+	float posy_plus   = G2::randomRange( 40.0F,  80.0F);
+	float posy_minus  = G2::randomRange(-80.0F, -40.0F);
+	int   posy_choise = G2::randomRange(0, 1);
+	float posy = posy_choise ? posy_plus : posy_minus;
+
+	float dir = posx  < mainPlayerPos.x ?  1.0F : -1.0F;
+	mob->Position({ posx, posy });
+	mob->Scale(0.6F);
+	mob->Direction(dir);
+	mob->HP(100);
+
 	return S_OK;
-}
-
-int ScenePlay::DeleteMobCharModel()
-{
-	int hr = S_OK;
-	return S_OK;
-}
-
-
-
-bool ScenePlay::chckNoKeyEvent()
-{
-	bool isIdle
-		=  m_keyEvent[VK_LEFT ] == EAPP_INPUT_NONE
-		&& m_keyEvent[VK_RIGHT] == EAPP_INPUT_NONE
-		&& m_keyEvent[VK_UP   ] == EAPP_INPUT_NONE
-		&& m_keyEvent[VK_DOWN ] == EAPP_INPUT_NONE
-		&& m_keyEvent['A'     ] == EAPP_INPUT_NONE
-		;
-	return isIdle;
 }

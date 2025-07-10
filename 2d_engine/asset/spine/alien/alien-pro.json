@@ -1768,7 +1768,7 @@
 			}
 		}
 	},
-	"run": {
+	"walk": {
 		"slots": {
 			"eye-highlight": {
 				"attachment": [

@@ -2,7 +2,9 @@
 #ifndef __APPCOMMON_H__
 #define __APPCOMMON_H__
 
+#include <any>
 #include <array>
+#include <map>
 #include <memory>
 #include <vector>
 #include <Windows.h>
@@ -14,6 +16,8 @@
 #include <DirectXColors.h>
 #include <wrl/client.h>
 #include "AppConst.h"
+#include "Common/G2.Constants.h"
+#include "common/G2.ConstantsWin.h"
 #include "Common/GameTimer.h"
 
 using std::vector;

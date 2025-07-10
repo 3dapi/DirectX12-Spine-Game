@@ -47,14 +47,13 @@ std::any MainApp::getAttrib(int nAttrib)
 {
 	switch((EAPP_ATTRIB)nAttrib)
 	{
-		case EAPP_ATTRIB::EAPP_ATT_WIN_HWND:					return mhMainWnd;
-		case EAPP_ATTRIB::EAPP_ATT_WIN_HINST:					return mhAppInst;
-		case EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE:					return m_xtkSprite.get();
-		case EAPP_ATTRIB::EAPP_ATT_XTK_GRAPHIC_MEM:				return m_xtkGraphicMem.get();
-		case EAPP_ATTRIB::EAPP_ATT_XTK_DESC_HEAP:				return m_xtkDescHeap.get();
-		case EAPP_ATTRIB::EAPP_ATT_XTK_BATCH:					return m_batch.get();
-		case EAPP_ATTRIB::EAPP_ATT_CUR_SPINE_VP:
-		{
+		case EAPP_ATTRIB::EAPP_ATT_WIN_HWND:		return mhMainWnd;
+		case EAPP_ATTRIB::EAPP_ATT_WIN_HINST:		return mhAppInst;
+		case EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE:		return m_xtkSprite.get();
+		case EAPP_ATTRIB::EAPP_ATT_XTK_GRAPHIC_MEM:	return m_xtkGraphicMem.get();
+		case EAPP_ATTRIB::EAPP_ATT_XTK_DESC_HEAP:	return m_xtkDescHeap.get();
+		case EAPP_ATTRIB::EAPP_ATT_XTK_BATCH:		return m_batch.get();
+		case EAPP_ATTRIB::EAPP_ATT_CUR_SPINE_VP: {
 			if (m_sceneIdxCur == EAPP_SCENE_PLAY)
 				return &m_spineVPplay;
 			else
@@ -76,14 +75,12 @@ int MainApp::command(int nCmd,const std::any& v)
 		case EAPP_CMD::EAPP_CMD_CHANGE_SCENE:
 		{
 			m_sceneIdxNew = any_cast<EAPP_SCENE>(v);
-			if(m_sceneIdxCur != m_sceneIdxNew)
-			{
+			if(m_sceneIdxCur != m_sceneIdxNew) {
 				m_bChangeScene = true;
 			}
 			return S_OK;
 		}
 	}
-
 	return D3DWinApp::command(nCmd, v);
 }
 
@@ -129,47 +126,30 @@ int MainApp::init(const std::any& initialValue /* = */)
 
 	// lobby spine camera
 	auto aspectRatio = m_screenSize.cx / float(m_screenSize.cy);
+	XMVECTORF32  up = { 0.0f, 1.0f, 0.0f, 0.0f };
+	XMMATRIX tmPrj = XMMatrixPerspectiveFovLH(XM_PI / 3.0F, aspectRatio, 1.0f, 5000.0f);
 	{
-		XMMATRIX tmPrj = XMMatrixPerspectiveFovLH(XM_PI / 3.0F, aspectRatio, 1.0f, 5000.0f);
 		XMVECTORF32 eye = { 0.0f, 0.0f, -700.0f, 0.0f };
 		XMVECTORF32  at = { 0.0f, 0.0f, 0.0f, 0.0f };
-		XMVECTORF32  up = { 0.0f, 1.0f, 0.0f, 0.0f };
 		XMMATRIX     tmViw = XMMatrixLookAtLH(eye, at, up);
 		m_spineVPlobby = tmViw * tmPrj;
 	}
-
 	// play spine camera
 	{
-		XMMATRIX tmPrj = XMMatrixPerspectiveFovLH(XM_PI / 3.0F, aspectRatio, 1.0f, 5000.0f);
 		XMVECTORF32 eye = { 0.0f, 200.0f, -700.0f, 0.0f };
 		XMVECTORF32  at = { 0.0f, 200.0f, 0.0f, 0.0f };
-		XMVECTORF32  up = { 0.0f, 1.0f, 0.0f, 0.0f };
 		XMMATRIX     tmViw = XMMatrixLookAtLH(eye, at, up);
 		m_spineVPplay = tmViw * tmPrj;
 	}
 
-
 	//m_camera2DLobby = std::unique_ptr<IG2Camera>(IG2Camera::create(EG2CAMERA::EG2CAM_2D));
-
 	//auto cam2DPlay = IG2Camera::create(EG2CAMERA::EG2CAM_2D);
-
 	//cam2DPlay->Position({ 0.0f, 100.0f, -700.0f });
 	//cam2DPlay->LookAt  ({ 0.0f, 100.0f, -700.0f });
 	//cam2DPlay->Update();
 
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_LOBBY);
-
-
-	//	auto scene=std::make_unique<SceneSpine>();
-	//	if(scene)
-	//	{
-	//		if(SUCCEEDED(scene->Init()))
-	//		{
-	//			m_pSceneSpine = std::move(scene);
-	//		}
-	//	}
-	//}
+	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_PLAY);
 
 	return S_OK;
 }
@@ -178,8 +158,6 @@ int MainApp::destroy()
 {
 	if(!m_scene.empty())
 		m_scene.clear();
-
-	m_pSceneSpine	= {};
 
 	FactorySpine::instance()->UnLoadAll();
 	FactoryPipelineState::instance()->UnLoadAll();
@@ -224,7 +202,6 @@ int MainApp::Render()
 	auto d3dBackBufferV  = std::any_cast<CD3DX12_CPU_DESCRIPTOR_HANDLE>(d3d->getBackBufferView());
 	auto d3dDepthV       = std::any_cast<D3D12_CPU_DESCRIPTOR_HANDLE>(d3d->getDepthStencilView());
 	auto psoManager      = FactoryPipelineState::instance();
-
 	// 0. d3d 작업 완료 대기.
 	hr = d3d->command(EG2GRAPHICS_D3D::CMD_FENCE_WAIT);
 
@@ -238,9 +215,7 @@ int MainApp::Render()
 
 	d3dCommandList->RSSetViewports(1, d3dViewport);
 	d3dCommandList->RSSetScissorRects(1, d3dScissor);
-
 	d3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(d3dBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-
 
 	XMFLOAT4 clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 	d3dCommandList->ClearRenderTargetView(d3dBackBufferV, (float*)&clearColor, 0, nullptr);
@@ -250,12 +225,8 @@ int MainApp::Render()
 	if (m_scene[m_sceneIdxCur])
 		m_scene[m_sceneIdxCur]->Render();
 
-	if (m_pSceneSpine)
-		m_pSceneSpine->Render();
-
 	// xtk memory clear.!!!!!!
 	m_xtkGraphicMem->Commit(commandQue);
-
 
 	d3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(d3dBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 	hr = d3dCommandList->Close();
@@ -297,6 +268,7 @@ void MainApp::OnMouseMove(WPARAM btnState, const ::POINT& p)
 
 void MainApp::OnKeyboardInput()
 {
+	// Keyboar debugging
 	//for (int i = 0; i < 256; ++i)
 	//{
 	//	if (GetAsyncKeyState(i) & 0x8000)

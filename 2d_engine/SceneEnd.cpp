@@ -82,7 +82,7 @@ int SceneEnd::Notify(const std::string& name, const std::any& t)
 
 		if (chckPointInRect(mousePos.x, mousePos.y, 400, 160, 900, 550))
 		{
-			IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE_LOBBY);
+			IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_LOBBY);
 		}
 	}
 

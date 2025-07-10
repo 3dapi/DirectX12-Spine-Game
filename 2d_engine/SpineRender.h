@@ -43,7 +43,7 @@ struct SPINE_ATTRIB
 	vector<string>	detachSlot	{};
 };
 
-class SpineRender: public G2::IG2Object
+class SpineRender : public G2::IG2Object
 {
 protected:
 	// spine resource
@@ -71,22 +71,30 @@ protected:
 	uint8_t*						m_ptrMVP			{};
 
 protected:
-	float		m_dir	{ 1.0F	};
-	XMFLOAT2	m_pos	{ 0.0F, 0.0f};
+	XMFLOAT2	m_pos	{ 0.0F, 0.0F};
+	float		m_dir	{ 1.0F };
+	float		m_scale	{ 1.0F };
+	XMFLOAT4	m_color { 1.0F, 1.0F, 1.0F, 1.0F };		// x->r, y->g, z->b, w->a
 
 public:
 	SpineRender();
 	virtual ~SpineRender();
 
 	// IG2Scene
-	int		Type()						override { return EAPP_SCENE::EAPP_SCENE_SPINE; }
+	int		Type()						override { return (int)EAPP_SCENE::EAPP_SCENE_SPINE; }
 	int		Init(const std::any& ={})	override;
 	int		Destroy()					override;
 	int		Update(const std::any& t)	override;
 	int		Render()					override;
 
-	void	Look(float direction);
-	void	Scale(float direction);
+	void		Position		(const XMFLOAT2&);
+	XMFLOAT2	Position		() const ;
+	void		Direction		(float);
+	float		Direction		() const;
+	void		Scale			(float);
+	float		Scale			() const;
+	void		Color			(const XMFLOAT4&);		// x->r, y->g, z->b, w->a
+	XMFLOAT4	Color			() const;				// x->r, y->g, z->b, w->a
 
 protected:
 	int		InitSpine();
@@ -94,7 +102,5 @@ protected:
 	int		UpdateDrawBuffer();
 	void	SetupDrawBuffer();
 };
-
-SPINE_ATTRIB* FindSpineAttribute(EAPP_MODEL model);
 
 #endif

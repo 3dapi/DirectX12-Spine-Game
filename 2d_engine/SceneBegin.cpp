@@ -46,19 +46,21 @@ int SceneBegin::Init(const std::any& initial_value)
 	auto cmdList = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	vector<EAPP_MODEL>	charModel
+	//           model type  positgion scale  direction
+	vector<tuple<EAPP_MODEL, XMFLOAT2, float, float> >	charModel
 	{
-		EMODEL_RAPTOR	,
-		EMODEL_GOBLIN	,
-		EMODEL_KNIGHT	,
-		EMODEL_BOY		,
-		EMODEL_STMAN	,
-		EMODEL_ALIEN	,
-	};
+		{ EAPP_MODEL::EMODEL_RAPTOR	, {-840.0F, -300.0F}, 1.0F,  1.0F, },
+		{ EAPP_MODEL::EMODEL_GOBLIN	, {-400.0F, -300.0F}, 1.0F,  1.0F, },
+		{ EAPP_MODEL::EMODEL_KNIGHT	, {-120.0F, -300.0F}, 0.7F,  1.0F, },
+		{ EAPP_MODEL::EMODEL_BOY	, { 260.0F, -300.0F}, 0.7F, -1.0F, },
+		{ EAPP_MODEL::EMODEL_STMAN	, { 550.0F, -300.0F}, 1.0F, -1.0F, },
+		{ EAPP_MODEL::EMODEL_ALIEN	, { 800.0F, -300.0F}, 1.0F, -1.0F, },
+	};	
 
 	for(size_t i = 0; i < charModel.size(); ++i)
 	{
-		SPINE_ATTRIB* att = FindSpineAttribute(charModel[i]);
+		const auto& [model, pos, scale, direction] = charModel[i];
+		SPINE_ATTRIB* att = FactorySpineObject::FindSpineAttribute(model);
 		if(!att)
 			continue;
 		auto spineChar = std::make_unique<SpineRender>();
@@ -66,12 +68,12 @@ int SceneBegin::Init(const std::any& initial_value)
 			continue;
 		if(FAILED(spineChar->Init(*att)))
 			continue;
+
+		spineChar->Position  (pos);
+		spineChar->Scale     (scale);
+		spineChar->Direction (direction);
 		m_char.push_back(std::move(spineChar));
 	}
-
-	m_char[3]->Look(-1);
-	m_char[4]->Look(-1);
-	m_char[5]->Look(-1);
 
 	m_pUi = new UiBegin;
 	if (m_pUi)
@@ -131,7 +133,7 @@ int SceneBegin::Notify(const std::string& name, const std::any& t)
 
 		if (chckPointInRect(mousePos.x, mousePos.y, 400, 160, 900, 550))
 		{
-			IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE_LOBBY);
+			IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_LOBBY);
 		}
 	}
 

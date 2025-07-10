@@ -26,7 +26,7 @@ public:
 	SceneXtkGame()  noexcept;
 	virtual ~SceneXtkGame();
 
-	int		Type()									override { return EAPP_SCENE::EAPP_SCENE_XTK; }
+	int		Type()									override { return (int)EAPP_SCENE::EAPP_SCENE_XTK; }
 	int		Init(const std::any& initialValue ={})	override;
 	int		Destroy()								override;
 	int		Update(const std::any& t)				override;

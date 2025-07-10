@@ -77,7 +77,7 @@ int MainApp::command(int nCmd,const std::any& v)
 		}
 	}
 
-	IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE_PLAY);
+	IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_PLAY);
 
 	return D3DWinApp::command(nCmd, v);
 }
@@ -140,13 +140,14 @@ int MainApp::init(const std::any& initialValue /* = */)
 		m_xtkSprite->SetViewport(vpt);
 	}
 
+	//AFEW::D
 	m_xtkGraphicMem = std::make_unique<GraphicsMemory>(device);
 	m_xtkDescHeap   = std::make_unique<DescriptorHeap>(device, EAPP_DESC_HEAP_SIZE);
 	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(device);
 
 
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE_BEGIN);
+	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_BEGIN);
 
 
 	// create XTK Instance

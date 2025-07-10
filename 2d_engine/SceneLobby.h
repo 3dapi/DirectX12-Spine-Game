@@ -39,7 +39,7 @@ public:
 	virtual ~SceneLobby();
 
 	// IG2Scene
-	int		Type()						override { return EAPP_SCENE::EAPP_SCENE_LOBBY; }
+	int		Type()						override { return (int)EAPP_SCENE::EAPP_SCENE_LOBBY; }
 	int		Init(const std::any& ={})	override;
 	int		Destroy()					override;
 	int		Update(const std::any& t)	override;

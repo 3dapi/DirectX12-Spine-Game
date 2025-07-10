@@ -51,7 +51,7 @@ public:
 	SceneSample2D();
 	virtual ~SceneSample2D();
 
-	int		Type()						override { return EAPP_SCENE::EAPP_SCENE_SPINE; }
+	int		Type()						override { return (int)EAPP_SCENE::EAPP_SCENE_SPINE; }
 	int		Init(const std::any& ={})	override;
 	int		Destroy()					override;
 	int		Update(const std::any& t)	override;

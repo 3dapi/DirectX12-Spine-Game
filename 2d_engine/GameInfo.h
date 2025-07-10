@@ -19,14 +19,14 @@ using namespace DirectX;
 class GameCharacter
 {
 protected:
-	EAPP_CHAR_STATE	m_st	{ ESTATE_CHAR_IDLE };
+	EAPP_CHAR_STATE	m_st	{ EAPP_CHAR_STATE::ESTATE_CHAR_IDLE };
 	int				m_hp	{100};
 	float			m_speed	{5.0F};
 	XMFLOAT2		m_pos	{};			// position
 	float			m_dir	{ 1.0F };	// direction: left: -1, right:1
 	XMVECTOR 		m_dif	{1.0F, 1.0F, 1.0F, 1.0F};	// color
 
-	EAPP_MODEL		m_modelType	{ EMODEL_NONE };
+	EAPP_MODEL		m_modelType	{ EAPP_MODEL::EMODEL_NONE };
 	PG2OBJECT		m_modelObj	{};
 public:
 	virtual	void		Position(XMFLOAT2 v);
@@ -51,7 +51,7 @@ class GamePlayer : public GameCharacter
 {
 protected:
 public:
-	void		Init();
+	void		Init(EAPP_MODEL modelType, PG2OBJECT modelObj);
 };
 
 class GameMob : public GameCharacter
@@ -75,7 +75,6 @@ protected:
 
 public:
 	GameInfo();
-	void			InitPlayer();
 	GamePlayer*		MainPlayer();
 };
 

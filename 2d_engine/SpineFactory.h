@@ -5,7 +5,12 @@
 #include "AppCommon.h"
 #include "SpineRender.h"
 
-SPINE_ATTRIB* FindSpineAttribute(EAPP_MODEL model);
+class FactorySpineObject
+{
+public:
+	static SPINE_ATTRIB* FindSpineAttribute(EAPP_MODEL model);
+	SpineRender* CreateSpine(EAPP_MODEL model, float scale = 1.0F);
+};
 
 #endif // _SpineFactory_H_
 

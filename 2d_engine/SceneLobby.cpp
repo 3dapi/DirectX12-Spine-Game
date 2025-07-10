@@ -46,28 +46,32 @@ int SceneLobby::Init(const std::any& initial_value)
 	auto cmdList    = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	vector<string> detachSlotHero = {
-		"weapon-morningstar-path",
-		"chain-ball", "chain-round", "chain-round2", "chain-round3",
-		"chain-flat", "chain-flat2", "chain-flat3", "chain-flat4", "handle"
-	};
-	vector< SPINE_ATTRIB> spine_rsc =
+	//           model type  positgion scale  direction
+	vector<tuple<EAPP_MODEL, XMFLOAT2, float, float> >	charModel
 	{
-		{"hero"     , "hero-pro.atlas"      , "hero-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, { -300.0F, -150.0F}, "idle", "weapon/sword", detachSlotHero },
-		{"spineboy" , "spineboy-pma.atlas"  , "spineboy-pro.json"   , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.49F, {  300.0F, -150.0F}, "idle", "default", {} },
+		{ EAPP_MODEL::EMODEL_KNIGHT	, {-300.0F, -160.0F}, 1.0F,  1.0F, },
+		{ EAPP_MODEL::EMODEL_BOY	, { 300.0F, -160.0F}, 1.0F, -1.0F, },
 	};
 
-	for (size_t i=0; i<spine_rsc.size(); ++i)
+	for (size_t i = 0; i < charModel.size(); ++i)
 	{
-		m_char[i] = std::make_unique<SpineRender>();
-		if (m_char[i])
-		{
-			const auto& initArgs = spine_rsc[i];
-			m_char[i]->Init(initArgs);
-		}
+		const auto& [model, pos, scale, direction] = charModel[i];
+		SPINE_ATTRIB* att = FactorySpineObject::FindSpineAttribute(model);
+		if(!att)
+			continue;
+		auto spineChar = std::make_unique<SpineRender>();
+		if (!spineChar)
+			continue;
+		if(FAILED(spineChar->Init(*att)))
+			continue;
+
+		spineChar->Position  (pos);
+		spineChar->Scale     (scale);
+		spineChar->Direction (direction);
+		m_char[i] = std::move(spineChar);
 	}
 
-	m_char[1]->Look(-1);
+	m_char[1]->Direction(-1);
 
 	m_pUi = new UiLobby;
 	if (m_pUi)
@@ -133,21 +137,21 @@ void SceneLobby::CheckSelectCharacter(const ::POINT& mousePos)
 	// character knight 선택
 	if(chckPointInRect (mousePos.x, mousePos.y, 340, 170, 600, 430))
 	{
-		g_gameInfo->MainPlayer()->ModelType(EMODEL_KNIGHT);
+		g_gameInfo->MainPlayer()->ModelType(EAPP_MODEL::EMODEL_KNIGHT);
 		return;
 	}
 	else
 	{
-		if (g_gameInfo->MainPlayer()->ModelType() == EMODEL_KNIGHT)
+		if (g_gameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)
 		{
 			if (chckPointInRect(mousePos.x, mousePos.y, 450, 500, 830, 560))
 			{
-				IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE_PLAY);
+				IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_PLAY);
 				return;
 			}
 			else
 			{
-				g_gameInfo->MainPlayer()->ModelType(EMODEL_NONE);
+				g_gameInfo->MainPlayer()->ModelType(EAPP_MODEL::EMODEL_NONE);
 				return;
 			}
 		}

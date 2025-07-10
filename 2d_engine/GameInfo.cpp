@@ -84,15 +84,15 @@ PG2OBJECT GameCharacter::ModelObject() const
 	return m_modelObj;
 }
 
-void GamePlayer::Init()
+void GamePlayer::Init(EAPP_MODEL modelType, PG2OBJECT modelObj)
 {
 	m_hp    = 100;
 	m_speed = 5.0F;
 	m_pos   = XMFLOAT2{ 0.0F, 0.0F };
 	m_dir   = 1.0F;
 	m_dif   = XMVectorSet( 1.0F, 1.0F, 1.0F, 1.0F );
-	m_modelType = EMODEL_NONE;
-	m_modelObj  = nullptr;
+	m_modelType = modelType;
+	m_modelObj  = modelObj;
 }
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -108,11 +108,6 @@ GameInfo* g_gameInfo = new GameInfo;
 GameInfo::GameInfo()
 {
 	m_player = new GamePlayer;
-}
-
-void GameInfo::InitPlayer()
-{
-	m_player->Init();
 }
 
 GamePlayer* GameInfo::MainPlayer()

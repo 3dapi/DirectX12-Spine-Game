@@ -25,7 +25,7 @@ public:
 	SceneGameMesh()  noexcept;
 	virtual ~SceneGameMesh();
 
-	int		Type()									override { return EAPP_SCENE::EAPP_SCENE_MESH; }
+	int		Type()									override { return (int)EAPP_SCENE::EAPP_SCENE_MESH; }
 	int		Init(const std::any& initialValue = {})	override;
 	int		Destroy()								override;
 	int		Update(const std::any& t)				override;

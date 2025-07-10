@@ -6,7 +6,7 @@
 
 using namespace std;
 
-vector<string> detachSlotSpineBoy = {
+static vector<string> detachSlotSpineBoy = {
 	"spineboy-torso", "head", "eyes-open", "mouth-smile", "visor",
 	"gun", "front-arm", "front-bracer", "front-hand",
 	"back-arm", "back-hand", "back-bracer", "back-knee",
@@ -31,27 +31,49 @@ vector<string> detachSlotSpineBoy = {
 	"raptor-horn",
 
 };
-vector<string> detachSlotHero = {
+static vector<string> detachSlotHero = {
 	"weapon-morningstar-path",
 	"chain-ball", "chain-round", "chain-round2", "chain-round3",
 	"chain-flat", "chain-flat2", "chain-flat3", "chain-flat4", "handle"
 };
 
-map<EAPP_MODEL, SPINE_ATTRIB> spine_rsc =
+static map<EAPP_MODEL, SPINE_ATTRIB> spine_rsc =
 {
-	{ EMODEL_KNIGHT	 , {"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, {-120.0F, -300.0F}, "walk", "weapon/sword", detachSlotHero} },
-	{ EMODEL_BOY	 , {"spineboy"     , "spineboy-pma.atlas"     , "spineboy-pro.json"     , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.49F, { 260.0F, -300.0F}, "walk", "default", {} }                 },
-	{ EMODEL_RAPTOR	 , {"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {-840.0F, -300.0F}, "walk", "default", detachSlotSpineBoy}  },
-	{ EMODEL_GOBLIN	 , {"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {-400.0F, -300.0F}, "walk", "goblin" , {} }                 },
-	{ EMODEL_ALIEN	 , {"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 800.0F, -300.0F}, "run" , "default", {} }                 },
-	{ EMODEL_STMAN	 , {"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 6.0F, 1.0F, 0.60F, { 550.0F, -300.0F}, "walk", "default", {} }                 },
+	{ EAPP_MODEL::EMODEL_KNIGHT	 , {"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, {0.0F, 0.0F}, "walk", "weapon/sword", detachSlotHero} },
+	{ EAPP_MODEL::EMODEL_BOY	 , {"spineboy"     , "spineboy-pma.atlas"     , "spineboy-pro.json"     , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.49F, {0.0F, 0.0F}, "walk", "default", {} }                 },
+	{ EAPP_MODEL::EMODEL_RAPTOR	 , {"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {0.0F, 0.0F}, "walk", "default", detachSlotSpineBoy}  },
+	{ EAPP_MODEL::EMODEL_GOBLIN	 , {"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {0.0F, 0.0F}, "walk", "goblin" , {} }                 },
+	{ EAPP_MODEL::EMODEL_ALIEN	 , {"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, {0.0F, 0.0F}, "run" , "default", {} }                 },
+	{ EAPP_MODEL::EMODEL_STMAN	 , {"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 6.0F, 1.0F, 0.60F, {0.0F, 0.0F}, "walk", "default", {} }                 },
 };
 
-SPINE_ATTRIB* FindSpineAttribute(EAPP_MODEL model)
+SPINE_ATTRIB* FactorySpineObject::FindSpineAttribute(EAPP_MODEL model)
 {
 	auto itr = spine_rsc.find(model);
 	if (itr == spine_rsc.end())
 		return nullptr;
 
 	return &itr->second;
+}
+
+
+SpineRender* FactorySpineObject::CreateSpine(EAPP_MODEL model, float scale)
+{
+	auto attr = FindSpineAttribute(model);
+	if (!attr)
+		return {};
+
+	auto spineObj = new(std::nothrow) SpineRender;
+	if (!spineObj)
+		return {};
+
+	if (FAILED(spineObj->Init(*attr)))
+	{
+		delete spineObj;
+		return {};
+	}
+
+	spineObj->Position({ 0.0F, 0.F });
+
+	return spineObj;
 }

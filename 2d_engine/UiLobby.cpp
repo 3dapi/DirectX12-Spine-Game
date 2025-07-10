@@ -90,7 +90,7 @@ int UiLobby::Draw()
 	cmdList->SetDescriptorHeaps(1, heaps);
 	sprite->Begin(cmdList);
 	{
-		float alpha = (g_gameInfo->MainPlayer()->ModelType() == EMODEL_KNIGHT)? 1.0F : 0.3F;
+		float alpha = (g_gameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)? 1.0F : 0.3F;
 		{
 			auto& tex = m_uiTex["ui/ui_select_char"];
 			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 20.0F), DirectX::XMVectorSet(1.0F, 0.9F, 0.0F, 0.8F));
@@ -101,7 +101,7 @@ int UiLobby::Draw()
 			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(710, 150), DirectX::XMVectorSet(0.0F, 0.0F, 1.0F, 0.2F));
 		}
 
-		if(g_gameInfo->MainPlayer()->ModelType() == EMODEL_KNIGHT)
+		if(g_gameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)
 		{
 			auto& tex = m_uiTex["ui/ui_game_start"];
 			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 500), DirectX::XMVectorSet(1.0F, 1.0F, 1.0F, 1.0F));

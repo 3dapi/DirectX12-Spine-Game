@@ -138,9 +138,46 @@ int SpineRender::Render()
 	return S_OK;
 }
 
-void SpineRender::Look(float direction)
+void SpineRender::Position(const XMFLOAT2& v)
 {
-	m_spineSkeleton->setScaleX(m_attrib.vecScale * direction);
+	m_pos = v;
+	auto x = m_attrib.vecOffset.x + m_pos.x;
+	auto y = m_attrib.vecOffset.y + m_pos.y;
+	m_spineSkeleton->setPosition(x, y);
+}
+XMFLOAT2 SpineRender::Position() const
+{
+	return m_pos;
+}
+void SpineRender::Direction(float v)
+{
+	m_dir = v;
+	auto s = m_attrib.vecScale * m_scale * m_dir;
+	m_spineSkeleton->setScaleX(s);
+}
+float SpineRender::Direction() const
+{
+	return m_dir;
+}
+void SpineRender::Scale(float v)
+{
+	m_scale = v;
+	auto x = m_attrib.vecScale * m_scale * m_dir;
+	auto y = m_attrib.vecScale * m_scale;
+	m_spineSkeleton->setScaleX(x);
+	m_spineSkeleton->setScaleY(y);
+}
+float SpineRender::Scale() const
+{
+	return m_scale;
+}
+void SpineRender::Color(const XMFLOAT4& v)
+{
+	m_color = v;
+}
+XMFLOAT4 SpineRender::Color() const
+{
+	return m_color;
 }
 
 int SpineRender::UpdateDrawBuffer()
@@ -222,10 +259,10 @@ int SpineRender::UpdateDrawBuffer()
 			spine::Color c = slot->getColor();
 			spine::Color m = meshAttachment->getColor();
 			rgba =
-				((uint32_t)(c.a * m.a * 255) << 24) |
-				((uint32_t)(c.r * m.r * 255) << 16) |
-				((uint32_t)(c.g * m.g * 255) << 8) |
-				((uint32_t)(c.b * m.b * 255) << 0);
+				((uint32_t)(m_color.w * c.a * m.a * 255) << 24) |
+				((uint32_t)(m_color.x * c.r * m.r * 255) << 16) |
+				((uint32_t)(m_color.y * c.g * m.g * 255) << 8) |
+				((uint32_t)(m_color.z * c.b * m.b * 255) << 0);
 
 			posSize = sizeof(XMFLOAT2) * vtxCount;
 			difSize = sizeof(uint32_t) * vtxCount;
@@ -272,10 +309,10 @@ int SpineRender::UpdateDrawBuffer()
 			auto c = slot->getColor();
 			auto r = regionAttachment->getColor();
 			rgba =
-				((uint32_t)(c.a * r.a * 255) << 24) |
-				((uint32_t)(c.r * r.r * 255) << 16) |
-				((uint32_t)(c.g * r.g * 255) << 8) |
-				((uint32_t)(c.b * r.b * 255) << 0);
+				((uint32_t)(m_color.w * c.a * r.a * 255) << 24) |
+				((uint32_t)(m_color.x * c.r * r.r * 255) << 16) |
+				((uint32_t)(m_color.y * c.g * r.g * 255) << 8) |
+				((uint32_t)(m_color.z * c.b * r.b * 255) << 0);
 
 			posSize = sizeof(XMFLOAT2) * vtxCount;
 			difSize = sizeof(uint32_t) * vtxCount;

@@ -90,6 +90,8 @@ int ScenePlay::CreateMainPlayerModel()
 		return E_FAIL;
 	m_mainPlayer = mainPlayer;
 
+	//SpineFactgory
+	//m_mainPlayer->Init();
 	// new char model
 	//PG2OBJECT newSpine = 
 	return S_OK;

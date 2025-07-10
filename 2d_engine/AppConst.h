@@ -51,7 +51,7 @@ enum EAPP_SCENE
 	EAPP_SCENE_SPINE	,
 };
 
-enum EAPP_CHAR_STATE
+enum class EAPP_CHAR_STATE : int
 {
 	ESTATE_CHAR_NONE		= 0,
 	ESTATE_CHAR_IDLE		= 1,
@@ -61,7 +61,7 @@ enum EAPP_CHAR_STATE
 	ESTATE_CHAR_DEATH		,
 };
 
-enum EAPP_MODEL
+enum class EAPP_MODEL : int
 {
 	EMODEL_NONE		= 0,		// nothing
 	EMODEL_KNIGHT	= 1,		// hero

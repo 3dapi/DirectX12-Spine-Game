@@ -73,6 +73,9 @@ void GameCharacter::MoveLeft(float dt)
 {
 	this->Direction(-1.0F);
 	m_pos.x += m_speed * dt * m_dir;
+
+	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
+
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
 	{
@@ -84,6 +87,9 @@ void GameCharacter::MoveRight(float dt)
 {
 	this->Direction(+1.0F);
 	m_pos.x += m_speed * dt * m_dir;
+
+	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
+
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
 	{
@@ -94,6 +100,9 @@ void GameCharacter::MoveRight(float dt)
 void GameCharacter::MoveUp(float dt)
 {
 	m_pos.y += m_speed * dt * (+1.0F);
+
+	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
+
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
 	{
@@ -104,6 +113,9 @@ void GameCharacter::MoveUp(float dt)
 void GameCharacter::MoveDown(float dt)
 {
 	m_pos.y += m_speed * dt * (-1.0F);
+
+	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
+
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
 	{
@@ -132,6 +144,11 @@ PG2OBJECT GameCharacter::ModelObject() const
 
 void GameCharacter::State(EAPP_CHAR_STATE v)
 {
+	// state 가 같으면 변경을 안하다.
+	if (m_state == v)
+	{
+		return;
+	}
 	m_state = v;
 	string aniName = "idle";
 	switch (m_state)
@@ -166,6 +183,18 @@ int GamePlayer::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE s
 	m_modelObj  = modelObj;
 
 	this->State(state);
+	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
+	if (spineObj)
+	{
+		if (m_state == EAPP_CHAR_STATE::ESTATE_CHAR_IDLE)
+		{
+			auto cur_ani = spineObj->Animation();
+			if (cur_ani != "idle")
+			{
+				spineObj->Animation("idle");
+			}
+		}
+	}
 	return S_OK;
 }
 int GamePlayer::Update(const GameTimer& gt)

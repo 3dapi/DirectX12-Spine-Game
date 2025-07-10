@@ -50,6 +50,8 @@ public:
 	int		CreateMobCharModel();
 	int		DeletePlayCharModel();
 	int		DeleteMobCharModel();
+protected:
+	bool chckNoKeyEvent();
 };
 
 #endif

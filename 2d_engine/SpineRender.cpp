@@ -76,17 +76,7 @@ int SpineRender::Update(const std::any& t)
 	auto deltaTime = gt.DeltaTime();
 	deltaTime *= m_attrib.aniSpeed;
 
-	//float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
-	//XMMATRIX tmPrj = XMMatrixPerspectiveFovLH(XM_PI/3.0F, aspectRatio, 1.0f, 5000.0f);
-	//static const XMVECTORF32 eye = { 0.0f, 200.0f, -700.0f, 0.0f };
-	//static const XMVECTORF32  at = { 0.0f, 200.0f, 0.0f, 0.0f };
-	//static const XMVECTORF32  up = { 0.0f, 1.0f, 0.0f, 0.0f };
-	//XMMATRIX tmViw = XMMatrixLookAtLH(eye, at, up);
-	//XMMATRIX mtVP = tmViw * tmPrj;
-	//XMMATRIX mtMVP = tmWld * tmVP;
-
 	XMMATRIX mtMVP = tmVP;
-		
 
 	auto currentFrameIndex = *(any_cast<UINT*>(IG2GraphicsD3D::instance()->getAttrib(ATT_DEVICE_CURRENT_FRAME_INDEX)));
 	{
@@ -192,7 +182,17 @@ void SpineRender::Animation(const string& aniName)
 {
 	auto itr = std::find_if(m_spineAnimation.begin(), m_spineAnimation.end(), [&](const string& it) { return aniName == it; });
 	if (itr == m_spineAnimation.end())
+	{
+		//printf("SpineRender::Animation: no exist: aniName: %s \n", aniName.c_str());
 		return;
+	}
+	else
+	{
+		//printf("m_ani: %s   aniName: %s \n", m_ani.c_str(), aniName.c_str());
+	}
+	if (m_ani == aniName)
+		return;
+	m_ani = aniName;
 	m_spineAniState->setAnimation(0, aniName.c_str(), true);
 }
 
@@ -453,6 +453,7 @@ int SpineRender::InitSpine()
 	}
 	else
 	{
+		m_ani = m_attrib.aniName;
 		m_spineAniState->setAnimation(0, m_attrib.aniName.c_str(), true);
 	}
 

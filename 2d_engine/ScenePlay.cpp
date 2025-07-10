@@ -65,20 +65,44 @@ int ScenePlay::Update(const std::any& t)
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto dt = gt.DeltaTime();
 
+	bool isKeyEvent = false;
+	// 이동.
 	if (m_keyEvent[VK_LEFT] == EAPP_INPUT_PRESS)
+	{
+		isKeyEvent = true;
 		m_mainPlayer->MoveLeft(dt);
+	}
 
 	if (m_keyEvent[VK_RIGHT] == EAPP_INPUT_PRESS)
+	{
+		isKeyEvent = true;
 		m_mainPlayer->MoveRight(dt);
+	}
 
 	if (m_keyEvent[VK_UP] == EAPP_INPUT_PRESS)
+	{
+		isKeyEvent = true;
 		m_mainPlayer->MoveUp(dt);
+	}
 
 	if (m_keyEvent[VK_DOWN] == EAPP_INPUT_PRESS)
+	{
+		isKeyEvent = true;
 		m_mainPlayer->MoveDown(dt);
+	}
 
+	// attack.
+	if (m_keyEvent['A'] == EAPP_INPUT_PRESS)
+	{
+		isKeyEvent = true;
+		m_mainPlayer->State(EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK);
+	}
 
+	printf("Key event : %s \n", isKeyEvent ? "true" : "false");
 
+	auto curSt = m_mainPlayer->State();
+	EAPP_CHAR_STATE st = isKeyEvent ?curSt : EAPP_CHAR_STATE::ESTATE_CHAR_IDLE;
+	m_mainPlayer->State(st);
 	m_mainPlayer->Update(gt);
 	
 
@@ -152,3 +176,16 @@ int ScenePlay::DeleteMobCharModel()
 	return S_OK;
 }
 
+
+
+bool ScenePlay::chckNoKeyEvent()
+{
+	bool isIdle
+		=  m_keyEvent[VK_LEFT ] == EAPP_INPUT_NONE
+		&& m_keyEvent[VK_RIGHT] == EAPP_INPUT_NONE
+		&& m_keyEvent[VK_UP   ] == EAPP_INPUT_NONE
+		&& m_keyEvent[VK_DOWN ] == EAPP_INPUT_NONE
+		&& m_keyEvent['A'     ] == EAPP_INPUT_NONE
+		;
+	return isIdle;
+}

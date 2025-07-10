@@ -24,7 +24,7 @@ protected:
 	XMFLOAT2		m_pos	{};			// position
 	float			m_dir	{ 1.0F };	// direction: left: -1, right:1
 	float			m_scale	{ 1.0F };	// model scale
-	float			m_speed	{ 5.0F };	// move speed
+	float			m_speed	{ 1000.0F };	// move speed
 	XMVECTOR 		m_dif	{1.0F, 1.0F, 1.0F, 1.0F};	// model color
 
 	EAPP_MODEL		m_modelType	{ EAPP_MODEL::EMODEL_NONE };
@@ -42,9 +42,11 @@ public:
 	virtual	void		Speed(float v);
 	virtual	float		Speed() const;
 
-	virtual	void		Move();
-	virtual	void		MoveLeft();
-	virtual	void		MoveRight();
+	virtual	void		Move(float dt);
+	virtual	void		MoveLeft(float dt);
+	virtual	void		MoveRight(float dt);
+	virtual	void		MoveUp(float dt);
+	virtual	void		MoveDown(float dt);
 
 	virtual	void		ModelType(EAPP_MODEL v);
 	virtual	EAPP_MODEL	ModelType() const;

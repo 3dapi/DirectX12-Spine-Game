@@ -57,10 +57,10 @@ float GameCharacter::Speed() const
 	return m_speed;
 }
 
-void GameCharacter::Move()
+void GameCharacter::Move(float dt)
 {
-	m_pos.x += m_speed;
-	m_pos.y += m_speed;
+	m_pos.x += m_speed * dt;
+	m_pos.y += m_speed * dt;
 
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
@@ -69,10 +69,9 @@ void GameCharacter::Move()
 	}
 }
 
-void GameCharacter::MoveLeft()
+void GameCharacter::MoveLeft(float dt)
 {
-	m_pos.x += m_speed * (-1.0F);
-	m_pos.y += m_speed * (-1.0F);
+	m_pos.x += m_speed * dt * (-1.0F);
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
 	{
@@ -80,10 +79,29 @@ void GameCharacter::MoveLeft()
 	}
 }
 
-void GameCharacter::MoveRight()
+void GameCharacter::MoveRight(float dt)
 {
-	m_pos.x += m_speed * (+1.0F);
-	m_pos.y += m_speed * (+1.0F);
+	m_pos.x += m_speed * dt * (+1.0F);
+	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
+	if (spineObj)
+	{
+		spineObj->Position(m_pos);
+	}
+}
+
+void GameCharacter::MoveUp(float dt)
+{
+	m_pos.y += m_speed * dt * (+1.0F);
+	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
+	if (spineObj)
+	{
+		spineObj->Position(m_pos);
+	}
+}
+
+void GameCharacter::MoveDown(float dt)
+{
+	m_pos.y += m_speed * dt * (-1.0F);
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
 	{
@@ -138,7 +156,7 @@ EAPP_CHAR_STATE	GameCharacter::State() const
 int GamePlayer::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE state)
 {
 	m_hp    = 100;
-	m_speed = 5.0F;
+	m_speed = 1000.0F;
 	m_pos   = XMFLOAT2{ 0.0F, 0.0F };
 	m_dir   = 1.0F;
 	m_dif   = XMVectorSet( 1.0F, 1.0F, 1.0F, 1.0F );

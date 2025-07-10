@@ -37,6 +37,14 @@ enum EAPP_CMD
 	EAPP_CMD_CHANGE_SCENE				= 0x4001,	// change scene
 };
 
+enum EAPP_INPUT_EVENT
+{
+	EAPP_INPUT_NONE						= 0x0,		// no event
+	EAPP_INPUT_DOWN						= 0x1,		// key down
+	EAPP_INPUT_PRESS					= 0x2,		// key press
+	EAPP_INPUT_UP						= 0x3,		// key up
+};
+
 enum EAPP_SCENE
 {
 	EAPP_SCENE_NONE		= 0,

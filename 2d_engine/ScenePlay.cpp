@@ -29,8 +29,8 @@ using namespace G2;
 
 
 ScenePlay::ScenePlay()
+	: m_keyEvent(256, 0)
 {
-	printf("ScenePlay: Create\n");
 }
 
 ScenePlay::~ScenePlay()
@@ -63,7 +63,21 @@ int ScenePlay::Destroy()
 int ScenePlay::Update(const std::any& t)
 {
 	GameTimer gt = std::any_cast<GameTimer>(t);
-	auto deltaTime = gt.DeltaTime();
+	auto dt = gt.DeltaTime();
+
+	if (m_keyEvent[VK_LEFT] == EAPP_INPUT_PRESS)
+		m_mainPlayer->MoveLeft(dt);
+
+	if (m_keyEvent[VK_RIGHT] == EAPP_INPUT_PRESS)
+		m_mainPlayer->MoveRight(dt);
+
+	if (m_keyEvent[VK_UP] == EAPP_INPUT_PRESS)
+		m_mainPlayer->MoveUp(dt);
+
+	if (m_keyEvent[VK_DOWN] == EAPP_INPUT_PRESS)
+		m_mainPlayer->MoveDown(dt);
+
+
 
 	m_mainPlayer->Update(gt);
 	
@@ -79,7 +93,16 @@ int ScenePlay::Render()
 
 int ScenePlay::Notify(const std::string& name, const std::any& t)
 {
-	printf("ScenePplay: Notify\n");
+	if(name == "KeyEvent")
+	{
+		auto keyState = any_cast<const uint8_t*>(t);
+		std::copy(keyState, keyState + 256, m_keyEvent.begin());
+	}
+	else if (name == "MouseUp")
+	{
+		auto mousePos = any_cast<const ::POINT&>(t);
+	}
+
 	return S_OK;
 }
 

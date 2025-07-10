@@ -13,6 +13,7 @@
 #include "Common/UploadBuffer.h"
 #include "Common/GeometryGenerator.h"
 #include "Common/D3DWinApp.h"
+#include "Common/G2.Camera.h"
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
 
@@ -38,13 +39,20 @@ public:
 	void	OnMouseDown(WPARAM btnState, const ::POINT& )	override;
 	void	OnMouseUp(WPARAM btnState, const ::POINT& )		override;
 	void	OnMouseMove(WPARAM btnState, const ::POINT& )	override;
-	void	OnKeyboardInput(const GameTimer& gt);
+	void	OnKeyboardInput();
 
 protected:
-	unique_ptr<SpriteBatch>				m_xtkSprite			{};
-	unique_ptr<GraphicsMemory>			m_xtkGraphicMem		{};		// 꼭 필요함.
-	unique_ptr<DescriptorHeap>			m_xtkDescHeap		{};
+	unique_ptr<SpriteBatch>				m_xtkSprite		{};
+	unique_ptr<GraphicsMemory>			m_xtkGraphicMem	{};		// 꼭 필요함.
+	unique_ptr<DescriptorHeap>			m_xtkDescHeap	{};
 	unique_ptr<XTK_BATCH>				m_batch			;
+
+	// control
+	uint8_t								m_keyOld		[256]{};
+	uint8_t								m_keyNew		[256]{};
+	uint8_t								m_keyCur		[256]{};
+	unique_ptr<IG2Camera>				m_camera2DLobby	{};
+	unique_ptr<IG2Camera>				m_camera2DPlay	{};
 
 protected:
 	EAPP_SCENE							m_sceneIdxCur	{ EAPP_SCENE::EAPP_SCENE_BEGIN};

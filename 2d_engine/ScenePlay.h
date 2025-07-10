@@ -32,7 +32,8 @@ class ScenePlay: public G2::IG2Scene
 {
 protected:
 	GamePlayer*				m_mainPlayer{};
-	vector<GameMob*>		m_vecMob{ GameInfo::MAX_MOB };
+	vector<GameMob*>		m_vecMob	{ GameInfo::MAX_MOB };
+	vector<uint8_t>			m_keyEvent	;
 public:
 	ScenePlay();
 	virtual ~ScenePlay();

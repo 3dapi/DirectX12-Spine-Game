@@ -77,8 +77,6 @@ int MainApp::command(int nCmd,const std::any& v)
 		}
 	}
 
-	IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_PLAY);
-
 	return D3DWinApp::command(nCmd, v);
 }
 
@@ -145,6 +143,12 @@ int MainApp::init(const std::any& initialValue /* = */)
 	m_xtkDescHeap   = std::make_unique<DescriptorHeap>(device, EAPP_DESC_HEAP_SIZE);
 	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(device);
 
+	m_camera2DLobby = std::unique_ptr<IG2Camera>(IG2Camera::create(EG2CAMERA::EG2CAM_2D));
+	m_camera2DPlay  = std::unique_ptr<IG2Camera>(IG2Camera::create(EG2CAMERA::EG2CAM_2D));
+
+	m_camera2DPlay->Position({ 0.0f, 100.0f, -700.0f });
+	m_camera2DPlay->LookAt  ({ 0.0f, 100.0f, -700.0f });
+	m_camera2DPlay->Update();
 
 	//AFEW::WORK
 	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_LOBBY);
@@ -221,7 +225,7 @@ int MainApp::Update(const std::any& t)
 {
 	int hr = S_OK;
 	GameTimer gt = std::any_cast<GameTimer>(t);
-	OnKeyboardInput(gt);
+	OnKeyboardInput();
 
 	if (m_bChangeScene)
 		this->ChangeScene(m_sceneIdxNew);
@@ -346,8 +350,47 @@ void MainApp::OnMouseMove(WPARAM btnState, const ::POINT& p)
 	}
 }
 
-void MainApp::OnKeyboardInput(const GameTimer& gt)
+void MainApp::OnKeyboardInput()
 {
+	//for (int i = 0; i < 256; ++i)
+	//{
+	//	if (GetAsyncKeyState(i) & 0x8000)
+	//	{
+	//		printf("VK %d (0x%02X) is down\n", i, i);
+	//	}
+	//}
+
+	bool isEvent = false;
+	memcpy(m_keyOld, m_keyNew, 256);
+	for (int i = 0; i < 256; ++i)
+	{
+		if (i == 21) continue;
+		m_keyNew[i] = (GetAsyncKeyState(i) & 0x8000) ? 1 : 0;
+		if      (0 == m_keyOld[i] && 0 == m_keyNew[i])		// no event
+		{
+			m_keyCur[i] = (int)EAPP_INPUT_NONE;
+		}
+		else if (0 == m_keyOld[i] && 1 == m_keyNew[i])		// down
+		{
+			m_keyCur[i] = (int)EAPP_INPUT_DOWN;
+		}
+		else if (1 == m_keyOld[i] && 1 == m_keyNew[i])		// pressed
+		{
+			m_keyCur[i] = (int)EAPP_INPUT_PRESS;
+		}
+		else if (1 == m_keyOld[i] && 0 == m_keyNew[i])		// up
+		{
+			m_keyCur[i] = (int)EAPP_INPUT_UP;
+		}
+
+		if (!isEvent && m_keyCur[i] != (int)EAPP_INPUT_NONE)
+			isEvent = true;
+	}
+
+	if (isEvent && m_scene[m_sceneIdxCur])
+	{
+		m_scene[m_sceneIdxCur]->Notify("KeyEvent", static_cast<const uint8_t*>(m_keyCur));
+	}
 }
 
 void MainApp::ChangeScene(EAPP_SCENE target)

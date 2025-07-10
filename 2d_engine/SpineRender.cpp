@@ -82,6 +82,7 @@ int SpineRender::Update(const std::any& t)
 	static const XMVECTORF32  up = { 0.0f, 1.0f, 0.0f, 0.0f };
 	XMMATRIX tmViw = XMMatrixLookAtLH(eye, at, up);
 	XMMATRIX tmWld = XMMatrixIdentity();
+
 	XMMATRIX mtMVP = tmWld * tmViw * tmPrj;
 
 	auto currentFrameIndex = *(any_cast<UINT*>(IG2GraphicsD3D::instance()->getAttrib(ATT_DEVICE_CURRENT_FRAME_INDEX)));

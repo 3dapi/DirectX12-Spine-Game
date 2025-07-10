@@ -19,7 +19,7 @@ enum EG2CAMERA
 
 struct IG2Camera
 {
-	virtual ~IG2Camera() = default;
+	virtual ~IG2Camera() {};
 	virtual int			Type() const = 0;
 	virtual int			Init(const std::any& initialValue = {}) = 0;
 	virtual int			Update(const std::any& t = {}) = 0;

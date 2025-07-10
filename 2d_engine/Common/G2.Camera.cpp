@@ -136,6 +136,9 @@ public:
 		float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
 		m_vcFNF = { XM_PI / 3.0F, aspectRatio, 1.0f, 5000.0f };
 		m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
+		m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
+		m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
+		m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
 		m_vcEye  = { 0.0f, 0.0f, -700.0f};
 		m_vcLook = { 0.0f, 0.0f,    0.0f};
 		m_tmViw  = XMMatrixLookAtLH(XMLoadFloat3(&m_vcEye), XMLoadFloat3(&m_vcLook), XMLoadFloat3(&m_vcUp));		m_tmVP = m_tmViw * m_tmPrj;	}
@@ -144,7 +147,8 @@ public:
 	{
 		if (m_beUpdate)
 		{
-			m_vcFNF.y = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
+			float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
+			m_vcFNF.y         = aspectRatio;
 			m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
 			m_tmViw = XMMatrixLookAtLH(XMLoadFloat3(&m_vcEye), XMLoadFloat3(&m_vcLook), XMLoadFloat3(&m_vcUp));
 			m_tmVP = m_tmViw * m_tmPrj;
@@ -153,29 +157,26 @@ public:
 	}
 };
 
-
 IG2Camera* IG2Camera::create(EG2CAMERA type)
 {
 	IG2Camera* ret = {};
-	switch (type)
+	if(EG2CAM_UI == type)
 	{
-	case EG2CAM_NONE:
-		return ret;
-	case EG2CAM_ZERO:
-		return ret;
-	case EG2CAM_UI:
 		ret = new G2CameraUI;
-		break;
-	case EG2CAM_2D:
-		ret = new G2Camera2D;
-		break;
-	case EG2CAM_FPC:
-		ret = new G2CameraFPC;
-		break;
-	case EG2CAM_3RD:
-		ret = new G2Camera3RD;
-		break;
 	}
+	else if (EG2CAM_2D == type)
+	{
+		ret = new G2Camera2D;
+	}
+	else if(EG2CAM_FPC == type)
+	{
+		ret = new G2CameraFPC;
+	}
+	else if(EG2CAM_3RD == type)
+	{
+		ret = new G2Camera3RD;
+	}
+
 	if (ret)
 		ret->Update();
 

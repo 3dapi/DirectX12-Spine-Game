@@ -70,20 +70,23 @@ int SpineRender::Destroy()
 
 int SpineRender::Update(const std::any& t)
 {
+	auto tmVP = *std::any_cast<XMMATRIX*>(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_CUR_SPINE_VP));
+
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto deltaTime = gt.DeltaTime();
 	deltaTime *= m_attrib.aniSpeed;
 
-	float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
+	//float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
+	//XMMATRIX tmPrj = XMMatrixPerspectiveFovLH(XM_PI/3.0F, aspectRatio, 1.0f, 5000.0f);
+	//static const XMVECTORF32 eye = { 0.0f, 200.0f, -700.0f, 0.0f };
+	//static const XMVECTORF32  at = { 0.0f, 200.0f, 0.0f, 0.0f };
+	//static const XMVECTORF32  up = { 0.0f, 1.0f, 0.0f, 0.0f };
+	//XMMATRIX tmViw = XMMatrixLookAtLH(eye, at, up);
+	//XMMATRIX mtVP = tmViw * tmPrj;
+	//XMMATRIX mtMVP = tmWld * tmVP;
 
-	XMMATRIX tmPrj = XMMatrixPerspectiveFovLH(XM_PI/3.0F, aspectRatio, 1.0f, 5000.0f);
-	static const XMVECTORF32 eye = { 0.0f, 0.0f, -700.0f, 0.0f };
-	static const XMVECTORF32  at = { 0.0f, 0.0f, 0.0f, 0.0f };
-	static const XMVECTORF32  up = { 0.0f, 1.0f, 0.0f, 0.0f };
-	XMMATRIX tmViw = XMMatrixLookAtLH(eye, at, up);
-	XMMATRIX tmWld = XMMatrixIdentity();
-
-	XMMATRIX mtMVP = tmWld * tmViw * tmPrj;
+	XMMATRIX mtMVP = tmVP;
+		
 
 	auto currentFrameIndex = *(any_cast<UINT*>(IG2GraphicsD3D::instance()->getAttrib(ATT_DEVICE_CURRENT_FRAME_INDEX)));
 	{

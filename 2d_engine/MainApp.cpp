@@ -53,6 +53,13 @@ std::any MainApp::getAttrib(int nAttrib)
 		case EAPP_ATTRIB::EAPP_ATT_XTK_GRAPHIC_MEM:				return m_xtkGraphicMem.get();
 		case EAPP_ATTRIB::EAPP_ATT_XTK_DESC_HEAP:				return m_xtkDescHeap.get();
 		case EAPP_ATTRIB::EAPP_ATT_XTK_BATCH:					return m_batch.get();
+		case EAPP_ATTRIB::EAPP_ATT_CUR_SPINE_VP:
+		{
+			if (m_sceneIdxCur == EAPP_SCENE_PLAY)
+				return &m_spineVPplay;
+			else
+				return &m_spineVPlobby;
+		}
 	}
 	return D3DWinApp::getAttrib(nAttrib);
 }
@@ -96,30 +103,7 @@ int MainApp::init(const std::any& initialValue /* = */)
 	auto device = std::any_cast<ID3D12Device*       >(d3d->getDevice());
 	auto cmdQue = std::any_cast<ID3D12CommandQueue* >(d3d->getCommandQueue());
 
-	d3d->command(CMD_COMMAND_BEGIN);
-		// 1. load texutre
-		auto tex_manager = FactoryTexture::instance();
-		tex_manager->Load("grassTex", "asset/texture/grass.dds");
-		tex_manager->Load("fenceTex", "asset/texture/WireFence.dds");
-		// 3. Build Shaders And Input Layouts
-		const D3D_SHADER_MACRO defines[] =
-		{
-			"FOG", "1",
-			NULL, NULL
-		};
-		const D3D_SHADER_MACRO alphaTestDefines[] =
-		{
-			"FOG", "1",
-			"ALPHA_TEST", "1",
-			NULL, NULL
-		};
-		auto shader_manager = FactoryShader::instance();
-		shader_manager->Load("standardVS"   , "asset/shader/Default.hlsl"   , "vs_5_0", "VS"                  );
-		shader_manager->Load("opaquePS"     , "asset/shader/Default.hlsl"   , "ps_5_0", "PS", defines         );
-		shader_manager->Load("alphaTestedPS", "asset/shader/Default.hlsl"   , "ps_5_0", "PS", alphaTestDefines);
-		auto psoManager = FactoryPipelineState::instance();
-	d3d->command(CMD_COMMAND_END);
-
+	
 	// create XTK Instance
 	DirectX::ResourceUploadBatch resourceUpload(device);
 	{
@@ -143,49 +127,40 @@ int MainApp::init(const std::any& initialValue /* = */)
 	m_xtkDescHeap   = std::make_unique<DescriptorHeap>(device, EAPP_DESC_HEAP_SIZE);
 	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(device);
 
-	m_camera2DLobby = std::unique_ptr<IG2Camera>(IG2Camera::create(EG2CAMERA::EG2CAM_2D));
-	m_camera2DPlay  = std::unique_ptr<IG2Camera>(IG2Camera::create(EG2CAMERA::EG2CAM_2D));
+	// lobby spine camera
+	auto aspectRatio = m_screenSize.cx / float(m_screenSize.cy);
+	{
+		XMMATRIX tmPrj = XMMatrixPerspectiveFovLH(XM_PI / 3.0F, aspectRatio, 1.0f, 5000.0f);
+		XMVECTORF32 eye = { 0.0f, 0.0f, -700.0f, 0.0f };
+		XMVECTORF32  at = { 0.0f, 0.0f, 0.0f, 0.0f };
+		XMVECTORF32  up = { 0.0f, 1.0f, 0.0f, 0.0f };
+		XMMATRIX     tmViw = XMMatrixLookAtLH(eye, at, up);
+		m_spineVPlobby = tmViw * tmPrj;
+	}
 
-	m_camera2DPlay->Position({ 0.0f, 100.0f, -700.0f });
-	m_camera2DPlay->LookAt  ({ 0.0f, 100.0f, -700.0f });
-	m_camera2DPlay->Update();
+	// play spine camera
+	{
+		XMMATRIX tmPrj = XMMatrixPerspectiveFovLH(XM_PI / 3.0F, aspectRatio, 1.0f, 5000.0f);
+		XMVECTORF32 eye = { 0.0f, 200.0f, -700.0f, 0.0f };
+		XMVECTORF32  at = { 0.0f, 200.0f, 0.0f, 0.0f };
+		XMVECTORF32  up = { 0.0f, 1.0f, 0.0f, 0.0f };
+		XMMATRIX     tmViw = XMMatrixLookAtLH(eye, at, up);
+		m_spineVPplay = tmViw * tmPrj;
+	}
+
+
+	//m_camera2DLobby = std::unique_ptr<IG2Camera>(IG2Camera::create(EG2CAMERA::EG2CAM_2D));
+
+	//auto cam2DPlay = IG2Camera::create(EG2CAMERA::EG2CAM_2D);
+
+	//cam2DPlay->Position({ 0.0f, 100.0f, -700.0f });
+	//cam2DPlay->LookAt  ({ 0.0f, 100.0f, -700.0f });
+	//cam2DPlay->Update();
 
 	//AFEW::WORK
 	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_LOBBY);
 
 
-	// create XTK Instance
-	//{
-	//	auto scene = std::make_unique<SceneGameMesh>();
-	//	if (scene)
-	//	{
-	//		//if (SUCCEEDED(scene->Init()))
-	//		{
-	//			//m_pSceneMesh = std::move(scene);
-	//		}
-	//	}
-	//}
-	//{
-	//	auto scene = std::make_unique<SceneXtkGame>();
-	//	if(scene)
-	//	{
-	//		if(SUCCEEDED(scene->Init()))
-	//		{
-	//			m_pSceneXKT = std::move(scene);
-	//		}
-	//	}
-	//}
-	//{
-	//	auto scene = std::make_unique<SceneSample2D>();
-	//	if (scene)
-	//	{
-	//		//if(SUCCEEDED(scene->Init()))
-	//		//{
-	//		//	m_pSceneSample = std::move(scene);
-	//		//}
-	//	}
-	//}
-	//{
 	//	auto scene=std::make_unique<SceneSpine>();
 	//	if(scene)
 	//	{
@@ -203,8 +178,7 @@ int MainApp::destroy()
 {
 	if(!m_scene.empty())
 		m_scene.clear();
-	m_pSceneMesh	= {};
-	m_pSceneXKT		= {};
+
 	m_pSceneSpine	= {};
 
 	FactorySpine::instance()->UnLoadAll();
@@ -233,16 +207,6 @@ int MainApp::Update(const std::any& t)
 	if (m_scene[m_sceneIdxCur])
 		m_scene[m_sceneIdxCur]->Update(t);
 
-
-	if(m_pSceneMesh)
-		m_pSceneMesh->Update(t);
-	if(m_pSceneXKT)
-		m_pSceneXKT->Update(t);
-	if (m_pSceneSpine)
-		m_pSceneSpine->Update(t);
-	if(m_pSceneSample)
-		m_pSceneSample->Update(t);
-
 	return S_OK;
 }
 
@@ -264,14 +228,10 @@ int MainApp::Render()
 	// 0. d3d 작업 완료 대기.
 	hr = d3d->command(EG2GRAPHICS_D3D::CMD_FENCE_WAIT);
 
-	// Reuse the memory associated with command recording.
-	// We can only reset when the associated command lists have finished execution on the GPU.
 	hr = d3dCommandAlloc->Reset();
 	if (FAILED(hr))
 		return hr;
 
-	// A command list can be reset after it has been added to the command queue via ExecuteCommandList.
-	// Reusing the command list reuses memory.
 	hr = d3dCommandList->Reset(d3dCommandAlloc, nullptr);
 	if (FAILED(hr))
 		return hr;
@@ -279,49 +239,34 @@ int MainApp::Render()
 	d3dCommandList->RSSetViewports(1, d3dViewport);
 	d3dCommandList->RSSetScissorRects(1, d3dScissor);
 
-	// Indicate a state transition on the resource usage.
 	d3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(d3dBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	// Clear the back buffer and depth buffer.
+
 	XMFLOAT4 clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 	d3dCommandList->ClearRenderTargetView(d3dBackBufferV, (float*)&clearColor, 0, nullptr);
 	d3dCommandList->ClearDepthStencilView(d3dDepthV, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-	// Specify the buffers we are going to render to.
 	d3dCommandList->OMSetRenderTargets(1, &d3dBackBufferV, true, &d3dDepthV);
 
 	if (m_scene[m_sceneIdxCur])
 		m_scene[m_sceneIdxCur]->Render();
 
-
-	if(m_pSceneMesh)
-		m_pSceneMesh->Render();
-	if (m_pSceneXKT)
-		m_pSceneXKT->Render();
 	if (m_pSceneSpine)
 		m_pSceneSpine->Render();
-	if(m_pSceneSample)
-		m_pSceneSample->Render();
 
-
+	// xtk memory clear.!!!!!!
 	m_xtkGraphicMem->Commit(commandQue);
 
-	// Indicate a state transition on the resource usage.
-	d3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(d3dBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
-	// Done recording commands.
+	d3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(d3dBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 	hr = d3dCommandList->Close();
 	if (FAILED(hr))
 		return hr;
 
-	// Add the command list to the queue for execution.
 	ID3D12CommandList* cmdsLists[] = { d3dCommandList };
 	commandQue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
-	// 1. 화면 표시.
 	hr = d3d->command(EG2GRAPHICS_D3D::CMD_PRESENT);
-	// 2. GPU가 해당 작업을 완료할 때까지 대기.
 	hr = d3d->command(EG2GRAPHICS_D3D::CMD_WAIT_GPU);
-
 	return S_OK;
 }
 

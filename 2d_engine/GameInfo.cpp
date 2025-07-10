@@ -71,7 +71,8 @@ void GameCharacter::Move(float dt)
 
 void GameCharacter::MoveLeft(float dt)
 {
-	m_pos.x += m_speed * dt * (-1.0F);
+	this->Direction(-1.0F);
+	m_pos.x += m_speed * dt * m_dir;
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
 	{
@@ -81,7 +82,8 @@ void GameCharacter::MoveLeft(float dt)
 
 void GameCharacter::MoveRight(float dt)
 {
-	m_pos.x += m_speed * dt * (+1.0F);
+	this->Direction(+1.0F);
+	m_pos.x += m_speed * dt * m_dir;
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
 	{

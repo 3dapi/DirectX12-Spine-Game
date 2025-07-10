@@ -51,8 +51,11 @@ protected:
 	uint8_t								m_keyOld		[256]{};
 	uint8_t								m_keyNew		[256]{};
 	uint8_t								m_keyCur		[256]{};
-	unique_ptr<IG2Camera>				m_camera2DLobby	{};
-	unique_ptr<IG2Camera>				m_camera2DPlay	{};
+
+	XMMATRIX							m_spineVPlobby		;
+	XMMATRIX							m_spineVPplay		;
+	IG2Camera*							m_camera2DLobby		{};
+	IG2Camera*							m_camera2DPlay		{};
 
 protected:
 	EAPP_SCENE							m_sceneIdxCur	{ EAPP_SCENE::EAPP_SCENE_BEGIN};
@@ -64,10 +67,7 @@ public:
 
 
 protected:
+
 	// test scene
-	
-	unique_ptr<IG2Scene>			m_pSceneMesh	{};
-	unique_ptr<IG2Scene>			m_pSceneXKT		{};
 	unique_ptr<IG2Scene>			m_pSceneSpine	{};
-	unique_ptr<IG2Scene>			m_pSceneSample	{};
 };

@@ -53,6 +53,7 @@ TD3D_PIPELINESTATE* FactoryPipelineState::ResourceLoad()
 			alphaBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	// for opaque objects
+	if(false)
 	{
 		ID3D12PipelineState* pls{};
 		auto shader_vs = shader_manager->FindRes("standardVS");
@@ -84,6 +85,7 @@ TD3D_PIPELINESTATE* FactoryPipelineState::ResourceLoad()
 		}
 	}
 	// for transparent objects
+	if (false)
 	{
 		ID3D12PipelineState* pls{};
 		auto shader_vs = shader_manager->FindRes("standardVS");
@@ -116,6 +118,7 @@ TD3D_PIPELINESTATE* FactoryPipelineState::ResourceLoad()
 		}
 	}
 	// for alpha tested objects
+	if (false)
 	{
 		ID3D12PipelineState* pls{};
 		auto shader_vs = shader_manager->FindRes("standardVS");
@@ -148,10 +151,15 @@ TD3D_PIPELINESTATE* FactoryPipelineState::ResourceLoad()
 			m_db[name]->r = pls;
 		}
 	}
-	
-	auto ret = m_db["OPAQUE"].get();
+
 	m_isLoaded = true;
-	return ret;
+	if (false)
+	{
+		auto ret = m_db["OPAQUE"].get();
+		return ret;
+	}
+	
+	return {};
 }
 
 TD3D_PIPELINESTATE* FactoryPipelineState::Add(const std::string& name, ID3D12PipelineState* pls, bool replace)

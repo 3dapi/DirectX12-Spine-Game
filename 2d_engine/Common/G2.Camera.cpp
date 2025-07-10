@@ -8,158 +8,135 @@
 using std::any_cast;
 using namespace G2;
 
-class G2Camera : public IG2Camera
+int G2Camera::Init(const std::any& initialValue)
 {
-protected:
-	bool		m_beUpdate {};
-	XMMATRIX	m_tmViw = XMMatrixIdentity();
-	XMMATRIX	m_tmPrj = XMMatrixIdentity();
-	XMMATRIX	m_tmVP  = XMMatrixIdentity();
-	XMFLOAT3	m_vcEye  = {0.0F, 0.0F, -1.0F};			// position
-	XMFLOAT3	m_vcLook = {0.0F, 0.0F,  0.0F};			// look at position
-	XMFLOAT3	m_vcUp   = {0.0F, 1.0F,  0.0F};			// up vector
-	XMFLOAT3	m_vcDir  = {0.0F, 0.0F,  1.0F};			// direction
-	XMFLOAT4	m_vcFNF  = {XM_PIDIV4, 800/480.0F, 1.0F, 5000.0F};	// x: fov PI / 4.0F, y: aspect ratio, z:near, w:far or
-
-public:
-	int			Type() const  override { return EG2CAM_ZERO; }
-	int			Init(const std::any& initialValue = {}) override
+	return S_OK;
+}
+int G2Camera::Update(const std::any& t)
+{
+	if (m_beUpdate)
 	{
-		return E_FAIL;
+		m_vcFNF.y = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
+		m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
+		m_tmViw = XMMatrixLookAtLH(XMLoadFloat3(&m_vcEye), XMLoadFloat3(&m_vcLook), XMLoadFloat3(&m_vcUp));
+		m_tmVP  = m_tmViw * m_tmPrj;
 	}
-	int			Update(const std::any& t = {}) override
-	{
-		if (m_beUpdate)
-		{
-			m_vcFNF.y = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
-			m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
-			m_tmViw = XMMatrixLookAtLH(XMLoadFloat3(&m_vcEye), XMLoadFloat3(&m_vcLook), XMLoadFloat3(&m_vcUp));
-			m_tmVP  = m_tmViw * m_tmPrj;
-		}
-		return S_OK;
-	}
-
-	XMMATRIX	ViewMatrix          () const override { return m_tmViw;	}
-	XMMATRIX	ProjectionMatrix    () const override { return m_tmPrj; }
-	XMMATRIX	ViewProjectMatrix   () const override { return m_tmVP;  }
-	void		Position    (const XMFLOAT3& v) override
-	{
-		if (m_vcEye.x != v.x || m_vcEye.y != v.y || m_vcEye.z != v.z)
-		{
-			m_beUpdate = true;
-			m_vcEye = v;
-		}
-	}
-	XMFLOAT3	Position    () const override			{	return 	m_vcEye; }
-	void		LookAt      (const XMFLOAT3& v) override
-	{
-		if (m_vcLook.x != v.x || m_vcLook.y != v.y || m_vcLook.z != v.z)
-		{
-			m_beUpdate = true;
-			m_vcLook = v;
-		}
-	}
-	XMFLOAT3	LookAt      () const override			{	return m_vcLook; }
-	XMFLOAT3	Up          () const override			{	return m_vcUp;   }
-	XMFLOAT3	Direction   () const override			{	return m_vcDir;  }
-	void		FNF         (const XMFLOAT4& v) override
-	{
-		if (m_vcFNF.x != v.x || m_vcFNF.y != v.y || m_vcFNF.z != v.z || m_vcFNF.w != v.w)
-		{
-			m_beUpdate = true;
-			m_vcFNF = v;
-		}
-	}
-	XMFLOAT4	FNF         () const override			{	return m_vcFNF;  }
-
-	void		MoveLeft(float speed) override
+	return S_OK;
+}
+void G2Camera::Position(const XMFLOAT3& v)
+{
+	if (m_vcEye.x != v.x || m_vcEye.y != v.y || m_vcEye.z != v.z)
 	{
 		m_beUpdate = true;
+		m_vcEye = v;
 	}
-	void		MoveRight(float speed) override
+}
+void G2Camera::LookAt(const XMFLOAT3& v)
+{
+	if (m_vcLook.x != v.x || m_vcLook.y != v.y || m_vcLook.z != v.z)
 	{
 		m_beUpdate = true;
+		m_vcLook = v;
 	}
-	void		MoveUp(float speed) override
+}
+void G2Camera::FNF(const XMFLOAT4& v)
+{
+	if (m_vcFNF.x != v.x || m_vcFNF.y != v.y || m_vcFNF.z != v.z || m_vcFNF.w != v.w)
 	{
 		m_beUpdate = true;
+		m_vcFNF = v;
 	}
-	void		MoveDown(float speed) override
+}
+void G2Camera::MoveLeft(float speed)
+{
+	m_beUpdate = true;
+}
+void G2Camera::MoveRight(float speed)
+{
+	m_beUpdate = true;
+}
+void G2Camera::MoveUp(float speed)
+{
+	m_beUpdate = true;
+}
+void G2Camera::MoveDown(float speed)
+{
+	m_beUpdate = true;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+G2CameraUI::G2CameraUI()
+{
+}
+
+int G2CameraUI::Init(const std::any& initialValue)
+{
+	::SIZE  screenSize = *any_cast<::SIZE*>(IG2GraphicsD3D::instance()->getAttrib(ATT_SCREEN_SIZE));
+	m_vcFNF = { (float)screenSize.cx, (float)screenSize.cy, 1.0f, 5000.0f };
+	m_tmPrj = XMMatrixOrthographicLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
+	m_vcEye = { 0.0f, 0.0f, -100.0f };
+	m_vcLook = { 0.0f, 0.0f,   0.0f };
+	m_tmViw = XMMatrixLookAtLH(XMLoadFloat3(&m_vcEye), XMLoadFloat3(&m_vcLook), XMLoadFloat3(&m_vcUp));
+	m_tmVP = m_tmViw * m_tmPrj;
+	return S_OK;
+}
+
+int G2CameraUI::Update(const std::any& t)
+{
+	if (m_beUpdate)
 	{
-		m_beUpdate = true;
-	}
-};
-
-class G2CameraFPC : public G2Camera
-{
-public:
-	int			Type() const  override { return EG2CAM_FPC; }
-};
-
-class G2Camera3RD : public G2CameraFPC
-{
-	int			Type() const  override { return EG2CAM_3RD; }
-};
-
-class G2CameraUI : public G2Camera
-{
-public:
-	G2CameraUI()
-	{
-		::SIZE  screenSize = *any_cast<::SIZE*>(IG2GraphicsD3D::instance()->getAttrib(ATT_SCREEN_SIZE));
-		m_vcFNF = { (float)screenSize.cx, (float)screenSize.cy, 1.0f, 5000.0f };
+		m_vcFNF.y = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
 		m_tmPrj = XMMatrixOrthographicLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
-		m_vcEye = { 0.0f, 0.0f, -100.0f };
-		m_vcLook = { 0.0f, 0.0f,   0.0f };
 		m_tmViw = XMMatrixLookAtLH(XMLoadFloat3(&m_vcEye), XMLoadFloat3(&m_vcLook), XMLoadFloat3(&m_vcUp));
 		m_tmVP = m_tmViw * m_tmPrj;
 	}
-	int			Type() const  override { return EG2CAM_UI; }
-	int			Update(const std::any& t = {}) override
-	{
-		if (m_beUpdate)
-		{
-			m_vcFNF.y = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
-			m_tmPrj = XMMatrixOrthographicLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
-			m_tmViw = XMMatrixLookAtLH(XMLoadFloat3(&m_vcEye), XMLoadFloat3(&m_vcLook), XMLoadFloat3(&m_vcUp));
-			m_tmVP = m_tmViw * m_tmPrj;
-		}
-		return S_OK;
-	}
-};
+	return S_OK;
+}
 
-class G2Camera2D : public G2Camera
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+G2Camera2D::G2Camera2D()
 {
-public:
-	G2Camera2D()
+}
+
+int G2Camera2D::Init(const std::any& initialValue /* = */ )
+{
+	float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
+	m_vcFNF = { XM_PI / 3.0F, aspectRatio, 1.0f, 5000.0f };
+	m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
+
+	m_vcEye  = { 0.0f, 0.0f, -700.0f};
+	m_vcLook = { 0.0f, 0.0f,    0.0f};
+
+	XMVECTORF32 eye  = { m_vcEye.x , m_vcEye.y , m_vcEye.z , 0.0f };
+	XMVECTORF32 look = { m_vcLook.x, m_vcLook.y, m_vcLook.z, 0.0f };
+	XMVECTORF32  up  = { m_vcUp.x  , m_vcUp.y , m_vcUp.z   , 0.0f };
+
+	m_tmViw  = XMMatrixLookAtLH(eye, look, up);	m_tmVP = m_tmViw * m_tmPrj;	return S_OK;}
+
+int G2Camera2D::Update(const std::any& t)
+{
+	if (m_beUpdate)
 	{
 		float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
-		m_vcFNF = { XM_PI / 3.0F, aspectRatio, 1.0f, 5000.0f };
+		m_vcFNF.y         = aspectRatio;
 		m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
-		m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
-		m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
-		m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
-		m_vcEye  = { 0.0f, 0.0f, -700.0f};
-		m_vcLook = { 0.0f, 0.0f,    0.0f};
-		m_tmViw  = XMMatrixLookAtLH(XMLoadFloat3(&m_vcEye), XMLoadFloat3(&m_vcLook), XMLoadFloat3(&m_vcUp));		m_tmVP = m_tmViw * m_tmPrj;	}
-	int			Type() const  override { return EG2CAM_2D; }
-	int			Update(const std::any& t = {}) override
-	{
-		if (m_beUpdate)
-		{
-			float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
-			m_vcFNF.y         = aspectRatio;
-			m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
-			m_tmViw = XMMatrixLookAtLH(XMLoadFloat3(&m_vcEye), XMLoadFloat3(&m_vcLook), XMLoadFloat3(&m_vcUp));
-			m_tmVP = m_tmViw * m_tmPrj;
-		}
-		return S_OK;
+
+		XMVECTORF32 eye  = { m_vcEye.x , m_vcEye.y , m_vcEye.z , 0.0f };
+		XMVECTORF32 look = { m_vcLook.x, m_vcLook.y, m_vcLook.z, 0.0f };
+		XMVECTORF32  up  = { m_vcUp.x  , m_vcUp.y , m_vcUp.z   , 0.0f };
+		//m_tmViw = XMMatrixLookAtLH(eye, look, up);
+		m_tmVP = m_tmViw * m_tmPrj;
 	}
-};
+	return S_OK;
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 IG2Camera* IG2Camera::create(EG2CAMERA type)
 {
-	IG2Camera* ret = {};
+	IG2Camera* ret = nullptr;
 	if(EG2CAM_UI == type)
 	{
 		ret = new G2CameraUI;
@@ -178,7 +155,7 @@ IG2Camera* IG2Camera::create(EG2CAMERA type)
 	}
 
 	if (ret)
-		ret->Update();
+		ret->Init();
 
 	return ret;
 }

@@ -31,6 +31,7 @@ enum EAPP_ATTRIB
 	EAPP_ATT_XTK_DESC_HEAP				,			//
 	EAPP_ATT_XTK_BATCH					,			//
 	EAPP_ATT_CUR_CB						= 0x0301,	// current const buffer
+	EAPP_ATT_CUR_SPINE_VP				,			// current view projection for spine
 };
 enum EAPP_CMD
 {

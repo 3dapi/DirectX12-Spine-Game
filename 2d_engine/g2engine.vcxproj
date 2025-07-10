@@ -154,7 +154,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="SpineAnimation.cpp" />
+    <ClCompile Include="SpineFactory.cpp" />
     <ClCompile Include="Common\G2.Camera.cpp" />
     <ClCompile Include="Common\D3DWinApp.cpp" />
     <ClCompile Include="Common\G2.FactoryPipelineState.cpp" />
@@ -170,7 +170,7 @@
     <ClCompile Include="Common\GeometryGenerator.cpp" />
     <ClCompile Include="Common\G2.EngineD3D.cpp" />
     <ClCompile Include="GameInfo.cpp" />
-    <ClCompile Include="RenderSpine.cpp" />
+    <ClCompile Include="SpineRender.cpp" />
     <ClCompile Include="SceneEnd.cpp" />
     <ClCompile Include="SceneLobby.cpp" />
     <ClCompile Include="SceneNone.cpp" />
@@ -210,7 +210,8 @@
     <ClInclude Include="Common\MathHelper.h" />
     <ClInclude Include="Common\UploadBuffer.h" />
     <ClInclude Include="GameInfo.h" />
-    <ClInclude Include="RenderSpine.h" />
+    <ClInclude Include="SpineFactory.h" />
+    <ClInclude Include="SpineRender.h" />
     <ClInclude Include="SceneEnd.h" />
     <ClInclude Include="SceneLobby.h" />
     <ClInclude Include="SceneNone.h" />
@@ -229,25 +230,25 @@
     <ClInclude Include="UiPlay.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="assets\shaders\2dsprite.hlsl">
+    <FxCompile Include="asset\shader\2dsprite.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="assets\shaders\Default.hlsl">
+    <FxCompile Include="asset\shader\Default.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="assets\shaders\LightingUtil.hlsl">
+    <FxCompile Include="asset\shader\LightingUtil.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="assets\shaders\spine.hlsl">
+    <FxCompile Include="asset\shader\spine.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="assets\shaders\TreeSprite.hlsl">
+    <FxCompile Include="asset\shader\TreeSprite.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

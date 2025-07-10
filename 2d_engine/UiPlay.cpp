@@ -39,17 +39,17 @@ int UiPlay::Init()
 
 	auto texManager = FactoryTexture::instance();
 	{
-		auto r = texManager->Load("ui/ui_select_char", "assets/ui/ui_select_char.png");
+		auto r = texManager->Load("ui/ui_select_char", "asset/ui/ui_select_char.png");
 		r->name;
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r.Get(), r->size, {} }));
 	}
 	{
-		auto r = texManager->Load("ui/ui_box", "assets/ui/ui_box.png");
+		auto r = texManager->Load("ui/ui_box", "asset/ui/ui_box.png");
 		r->name;
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r.Get(), r->size, {} }));
 	}
 	{
-		auto r = texManager->Load("ui/ui_game_start", "assets/ui/ui_game_start.png");
+		auto r = texManager->Load("ui/ui_game_start", "asset/ui/ui_game_start.png");
 		r->name;
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r.Get(), r->size, {} }));
 	}
@@ -90,7 +90,7 @@ int UiPlay::Draw()
 	cmdList->SetDescriptorHeaps(1, heaps);
 	sprite->Begin(cmdList);
 	{
-		float alpha = (g_gameInfo->m_player->Model() == EMODEL_KNIGHT)? 1.0F : 0.3F;
+		float alpha = (g_gameInfo->MainPlayer()->ModelType() == EMODEL_KNIGHT)? 1.0F : 0.3F;
 		{
 			auto& tex = m_uiTex["ui/ui_select_char"];
 			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 20.0F), DirectX::XMVectorSet(1.0F, 0.9F, 0.0F, 0.8F));
@@ -101,7 +101,7 @@ int UiPlay::Draw()
 			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(710, 150), DirectX::XMVectorSet(0.0F, 0.0F, 1.0F, 0.2F));
 		}
 
-		if(g_gameInfo->m_player->Model() == EMODEL_KNIGHT)
+		if(g_gameInfo->MainPlayer()->ModelType() == EMODEL_KNIGHT)
 		{
 			auto& tex = m_uiTex["ui/ui_game_start"];
 			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 500), DirectX::XMVectorSet(1.0F, 1.0F, 1.0F, 1.0F));

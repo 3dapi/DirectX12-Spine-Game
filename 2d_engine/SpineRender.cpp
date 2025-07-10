@@ -11,11 +11,10 @@
 #include "Common/GameTimer.h"
 #include <pix.h>
 #include "CommonStates.h"
-#include "RenderSpine.h"
 #include "DirectXHelpers.h"
 #include "ResourceUploadBatch.h"
 #include "GraphicsMemory.h"
-#include "RenderSpine.h"
+#include "SpineRender.h"
 
 using namespace std;
 using std::any_cast;
@@ -24,16 +23,16 @@ using namespace spine;
 using namespace G2;
 
 
-RenderSpine::RenderSpine()
+SpineRender::SpineRender()
 {
 }
 
-RenderSpine::~RenderSpine()
+SpineRender::~SpineRender()
 {
 	Destroy();
 }
 
-int RenderSpine::Init(const std::any& initial_value)
+int SpineRender::Init(const std::any& initial_value)
 {
 	if (!initial_value.has_value()) {
 		return E_FAIL;
@@ -49,7 +48,7 @@ int RenderSpine::Init(const std::any& initial_value)
 	return S_OK;
 }
 
-int RenderSpine::Destroy()
+int SpineRender::Destroy()
 {
 	m_cbvHeap		.Reset();
 	m_maxVtxCount	= {};
@@ -65,7 +64,7 @@ int RenderSpine::Destroy()
 	return S_OK;
 }
 
-int RenderSpine::Update(const std::any& t)
+int SpineRender::Update(const std::any& t)
 {
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto deltaTime = gt.DeltaTime();
@@ -103,7 +102,7 @@ int RenderSpine::Update(const std::any& t)
 	return S_OK;
 }
 
-int RenderSpine::Render()
+int SpineRender::Render()
 {
 	auto d3d        =  IG2GraphicsD3D::instance();
 	auto device     = std::any_cast<ID3D12Device*             >(d3d->getDevice());
@@ -139,12 +138,12 @@ int RenderSpine::Render()
 	return S_OK;
 }
 
-void RenderSpine::Look(float direction)
+void SpineRender::Look(float direction)
 {
 	m_spineSkeleton->setScaleX(m_attrib.vecScale * direction);
 }
 
-int RenderSpine::UpdateDrawBuffer()
+int SpineRender::UpdateDrawBuffer()
 {
 	int hr = S_OK;
 	auto d3d        =  IG2GraphicsD3D::instance();
@@ -347,10 +346,10 @@ int RenderSpine::UpdateDrawBuffer()
 	return S_OK;
 }
 
-int RenderSpine::InitSpine()
+int SpineRender::InitSpine()
 {
 	auto spineManager = FactorySpine::instance();
-	auto resourceRoot = string("assets/spine/");
+	auto resourceRoot = string("asset/spine/");
 	decltype(auto) atlasPath = resourceRoot + m_attrib.spine_name + string("/") + m_attrib.atlasPath;
 	decltype(auto) skelPath = resourceRoot + m_attrib.spine_name + string("/") + m_attrib.skelPath;
 	auto itemSpine = spineManager->Load(m_attrib.spine_name, atlasPath, skelPath);
@@ -422,7 +421,7 @@ int RenderSpine::InitSpine()
 	return S_OK;
 }
 
-int RenderSpine::InitD3DResource()
+int SpineRender::InitD3DResource()
 {
 	HRESULT hr = S_OK;
 	auto d3d        =  IG2GraphicsD3D::instance();
@@ -505,8 +504,8 @@ int RenderSpine::InitD3DResource()
 	{
 		ID3D12PipelineState* pipelineState{};
 		auto shader_manager = FactoryShader::instance();
-		auto vs = shader_manager->Load("spine_shader_vertex", "assets/shaders/spine.hlsl", "vs_5_0", "main_vs");
-		auto ps = shader_manager->Load("spine_shader_pixel", "assets/shaders/spine.hlsl", "ps_5_0", "main_ps");
+		auto vs = shader_manager->Load("spine_shader_vertex", "asset/shader/spine.hlsl", "vs_5_0", "main_vs");
+		auto ps = shader_manager->Load("spine_shader_pixel", "asset/shader/spine.hlsl", "ps_5_0", "main_ps");
 		// Create the pipeline state once the shaders are loaded.
 		{
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
@@ -624,7 +623,7 @@ int RenderSpine::InitD3DResource()
 	return S_OK;
 }
 
-void RenderSpine::SetupDrawBuffer()
+void SpineRender::SetupDrawBuffer()
 {
 	// 최대 버퍼 길이 찾기
 	size_t maxVertexCount = 0;

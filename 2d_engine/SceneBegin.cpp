@@ -19,7 +19,7 @@
 #include "ResourceUploadBatch.h"
 #include "GraphicsMemory.h"
 #include "SceneBegin.h"
-#include "RenderSpine.h"
+#include "SpineRender.h"
 #include "GameInfo.h"
 
 using namespace std;
@@ -61,7 +61,7 @@ int SceneBegin::Init(const std::any& initial_value)
 		SPINE_ATTRIB* att = FindSpineAttribute(charModel[i]);
 		if(!att)
 			continue;
-		auto spineChar = std::make_unique<RenderSpine>();
+		auto spineChar = std::make_unique<SpineRender>();
 		if (!spineChar)
 			continue;
 		if(FAILED(spineChar->Init(*att)))

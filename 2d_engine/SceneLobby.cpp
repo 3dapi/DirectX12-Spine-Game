@@ -19,7 +19,7 @@
 #include "ResourceUploadBatch.h"
 #include "GraphicsMemory.h"
 #include "SceneLobby.h"
-#include "RenderSpine.h"
+#include "SpineFactory.h"
 #include "GameInfo.h"
 
 using namespace std;
@@ -59,7 +59,7 @@ int SceneLobby::Init(const std::any& initial_value)
 
 	for (size_t i=0; i<spine_rsc.size(); ++i)
 	{
-		m_char[i] = std::make_unique<RenderSpine>();
+		m_char[i] = std::make_unique<SpineRender>();
 		if (m_char[i])
 		{
 			const auto& initArgs = spine_rsc[i];
@@ -133,12 +133,12 @@ void SceneLobby::CheckSelectCharacter(const ::POINT& mousePos)
 	// character knight 선택
 	if(chckPointInRect (mousePos.x, mousePos.y, 340, 170, 600, 430))
 	{
-		g_gameInfo->m_player->Model(EMODEL_KNIGHT);
+		g_gameInfo->MainPlayer()->ModelType(EMODEL_KNIGHT);
 		return;
 	}
 	else
 	{
-		if (g_gameInfo->m_player->Model() == EMODEL_KNIGHT)
+		if (g_gameInfo->MainPlayer()->ModelType() == EMODEL_KNIGHT)
 		{
 			if (chckPointInRect(mousePos.x, mousePos.y, 450, 500, 830, 560))
 			{
@@ -147,7 +147,7 @@ void SceneLobby::CheckSelectCharacter(const ::POINT& mousePos)
 			}
 			else
 			{
-				g_gameInfo->m_player->Model(EMODEL_NONE);
+				g_gameInfo->MainPlayer()->ModelType(EMODEL_NONE);
 				return;
 			}
 		}

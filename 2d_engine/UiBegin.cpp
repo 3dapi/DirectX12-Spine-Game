@@ -39,17 +39,17 @@ int UiBegin::Init()
 
 	auto texManager = FactoryTexture::instance();
 	{
-		auto r = texManager->Load("ui/ui_big_title", "assets/ui/ui_big_title.png");
+		auto r = texManager->Load("ui/ui_big_title", "asset/ui/ui_big_title.png");
 		r->name;
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r.Get(), r->size, {} }));
 	}
 	{
-		auto r = texManager->Load("ui/ui_box", "assets/ui/ui_box.png");
+		auto r = texManager->Load("ui/ui_box", "asset/ui/ui_box.png");
 		r->name;
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r.Get(), r->size, {} }));
 	}
 	{
-		auto r = texManager->Load("ui/ui_game_start", "assets/ui/ui_game_start.png");
+		auto r = texManager->Load("ui/ui_game_start", "asset/ui/ui_game_start.png");
 		r->name;
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r.Get(), r->size, {} }));
 	}

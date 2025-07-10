@@ -1,7 +1,7 @@
 ﻿
 #pragma once
-#ifndef _RenderSpine_H_
-#define _RenderSpine_H_
+#ifndef _SpineRender_H_
+#define _SpineRender_H_
 
 #include <map>
 #include <vector>
@@ -43,7 +43,7 @@ struct SPINE_ATTRIB
 	vector<string>	detachSlot	{};
 };
 
-class RenderSpine: public G2::IG2Object
+class SpineRender: public G2::IG2Object
 {
 protected:
 	// spine resource
@@ -75,8 +75,8 @@ protected:
 	XMFLOAT2	m_pos	{ 0.0F, 0.0f};
 
 public:
-	RenderSpine();
-	virtual ~RenderSpine();
+	SpineRender();
+	virtual ~SpineRender();
 
 	// IG2Scene
 	int		Type()						override { return EAPP_SCENE::EAPP_SCENE_SPINE; }

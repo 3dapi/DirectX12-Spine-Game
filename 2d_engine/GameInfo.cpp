@@ -22,16 +22,6 @@
 #include "ScenePlay.h"
 #include "GameInfo.h"
 
-void GameCharacter::Model(EAPP_MODEL v)
-{
-	// find model 
-	m_model = v;
-}
-EAPP_MODEL GameCharacter::Model() const
-{
-	return m_model;
-}
-
 void GameCharacter::Position(XMFLOAT2 v)
 {
 	m_pos = v;
@@ -40,7 +30,6 @@ XMFLOAT2 GameCharacter::Position() const
 {
 	return m_pos;
 }
-
 void GameCharacter::Direction(float v)
 {
 	m_dir = v;
@@ -76,14 +65,34 @@ void GameCharacter::MoveRight()
 	m_pos.y += m_speed * (+1.0F);
 }
 
+void GameCharacter::ModelType(EAPP_MODEL v)
+{
+	// find model 
+	m_modelType = v;
+}
+EAPP_MODEL GameCharacter::ModelType() const
+{
+	return m_modelType;
+}
+void GameCharacter::ModelObject(PG2OBJECT v)
+{
+	m_modelObj = v;
+}
+
+PG2OBJECT GameCharacter::ModelObject() const
+{
+	return m_modelObj;
+}
+
 void GamePlayer::Init()
 {
-	m_model = EMODEL_NONE;
 	m_hp    = 100;
 	m_speed = 5.0F;
 	m_pos   = XMFLOAT2{ 0.0F, 0.0F };
 	m_dir   = 1.0F;
 	m_dif   = XMVectorSet( 1.0F, 1.0F, 1.0F, 1.0F );
+	m_modelType = EMODEL_NONE;
+	m_modelObj  = nullptr;
 }
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -104,4 +113,9 @@ GameInfo::GameInfo()
 void GameInfo::InitPlayer()
 {
 	m_player->Init();
+}
+
+GamePlayer* GameInfo::MainPlayer()
+{
+	return m_player;
 }

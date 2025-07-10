@@ -26,22 +26,25 @@ protected:
 	float			m_dir	{ 1.0F };	// direction: left: -1, right:1
 	XMVECTOR 		m_dif	{1.0F, 1.0F, 1.0F, 1.0F};	// color
 
-	EAPP_MODEL		m_model	{ EMODEL_NONE };
-	PG2OBJECT		m_obj	{};
+	EAPP_MODEL		m_modelType	{ EMODEL_NONE };
+	PG2OBJECT		m_modelObj	{};
 public:
-	void		Position(XMFLOAT2 v);
-	XMFLOAT2	Position() const;
-	void		Direction(float v);
-	float		Direction() const;
-	void		Speed(float v);
-	float		Speed() const;
+	virtual	void		Position(XMFLOAT2 v);
+	virtual	XMFLOAT2	Position() const;
+	virtual	void		Direction(float v);
+	virtual	float		Direction() const;
+	virtual	void		Speed(float v);
+	virtual	float		Speed() const;
 
-	void		Move();
-	void		MoveLeft();
-	void		MoveRight();
+	virtual	void		Move();
+	virtual	void		MoveLeft();
+	virtual	void		MoveRight();
 
-	virtual	void		Model(EAPP_MODEL v);
-	virtual	EAPP_MODEL	Model() const;
+	virtual	void		ModelType(EAPP_MODEL v);
+	virtual	EAPP_MODEL	ModelType() const;
+
+	virtual	void		ModelObject(PG2OBJECT v);
+	virtual	PG2OBJECT	ModelObject() const;
 };
 
 class GamePlayer : public GameCharacter
@@ -64,12 +67,16 @@ public:
 	static const int	MAX_MOB = 32;
 
 public:
+	int				m_gameScore{};
+
+protected:
 	GamePlayer*		m_player	{};
-	int				m_gameScore	{};
+
 
 public:
 	GameInfo();
-	void InitPlayer();
+	void			InitPlayer();
+	GamePlayer*		MainPlayer();
 };
 
 extern GameInfo* g_gameInfo;

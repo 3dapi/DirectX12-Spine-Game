@@ -56,7 +56,7 @@ int UiEnd::Init()
 	ResourceUploadBatch resourceUpload(device);
 	resourceUpload.Begin();
 	{
-		m_font = std::make_unique<SpriteFont>(device, resourceUpload, L"assets/SegoeUI_18.spritefont", hCpu, hGpu);
+		m_font = std::make_unique<SpriteFont>(device, resourceUpload, L"asset/SegoeUI_18.spritefont", hCpu, hGpu);
 	}
 	resourceUpload.End(cmdQue).wait();
 

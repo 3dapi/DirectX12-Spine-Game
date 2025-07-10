@@ -31,7 +31,8 @@ using namespace G2;
 class ScenePlay: public G2::IG2Scene
 {
 protected:
-	std::vector<GameMob*>		m_vecMob{ GameInfo::MAX_MOB };
+	GamePlayer*				m_mainPlayer{};
+	vector<GameMob*>		m_vecMob{ GameInfo::MAX_MOB };
 public:
 	ScenePlay();
 	virtual ~ScenePlay();
@@ -44,10 +45,10 @@ public:
 	int		Render()					override;
 	int		Notify(const std::string& name, const std::any& t)	override;
 
-	void	CreatePlayerCharModel();
-	void	CreateMobCharModel();
-	void	DeletePlayCharModel();
-	void	DeleteMobCharModel();
+	int		CreateMainPlayerModel();
+	int		CreateMobCharModel();
+	int		DeletePlayCharModel();
+	int		DeleteMobCharModel();
 };
 
 #endif

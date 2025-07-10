@@ -101,8 +101,8 @@ int MainApp::init(const std::any& initialValue /* = */)
 	d3d->command(CMD_COMMAND_BEGIN);
 		// 1. load texutre
 		auto tex_manager = FactoryTexture::instance();
-		tex_manager->Load("grassTex", "assets/texture/grass.dds");
-		tex_manager->Load("fenceTex", "assets/texture/WireFence.dds");
+		tex_manager->Load("grassTex", "asset/texture/grass.dds");
+		tex_manager->Load("fenceTex", "asset/texture/WireFence.dds");
 		// 3. Build Shaders And Input Layouts
 		const D3D_SHADER_MACRO defines[] =
 		{
@@ -116,9 +116,9 @@ int MainApp::init(const std::any& initialValue /* = */)
 			NULL, NULL
 		};
 		auto shader_manager = FactoryShader::instance();
-		shader_manager->Load("standardVS"   , "assets/shaders/Default.hlsl"   , "vs_5_0", "VS"                  );
-		shader_manager->Load("opaquePS"     , "assets/shaders/Default.hlsl"   , "ps_5_0", "PS", defines         );
-		shader_manager->Load("alphaTestedPS", "assets/shaders/Default.hlsl"   , "ps_5_0", "PS", alphaTestDefines);
+		shader_manager->Load("standardVS"   , "asset/shader/Default.hlsl"   , "vs_5_0", "VS"                  );
+		shader_manager->Load("opaquePS"     , "asset/shader/Default.hlsl"   , "ps_5_0", "PS", defines         );
+		shader_manager->Load("alphaTestedPS", "asset/shader/Default.hlsl"   , "ps_5_0", "PS", alphaTestDefines);
 		auto psoManager = FactoryPipelineState::instance();
 	d3d->command(CMD_COMMAND_END);
 

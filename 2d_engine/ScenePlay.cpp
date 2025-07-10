@@ -18,7 +18,8 @@
 #include "ResourceUploadBatch.h"
 #include "GraphicsMemory.h"
 #include "ScenePlay.h"
-#include "RenderSpine.h"
+#include "SpineFactory.h"
+
 
 using namespace std;
 using std::any_cast;
@@ -39,8 +40,13 @@ ScenePlay::~ScenePlay()
 
 int ScenePlay::Init(const std::any& initial_value)
 {
-	CreatePlayerCharModel();
-	CreateMobCharModel();
+	int hr = S_OK;
+	hr = CreateMainPlayerModel();
+	if (FAILED(hr))
+		return hr;
+	hr = CreateMobCharModel();
+	if (FAILED(hr))
+		return hr;
 
 	return S_OK;
 }
@@ -77,18 +83,33 @@ int ScenePlay::Notify(const std::string& name, const std::any& t)
 	return S_OK;
 }
 
-void ScenePlay::CreatePlayerCharModel()
+int ScenePlay::CreateMainPlayerModel()
 {
+	auto mainPlayer = g_gameInfo->MainPlayer();
+	if (!mainPlayer)
+		return E_FAIL;
+	m_mainPlayer = mainPlayer;
+
+	// new char model
+	//PG2OBJECT newSpine = 
+	return S_OK;
 }
 
-void ScenePlay::CreateMobCharModel()
+int ScenePlay::CreateMobCharModel()
 {
+	int hr = S_OK;
+	return S_OK;
 }
 
-void ScenePlay::DeletePlayCharModel()
+int ScenePlay::DeletePlayCharModel()
 {
+	int hr = S_OK;
+	return S_OK;
 }
 
-void ScenePlay::DeleteMobCharModel()
+int ScenePlay::DeleteMobCharModel()
 {
+	int hr = S_OK;
+	return S_OK;
 }
+

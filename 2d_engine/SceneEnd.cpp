@@ -18,7 +18,7 @@
 #include "ResourceUploadBatch.h"
 #include "GraphicsMemory.h"
 #include "SceneEnd.h"
-#include "RenderSpine.h"
+#include "SpineFactory.h"
 
 using namespace std;
 using std::any_cast;

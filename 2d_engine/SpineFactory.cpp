@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include "Common/G2.Util.h"
-#include "RenderSpine.h"
+#include "SpineFactory.h"
 
 using namespace std;
 

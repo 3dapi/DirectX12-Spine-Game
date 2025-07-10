@@ -18,7 +18,7 @@
 #include "ResourceUploadBatch.h"
 #include "GraphicsMemory.h"
 #include "SceneSpine.h"
-#include "RenderSpine.h"
+#include "SpineRender.h"
 
 using namespace std;
 using std::any_cast;
@@ -80,7 +80,7 @@ int SceneSpine::Init(const std::any& initial_value)
 
 	for(size_t i=0; i< spine_rsc.size(); ++i)
 	{
-		auto scene = std::make_unique<RenderSpine>();
+		auto scene = std::make_unique<SpineRender>();
 		if(scene)
 		{
 			const auto& initArgs = spine_rsc[i];

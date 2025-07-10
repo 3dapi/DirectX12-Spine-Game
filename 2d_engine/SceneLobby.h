@@ -19,7 +19,7 @@
 #include "common/G2.Util.h"
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
-#include "RenderSpine.h"
+#include "SpineFactory.h"
 #include "UiLobby.h"
 
 
@@ -31,7 +31,7 @@ using namespace G2;
 class SceneLobby: public G2::IG2Scene
 {
 protected:
-	vector<unique_ptr<RenderSpine> >	m_char	{ 2 };
+	vector<unique_ptr<SpineRender> >	m_char	{ 2 };
 	UiLobby*							m_pUi	{};
 
 public:

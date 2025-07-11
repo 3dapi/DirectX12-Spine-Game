@@ -11,8 +11,6 @@
 #include <DirectXMath.h>
 #include <d3dx12/d3dx12.h>
 
-#include "UploadBuffer.h"
-
 using namespace Microsoft::WRL;
 using namespace DirectX;
 

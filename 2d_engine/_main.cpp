@@ -1,10 +1,10 @@
 ﻿
-#define SYSTEM_WINDOWS 0
+// using console for debugging
+#if defined(DEBUG) || defined(_DEBUG)
+#define CONSOLE_DEBUG 1
+#endif
 
-
-#if SYSTEM_WINDOWS
-#pragma comment(linker, "/subsystem:windows")
-#else
+#ifdef CONSOLE_DEBUG
 #pragma comment(linker, "/subsystem:console")
 #endif
 
@@ -12,32 +12,30 @@
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
 
-#if defined(DEBUG) || defined(_DEBUG)
+#ifdef CONSOLE_DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
+
 #include "MainApp.h"
 
-#if SYSTEM_WINDOWS
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR cmdLine, int showCmd)
-{
-#else
+
+#ifdef CONSOLE_DEBUG
 int main(int, char**)
 {
-	HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(nullptr);
-#endif
-#if defined(DEBUG) | defined(_DEBUG)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	//_CrtSetBreakAlloc(36872);
+	HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(nullptr); 
+#else
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, int)
+{
 #endif
-
 	try
 	{
 		auto appMain = G2::IG2AppFrameWin::instance();
 		auto hr = appMain->init(hInstance);
 		if (FAILED(hr))
 			return 0;
-
 		hr = appMain->Run();
 		delete appMain;
 	}
@@ -46,7 +44,6 @@ int main(int, char**)
 		MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
 		return 0;
 	}
-
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
 	_CrtDumpMemoryLeaks();
 }

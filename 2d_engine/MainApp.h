@@ -9,9 +9,6 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include <SpriteBatch.h>
-#include "Common/MathHelper.h"
-#include "Common/UploadBuffer.h"
-#include "Common/GeometryGenerator.h"
 #include "Common/D3DWinApp.h"
 #include "Common/G2.Camera.h"
 #include "AppCommon.h"

@@ -108,6 +108,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -168,7 +169,6 @@
     <ClCompile Include="Common\G2.Geometry.cpp" />
     <ClCompile Include="Common\G2.Util.cpp" />
     <ClCompile Include="Common\GameTimer.cpp" />
-    <ClCompile Include="Common\GeometryGenerator.cpp" />
     <ClCompile Include="Common\G2.EngineD3D.cpp" />
     <ClCompile Include="GameInfo.cpp" />
     <ClCompile Include="SpineRender.cpp" />
@@ -204,10 +204,7 @@
     <ClInclude Include="Common\G2.Geometry.h" />
     <ClInclude Include="Common\G2.Util.h" />
     <ClInclude Include="Common\GameTimer.h" />
-    <ClInclude Include="Common\GeometryGenerator.h" />
     <ClInclude Include="Common\G2.EngineD3D.h" />
-    <ClInclude Include="Common\MathHelper.h" />
-    <ClInclude Include="Common\UploadBuffer.h" />
     <ClInclude Include="GameInfo.h" />
     <ClInclude Include="GameCharacter.h" />
     <ClInclude Include="SpineFactory.h" />
@@ -226,10 +223,6 @@
     <ClInclude Include="UiPlay.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="asset\shader\2dsprite.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
     <FxCompile Include="asset\shader\spine.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

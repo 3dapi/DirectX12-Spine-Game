@@ -44,6 +44,7 @@ int UiLobby::Init()
 	{
 		{"ui/ui_select_char"	, "asset/ui/ui_select_char.png"	},
 		{"ui/ui_box"			, "asset/ui/ui_box.png"			},
+		{"ui/ui_doc_key"		, "asset/ui/ui_doc_key.png"		},
 		{"ui/ui_game_start"		, "asset/ui/ui_game_start.png"	},
 	};
 	auto texManager = FactoryTexture::instance();
@@ -115,8 +116,12 @@ int UiLobby::Draw()
 		}
 		{
 			auto& tex = m_uiTex["ui/ui_box"];
-			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(320, 150), DirectX::XMVectorSet(1.0F, 0.0F, 1.0F, alpha));
-			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(710, 150), DirectX::XMVectorSet(0.0F, 0.0F, 1.0F, 0.4F));
+			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(190, 150), DirectX::XMVectorSet(1.0F, 0.0F, 1.0F, alpha));
+			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(580, 150), DirectX::XMVectorSet(0.0F, 0.0F, 1.0F, 0.4F));
+		}
+		{
+			auto& tex = m_uiTex["ui/ui_doc_key"];
+			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(950, 300), DirectX::XMVectorSet(0.8F, 0.8F, 0.8F, 1.0F));
 		}
 
 		sprite->End();

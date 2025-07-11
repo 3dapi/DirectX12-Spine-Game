@@ -42,9 +42,6 @@
     <ClCompile Include="Common\GameTimer.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="Common\GeometryGenerator.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="Common\G2.EngineD3D.cpp">
       <Filter>Common</Filter>
     </ClCompile>
@@ -140,9 +137,6 @@
     <ClInclude Include="Common\GameTimer.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="Common\GeometryGenerator.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="Common\G2.EngineD3D.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -171,12 +165,6 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="Common\G2.FrameConsts.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\UploadBuffer.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\MathHelper.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="Common\G2.FactorySpine.h">
@@ -244,9 +232,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="asset\shader\2dsprite.hlsl">
-      <Filter>asset\shader</Filter>
-    </FxCompile>
     <FxCompile Include="asset\shader\spine.hlsl">
       <Filter>asset\shader</Filter>
     </FxCompile>

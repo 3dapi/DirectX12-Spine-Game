@@ -49,8 +49,8 @@ int SceneLobby::Init(const std::any& initial_value)
 	//           model type  positgion scale  direction
 	vector<tuple<EAPP_MODEL, XMFLOAT2, float, float> >	charModel
 	{
-		{ EAPP_MODEL::EMODEL_KNIGHT	, {-300.0F, -160.0F}, 1.0F,  1.0F, },
-		{ EAPP_MODEL::EMODEL_BOY	, { 300.0F, -160.0F}, 1.0F, -1.0F, },
+		{ EAPP_MODEL::EMODEL_KNIGHT	, {-480.0F, -160.0F}, 1.0F,  1.0F, },
+		{ EAPP_MODEL::EMODEL_BOY	, { 120.0F, -160.0F}, 1.0F, -1.0F, },
 	};
 
 	for (size_t i = 0; i < charModel.size(); ++i)
@@ -138,7 +138,7 @@ void SceneLobby::CheckSelectCharacter(const ::POINT& mousePos)
 	auto pGameInfo = GameInfo::instance();
 
 	// character knight 선택
-	if(chckPointInRect (mousePos.x, mousePos.y, 340, 170, 600, 430))
+	if(chckPointInRect (mousePos.x, mousePos.y, 210, 170, 470, 430))
 	{
 		pGameInfo->MainPlayer()->ModelType(EAPP_MODEL::EMODEL_KNIGHT);
 		return;

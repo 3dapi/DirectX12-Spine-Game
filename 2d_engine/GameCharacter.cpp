@@ -285,11 +285,11 @@ int GameMob::Update(const GameTimer& t)
 
 	if (!g_gameInfo->IsCollisionPlayer(this) || !g_gameInfo->m_enablePlay)
 	{
-		if (-1000 > this->m_pos.x)
+		if (-g_gameInfo->m_maxMobPos > this->m_pos.x)
 		{
 			m_dir = +1.0;
 		}
-		else if (1000 < this->m_pos.x)
+		else if (g_gameInfo->m_maxMobPos < this->m_pos.x)
 		{
 			m_dir = -1.0;
 		}
@@ -302,9 +302,13 @@ int GameMob::Update(const GameTimer& t)
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
 	{
-		if (60 > m_hp)
+		if (30 > m_hp)
 		{
-			spineObj->Color({ 1.0F, 0.0F, 0.0F, 1.0F });
+			spineObj->Color({ 1.0F, 0.4F, 0.4F, 0.5F });
+		}
+		else if (60 > m_hp)
+		{
+			spineObj->Color({ 1.0F, 0.6F, 0.6F, 0.8F });
 		}
 		m_modelObj->Update(gt);
 	}

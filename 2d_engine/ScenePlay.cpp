@@ -360,9 +360,11 @@ int ScenePlay::SetupMobMovemoent(GameMob* mob)
 
 	float dir = posx  < mainPlayerPos.x ?  1.0F : -1.0F;
 
+	float scale = G2::randomRange(0.4F, 0.8F);
+
 	mob->Init();	// 모델 교체는 없이, 초기화만 다시 진행.
 	mob->Position({ posx, posy });
-	mob->Scale(0.6F);
+	mob->Scale(scale);
 	mob->Direction(dir);
 
 	return S_OK;

@@ -109,7 +109,7 @@ int UiBegin::Draw()
 			XMFLOAT2 position = { screenSize.cx / 2.0F - tex.size.x / 2.0F + 100.0F, 20.0F };
 			XMFLOAT2 origin = { 0, 0 };
 			XMFLOAT2 scale = { 0.6F, 0.6F };
-			sprite->Draw(tex.hCpu, tex.size, position, nullptr, XMVECTORF32{ { { 1.F, 1.F, 0.F, 1.0F } } }, 0.0F, origin, scale);
+			sprite->Draw(tex.hCpu, tex.size, position, nullptr, XMVECTORF32{ { { 1.F, 1.F, 0.F, m_blend } } }, 0.0F, origin, scale);
 		}
 	}
 	sprite->End();

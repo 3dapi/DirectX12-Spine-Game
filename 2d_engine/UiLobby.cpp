@@ -105,7 +105,7 @@ int UiLobby::Draw()
 
 	sprite->Begin(cmdList);
 	{
-		float alpha = (g_gameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)? 1.0F : 0.4F;
+		float alpha = (g_gameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)? 1.0F * m_blend : 0.4F;
 		{
 			auto& tex = m_uiTex["ui/ui_select_char"];
 			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 20.0F), DirectX::XMVectorSet(1.0F, 1.0F, 0.6F, 1.0F));

@@ -67,6 +67,12 @@ int SceneEnd::Render()
 	{
 		m_pUi->Draw();
 	}
+
+
+	if (m_pUi)
+	{
+		m_pUi->DrawFront();
+	}
 	return S_OK;
 }
 

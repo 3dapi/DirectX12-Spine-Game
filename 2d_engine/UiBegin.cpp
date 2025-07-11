@@ -55,6 +55,16 @@ int UiBegin::Init()
 	m_srvHeapUI = G2::CreateDescHeap((UINT)m_uiTex.size() + 1);
 	auto hCpu = m_srvHeapUI->GetCPUDescriptorHandleForHeapStart();
 	auto hGpu = m_srvHeapUI->GetGPUDescriptorHandleForHeapStart();
+	for (auto& itr : m_uiTex)
+	{
+		decltype(itr.second.res) res = itr.second.res;
+		device->CreateShaderResourceView(res, nullptr, hCpu);
+		itr.second.hCpu = hGpu;
+
+		// 다음 리소스 대응.
+		hCpu.ptr += descriptorSize;
+		hGpu.ptr += descriptorSize;
+	}
 	ResourceUploadBatch resourceUpload(device);
 	{
 		resourceUpload.Begin();
@@ -62,16 +72,6 @@ int UiBegin::Init()
 			m_font = std::make_unique<SpriteFont>(device, resourceUpload, L"asset/font/SegoeUI_18.spritefont", hCpu, hGpu);
 		}
 		resourceUpload.End(cmdQue).wait();
-	}
-
-	for (auto& itr : m_uiTex)
-	{
-		decltype(itr.second.res) res = itr.second.res;
-		device->CreateShaderResourceView(res, nullptr, hCpu);
-		itr.second.hCpu = hGpu;
-
-		hCpu.ptr += descriptorSize;
-		hGpu.ptr += descriptorSize;
 	}
 
 	return S_OK;
@@ -119,7 +119,7 @@ int UiBegin::Draw()
 
 int UiBegin::DrawFront()
 {
-		auto d3d          =  IG2GraphicsD3D::instance();
+	auto d3d          =  IG2GraphicsD3D::instance();
 	auto cmdList      = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 	auto sprite       = std::any_cast<SpriteBatch*              >(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE));
 	::SIZE screenSize = *any_cast<::SIZE*                       >(d3d->getAttrib(ATT_SCREEN_SIZE));

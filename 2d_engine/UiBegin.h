@@ -2,8 +2,10 @@
 #ifndef _UiBegin_H_
 #define _UiBegin_H_
 
+#include <memory>
 #include "UiBase.h"
 #include <wrl/client.h>
+#include "AppCommonXTK.h"
 
 using Microsoft::WRL::ComPtr;
 

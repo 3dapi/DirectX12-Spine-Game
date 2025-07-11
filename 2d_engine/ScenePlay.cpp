@@ -242,6 +242,11 @@ int ScenePlay::Render()
 		auto& obj = objRender[i];
 		obj->Render();
 	}
+
+	if (m_pUi)
+	{
+		m_pUi->DrawFront();
+	}
 	return S_OK;
 }
 

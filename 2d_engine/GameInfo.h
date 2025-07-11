@@ -22,7 +22,7 @@ public:
 	int					m_gameScore	{};
 	bool				m_enablePlay{ true };
 	float				m_maxMobPos	{1000.0F};		// mob boundary
-	int					m_maxMob	{16};			// play max mob count
+	int					m_maxMob	{10};			// play max mob count
 
 protected:
 	class GamePlayer*	m_player	{};

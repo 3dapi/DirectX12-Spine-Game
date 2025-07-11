@@ -29,7 +29,6 @@ using namespace G2;
 
 SceneEnd::SceneEnd()
 {
-	printf("SceneEnd: Create\n");
 }
 
 SceneEnd::~SceneEnd()
@@ -44,14 +43,12 @@ int SceneEnd::Init(const std::any& initial_value)
 	if (m_pUi)
 		m_pUi->Init();
 
-	printf("SceneEnd: Init\n");
 	return S_OK;
 }
 
 int SceneEnd::Destroy()
 {
 	SAFE_DELETE(m_pUi);
-	printf("SceneEnd: Destroy\n");
 	return S_OK;
 }
 
@@ -75,7 +72,7 @@ int SceneEnd::Render()
 
 int SceneEnd::Notify(const std::string& name, const std::any& t)
 {
-	printf("SceneBegin: Notify: %s\n", name.c_str());
+	//printf("SceneBegin: Notify: %s\n", name.c_str());
 
 	if (name == "MouseUp")
 	{

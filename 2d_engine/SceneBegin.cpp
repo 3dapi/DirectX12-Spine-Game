@@ -31,7 +31,6 @@ using namespace G2;
 
 SceneBegin::SceneBegin()
 {
-	printf("SceneBegin: Create\n");
 }
 
 SceneBegin::~SceneBegin()
@@ -80,14 +79,12 @@ int SceneBegin::Init(const std::any& initial_value)
 	if (m_pUi)
 		m_pUi->Init();
 
-	printf("SceneBegin: Init\n");
 	return S_OK;
 }
 
 int SceneBegin::Destroy()
 {
 	SAFE_DELETE(m_pUi);
-	printf("SceneBegin: Destroy\n");
 	return S_OK;
 }
 
@@ -120,13 +117,22 @@ int SceneBegin::Render()
 		if (m_char[i])
 			m_char[i]->Render();
 	}
-	//printf("SceneBegin: Render\n");
+
+	if (m_pUi)
+	{
+		m_pUi->Draw();
+	}
+
+	if (m_pUi)
+	{
+		m_pUi->DrawFront();
+	}
 	return S_OK;
 }
 
 int SceneBegin::Notify(const std::string& name, const std::any& t)
 {
-	printf("SceneBegin: Notify: %s\n", name.c_str());
+	//printf("SceneBegin: Notify: %s\n", name.c_str());
 
 	if (name == "MouseUp")
 	{

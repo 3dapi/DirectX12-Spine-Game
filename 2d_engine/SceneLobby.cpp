@@ -69,7 +69,6 @@ int SceneLobby::Init(const std::any& initial_value)
 		spineChar->Direction (direction);
 		m_char[i] = std::move(spineChar);
 	}
-
 	m_char[1]->Direction(-1);
 
 	SAFE_DELETE(m_pUi);
@@ -114,7 +113,11 @@ int SceneLobby::Render()
 		if (m_char[i])
 			m_char[i]->Render();
 	}
-	//printf("SceneLobby: Render\n");
+
+	if (m_pUi)
+	{
+		m_pUi->DrawFront();
+	}
 	return S_OK;
 }
 

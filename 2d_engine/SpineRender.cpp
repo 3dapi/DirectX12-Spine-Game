@@ -281,9 +281,9 @@ int SpineRender::UpdateDrawBuffer()
 			spine::Color m = meshAttachment->getColor();
 			rgba =
 				((uint32_t)(m_color.w * c.a * m.a * 255) << 24) |
-				((uint32_t)(m_color.x * c.r * m.r * 255) << 16) |
+				((uint32_t)(m_color.z * c.r * m.r * 255) << 16) |
 				((uint32_t)(m_color.y * c.g * m.g * 255) << 8) |
-				((uint32_t)(m_color.z * c.b * m.b * 255) << 0);
+				((uint32_t)(m_color.x * c.b * m.b * 255) << 0);
 
 			posSize = sizeof(XMFLOAT2) * vtxCount;
 			difSize = sizeof(uint32_t) * vtxCount;
@@ -331,9 +331,9 @@ int SpineRender::UpdateDrawBuffer()
 			auto r = regionAttachment->getColor();
 			rgba =
 				((uint32_t)(m_color.w * c.a * r.a * 255) << 24) |
-				((uint32_t)(m_color.x * c.r * r.r * 255) << 16) |
+				((uint32_t)(m_color.z * c.r * r.r * 255) << 16) |
 				((uint32_t)(m_color.y * c.g * r.g * 255) << 8) |
-				((uint32_t)(m_color.z * c.b * r.b * 255) << 0);
+				((uint32_t)(m_color.x * c.b * r.b * 255) << 0);
 
 			posSize = sizeof(XMFLOAT2) * vtxCount;
 			difSize = sizeof(uint32_t) * vtxCount;

@@ -25,7 +25,6 @@ UiEnd::~UiEnd()
 
 int UiEnd::Destroy()
 {
-	m_srvHeapFont.Reset();
 	m_srvHeapUI.Reset();
 
 	return S_OK;
@@ -39,24 +38,17 @@ int UiEnd::Init()
 	auto cmdList    = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	// 1. 디스크립터 힙 생성 (1개만)
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-	heapDesc.NumDescriptors = 1;
-	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_srvHeapFont));
-
-	// 2. 핸들 가져오기
-	auto hCpu = m_srvHeapFont->GetCPUDescriptorHandleForHeapStart();
-	auto hGpu = m_srvHeapFont->GetGPUDescriptorHandleForHeapStart();
-
-	// 3. ResourceUploadBatch 통해 SpriteFont 생성
+	m_srvHeapUI = G2::CreateDescHeap((UINT)m_uiTex.size() + 1);
+	auto hCpu = m_srvHeapUI->GetCPUDescriptorHandleForHeapStart();
+	auto hGpu = m_srvHeapUI->GetGPUDescriptorHandleForHeapStart();
 	ResourceUploadBatch resourceUpload(device);
-	resourceUpload.Begin();
 	{
-		m_font = std::make_unique<SpriteFont>(device, resourceUpload, L"asset/font/SegoeUI_18.spritefont", hCpu, hGpu);
+		resourceUpload.Begin();
+		{
+			m_font = std::make_unique<SpriteFont>(device, resourceUpload, L"asset/font/SegoeUI_18.spritefont", hCpu, hGpu);
+		}
+		resourceUpload.End(cmdQue).wait();
 	}
-	resourceUpload.End(cmdQue).wait();
 
 	return S_OK;
 }
@@ -73,7 +65,7 @@ int UiEnd::Draw()
 	auto sprite       = std::any_cast<SpriteBatch*              >(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE));
 	::SIZE screenSize = *any_cast<::SIZE*                       >(d3d->getAttrib(ATT_SCREEN_SIZE));
 
-	ID3D12DescriptorHeap* heaps[] = { m_srvHeapFont.Get() };
+	ID3D12DescriptorHeap* heaps[] = { m_srvHeapUI.Get() };
 	cmdList->SetDescriptorHeaps(1, heaps);
 	sprite->Begin(cmdList);
 	{

@@ -13,10 +13,7 @@
 #include "Common/G2.FactorySpine.h"
 #include "Common/G2.Geometry.h"
 #include "Common/G2.Util.h"
-#include "SceneGameMesh.h"
-#include "SceneXtkGame.h"
 #include "SceneSpine.h"
-#include "SceneSample2D.h"
 #include "SceneBegin.h"
 #include "SceneLobby.h"
 #include "ScenePlay.h"
@@ -104,13 +101,25 @@ int MainApp::init(const std::any& initialValue /* = */)
 	// create XTK Instance
 	DirectX::ResourceUploadBatch resourceUpload(device);
 	{
-		auto formatBackBuffer  = *std::any_cast<DXGI_FORMAT*>(d3d->getAttrib(ATT_DEVICE_BACKBUFFER_FORAT));
+		auto formatBackBuffer = *std::any_cast<DXGI_FORMAT*>(d3d->getAttrib(ATT_DEVICE_BACKBUFFER_FORAT));
 		auto formatDepthBuffer = *std::any_cast<DXGI_FORMAT*>(d3d->getAttrib(ATT_DEVICE_DEPTH_STENCIL_FORAT));
 		const RenderTargetState rtState(formatBackBuffer, formatDepthBuffer);
-		SpriteBatchPipelineStateDescription pd(rtState);
+
+		// 🔥 알파 블렌드 설정 추가
+		CD3DX12_BLEND_DESC alphaBlendDesc(D3D12_DEFAULT);
+		alphaBlendDesc.RenderTarget[0].BlendEnable = TRUE;
+		alphaBlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+		alphaBlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+		alphaBlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+		alphaBlendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+		alphaBlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+		alphaBlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		alphaBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+		SpriteBatchPipelineStateDescription pd(rtState, &alphaBlendDesc); // 🔥 blend desc 전달
 
 		resourceUpload.Begin();
-		m_xtkSprite = std::make_unique<SpriteBatch>(device, resourceUpload, pd);
+		m_xtkSprite = std::make_unique<SpriteBatch>(device, resourceUpload, pd); // 🔥 알파 블렌딩 적용된 PSO
 		auto uploadOp = resourceUpload.End(cmdQue);
 		uploadOp.wait();
 
@@ -149,7 +158,7 @@ int MainApp::init(const std::any& initialValue /* = */)
 	//cam2DPlay->Update();
 
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_PLAY);
+	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_BEGIN);
 
 	return S_OK;
 }
@@ -253,7 +262,7 @@ void MainApp::OnMouseUp(WPARAM btnState, const ::POINT& p)
 	{
 		m_scene[m_sceneIdxCur]->Notify("MouseUp", p);
 	}
-	printf("MainApp::OnMouseUp: %d %d\n", p.x, p.y);
+	//printf("MainApp::OnMouseUp: %d %d\n", p.x, p.y);
 }
 
 void MainApp::OnMouseMove(WPARAM btnState, const ::POINT& p)
@@ -269,7 +278,7 @@ void MainApp::OnMouseMove(WPARAM btnState, const ::POINT& p)
 void MainApp::OnKeyboardInput()
 {
 	// Keyboar debugging
-	//for (int i = 0; i < 256; ++i)
+	//for (int i = 0; i < EAPP_MAX_KEY; ++i)
 	//{
 	//	if (GetAsyncKeyState(i) & 0x8000)
 	//	{
@@ -278,8 +287,8 @@ void MainApp::OnKeyboardInput()
 	//}
 
 	bool isEvent = false;
-	memcpy(m_keyOld, m_keyNew, 256);
-	for (int i = 0; i < 256; ++i)
+	memcpy(m_keyOld, m_keyNew, EAPP_MAX_KEY);
+	for (int i = 0; i < EAPP_MAX_KEY; ++i)
 	{
 		if (i == 21) continue;
 		m_keyNew[i] = (GetAsyncKeyState(i) & 0x8000) ? 1 : 0;

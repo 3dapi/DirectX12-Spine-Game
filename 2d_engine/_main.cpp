@@ -1,8 +1,13 @@
-﻿//***************************************************************************************
-// MainApp.cpp by Frank Luna (C) 2015 All Rights Reserved.
-//***************************************************************************************
+﻿
+#define SYSTEM_WINDOWS 0
 
-// Link necessary d3d12 libraries.
+
+#if SYSTEM_WINDOWS
+#pragma comment(linker, "/subsystem:windows")
+#else
+#pragma comment(linker, "/subsystem:console")
+#endif
+
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -13,35 +18,34 @@
 #endif
 #include "MainApp.h"
 
-
-#if 0
+#if SYSTEM_WINDOWS
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR cmdLine, int showCmd)
 {
 #else
 int main(int, char**)
 {
-    HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(nullptr);
+	HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(nullptr);
 #endif
 #if defined(DEBUG) | defined(_DEBUG)
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-    //_CrtSetBreakAlloc(4884);
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	//_CrtSetBreakAlloc(4884);
 #endif
 
-    try
-    {
-        auto appMain = G2::IG2AppFrameWin::instance();
-        auto hr = appMain->init(hInstance);
-        if(FAILED(hr))
-            return 0;
+	try
+	{
+		auto appMain = G2::IG2AppFrameWin::instance();
+		auto hr = appMain->init(hInstance);
+		if (FAILED(hr))
+			return 0;
 
-        hr = appMain->Run();
-        delete appMain;
-    }
-    catch(DXException& e)
-    {
-        MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
-        return 0;
-    }
+		hr = appMain->Run();
+		delete appMain;
+	}
+	catch (DXException& e)
+	{
+		MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
+		return 0;
+	}
 
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
 	_CrtDumpMemoryLeaks();

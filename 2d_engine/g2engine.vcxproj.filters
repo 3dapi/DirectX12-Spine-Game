@@ -31,6 +31,9 @@
     <Filter Include="asset\shader">
       <UniqueIdentifier>{b614dd72-7e18-4d48-9df7-86ac17b967b8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\SceneGamePlay">
+      <UniqueIdentifier>{8bdc81fa-f63c-4eb6-a56a-a0ceda8de2be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\D3DWinApp.cpp">
@@ -72,44 +75,11 @@
     <ClCompile Include="Common\G2.FactorySpine.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="SceneBegin.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneLobby.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="ScenePlay.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="testScene\SceneXtkGame.cpp">
-      <Filter>src\testScene</Filter>
-    </ClCompile>
-    <ClCompile Include="testScene\SceneSample2D.cpp">
-      <Filter>src\testScene</Filter>
-    </ClCompile>
-    <ClCompile Include="testScene\SceneGameMesh.cpp">
-      <Filter>src\testScene</Filter>
-    </ClCompile>
     <ClCompile Include="testScene\SceneSpine.cpp">
       <Filter>src\testScene</Filter>
     </ClCompile>
     <ClCompile Include="Common\G2.Camera.cpp">
       <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneEnd.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="UiLobby.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="UiBegin.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="UiEnd.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="UiPlay.cpp">
-      <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="SpineFactory.cpp">
       <Filter>src\spine</Filter>
@@ -117,17 +87,47 @@
     <ClCompile Include="SpineRender.cpp">
       <Filter>src\spine</Filter>
     </ClCompile>
-    <ClCompile Include="GameInfo.cpp">
-      <Filter>src\AppGlobal</Filter>
-    </ClCompile>
-    <ClCompile Include="_main.cpp">
-      <Filter>src\AppGlobal</Filter>
-    </ClCompile>
-    <ClCompile Include="MainApp.cpp">
-      <Filter>src\AppGlobal</Filter>
-    </ClCompile>
     <ClCompile Include="SceneNone.cpp">
       <Filter>src\AppScene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameCharacter.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneBegin.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneEnd.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneLobby.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="ScenePlay.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="UiBegin.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="UiEnd.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="UiLobby.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="UiPlay.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="_main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="MainApp.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="GameInfo.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="UiBase.cpp">
+      <Filter>src\SceneGamePlay</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -182,50 +182,11 @@
     <ClInclude Include="Common\G2.FactorySpine.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="SceneBegin.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneLobby.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="ScenePlay.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="testScene\SceneXtkGame.h">
-      <Filter>src\testScene</Filter>
-    </ClInclude>
-    <ClInclude Include="testScene\SceneSample2D.h">
-      <Filter>src\testScene</Filter>
-    </ClInclude>
-    <ClInclude Include="testScene\SceneGameMesh.h">
-      <Filter>src\testScene</Filter>
-    </ClInclude>
     <ClInclude Include="testScene\SceneSpine.h">
       <Filter>src\testScene</Filter>
     </ClInclude>
     <ClInclude Include="Common\G2.Camera.h">
       <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneEnd.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="testScene\ShaderUploadChain.h">
-      <Filter>src\testScene</Filter>
-    </ClInclude>
-    <ClInclude Include="UiLobby.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="UiBase.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="UiBegin.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="UiEnd.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="UiPlay.h">
-      <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="SpineRender.h">
       <Filter>src\spine</Filter>
@@ -242,30 +203,51 @@
     <ClInclude Include="AppCommonXTK.h">
       <Filter>src\AppGlobal</Filter>
     </ClInclude>
-    <ClInclude Include="GameInfo.h">
-      <Filter>src\AppGlobal</Filter>
-    </ClInclude>
-    <ClInclude Include="MainApp.h">
-      <Filter>src\AppGlobal</Filter>
-    </ClInclude>
     <ClInclude Include="SceneNone.h">
       <Filter>src\AppScene</Filter>
+    </ClInclude>
+    <ClInclude Include="UiPlay.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="GameCharacter.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneBegin.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneEnd.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneLobby.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="ScenePlay.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="UiBase.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="UiBegin.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="UiEnd.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="UiLobby.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="MainApp.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="GameInfo.h">
+      <Filter>src\SceneGamePlay</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="asset\shader\2dsprite.hlsl">
       <Filter>asset\shader</Filter>
     </FxCompile>
-    <FxCompile Include="asset\shader\Default.hlsl">
-      <Filter>asset\shader</Filter>
-    </FxCompile>
-    <FxCompile Include="asset\shader\LightingUtil.hlsl">
-      <Filter>asset\shader</Filter>
-    </FxCompile>
     <FxCompile Include="asset\shader\spine.hlsl">
-      <Filter>asset\shader</Filter>
-    </FxCompile>
-    <FxCompile Include="asset\shader\TreeSprite.hlsl">
       <Filter>asset\shader</Filter>
     </FxCompile>
   </ItemGroup>

@@ -30,7 +30,7 @@ using namespace G2;
 
 
 ScenePlay::ScenePlay()
-	: m_keyEvent(256, 0)
+	: m_keyEvent(EAPP_MAX_KEY, 0)
 {
 }
 
@@ -101,12 +101,32 @@ int ScenePlay::Update(const std::any& t)
 		auto mobPosition = mob->Position();
 		if (EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK == playerState && g_gameInfo->IsCollisionPlayer(mob))
 		{
-			g_gameInfo->IncreaseScore(100);
+			bool isTarget = false;
+			// 플레이어 앞쪽만 타겟팅.
+			if(0< m_mainPlayer->Direction())
+			{
+				if(mob->Position().x >= m_mainPlayer->Position().x)
+				{
+					isTarget = true;
+				}
+			}
+			else
+			{
+				if (mob->Position().x <= m_mainPlayer->Position().x)
+				{
+					isTarget = true;
+				}
+			}
 
-			auto newHp = mob->HP() - m_mainPlayer->Damage();
-			if (0 > newHp)
-				newHp = 0;
-			mob->HP(newHp);
+			if (isTarget)
+			{
+				g_gameInfo->IncreaseScore(100);
+
+				auto newHp = mob->HP() - m_mainPlayer->Damage();
+				if (0 > newHp)
+					newHp = 0;
+				mob->HP(newHp);
+			}
 		}
 
 		if (EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK != playerState && 0< mob->HP() && g_gameInfo->IsCollisionPlayer(mob))
@@ -163,7 +183,8 @@ int ScenePlay::Update(const std::any& t)
 		}
 
 		// attack.
-		if (m_keyEvent['A'] == EAPP_INPUT_PRESS)
+		// 이동이 아닐때만 공격 가능
+		if (!isKeyEvent && m_keyEvent['A'] == EAPP_INPUT_PRESS)
 		{
 			isKeyEvent = true;
 			m_mainPlayer->State(EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK);
@@ -229,12 +250,13 @@ int ScenePlay::Notify(const std::string& name, const std::any& t)
 	if(name == "KeyEvent")
 	{
 		auto keyState = any_cast<const uint8_t*>(t);
-		std::copy(keyState, keyState + 256, m_keyEvent.begin());
+		std::copy(keyState, keyState + EAPP_MAX_KEY, m_keyEvent.begin());
 	}
 	else if (name == "MouseUp")
 	{
 		auto mousePos = any_cast<const ::POINT&>(t);
-		IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_END);
+		if(!g_gameInfo->m_enablePlay)
+			IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_END);
 	}
 
 	return S_OK;
@@ -332,10 +354,11 @@ int ScenePlay::SetupMobMovemoent(GameMob* mob)
 	float posy = posy_choise ? posy_plus : posy_minus;
 
 	float dir = posx  < mainPlayerPos.x ?  1.0F : -1.0F;
+
+	mob->Init();	// 모델 교체는 없이, 초기화만 다시 진행.
 	mob->Position({ posx, posy });
 	mob->Scale(0.6F);
 	mob->Direction(dir);
-	mob->HP(100);
 
 	return S_OK;
 }

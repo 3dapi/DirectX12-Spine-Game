@@ -37,19 +37,21 @@ int UiPlay::Init()
 	auto cmdQue     = std::any_cast<ID3D12CommandQueue*       >(d3d->getCommandQueue());
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	auto texManager = FactoryTexture::instance();
+	vector<tuple<string, string>>  uiTextureList
 	{
-		auto r = texManager->Load("ui/ui_gameover", "asset/ui/ui_gameover.png");
+		{"ui/ui_play_background"	, "asset/ui/ui_play_background.png"	},
+		{"ui/ui_rect"				, "asset/ui/ui_rect.png"	},
+		{"ui/ui_gameover"			, "asset/ui/ui_gameover.png"},
+	};
+	auto texManager = FactoryTexture::instance();
+	for (const auto& [name, file] : uiTextureList)
+	{
+		auto r = texManager->Load(name, file);
 		r->name;
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r.Get(), r->size, {} }));
 	}
 
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-	heapDesc.NumDescriptors = (UINT)m_uiTex.size() + 1;
-	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_srvHeapUI));
-
+	m_srvHeapUI = G2::CreateDescHeap((UINT)m_uiTex.size() + 1);
 	auto hCpu = m_srvHeapUI->GetCPUDescriptorHandleForHeapStart();
 	auto hGpu = m_srvHeapUI->GetGPUDescriptorHandleForHeapStart();
 	ResourceUploadBatch resourceUpload(device);
@@ -90,6 +92,12 @@ int UiPlay::Draw()
 	cmdList->SetDescriptorHeaps(1, heaps);
 	sprite->Begin(cmdList);
 	{
+		// background
+		{
+			auto& tex = m_uiTex["ui/ui_play_background"];
+			XMFLOAT2 position = { 0.0F, 0.0F };
+			sprite->Draw(tex.hCpu, tex.size, position);
+		}
 		{
 			wstring wstr = L"SCORE: " + std::to_wstring(g_gameInfo->m_gameScore);
 			m_font->DrawString(sprite, wstr.c_str(), XMFLOAT2(10, 10), Colors::Yellow, 0, XMFLOAT2(0, 0), 1.5F);
@@ -100,15 +108,22 @@ int UiPlay::Draw()
 			m_font->DrawString(sprite, wstr.c_str(), XMFLOAT2(10, 60), Colors::Red, 0, XMFLOAT2(0, 0), 1.5F);
 		}
 
-
+		// HP
 		auto hp = g_gameInfo->MainPlayer()->HP();
+		{
+			auto& tex = m_uiTex["ui/ui_rect"];
+			XMFLOAT2 position = { 145, 75.0F };
+			XMFLOAT2 origin = { 0, 0 };
+			XMFLOAT2 scale = { (hp +0.4F)*6.0F /100.0F, 0.25F};
+			sprite->Draw(tex.hCpu, tex.size, position, nullptr, XMVECTORF32{ { { 1.F, 0.F, 0.F, 1.0F } } }, 0.0F, origin, scale);
+		}
 		if(0>= hp)
 		{
 			auto& tex = m_uiTex["ui/ui_gameover"];
-			XMFLOAT2 position = { screenSize.cx / 2.0F - tex.size.x / 2.0F, 120.0F };
+			XMFLOAT2 position = { screenSize.cx / 2.0F - tex.size.x / 2.0F, 100.0F };
 			XMFLOAT2 origin = { 0, 0 };
 			XMFLOAT2 scale = { 1.0F, 1.0F };
-			sprite->Draw(tex.hCpu, tex.size, position, nullptr, XMVECTORF32{ { { 1.f, 0.f, 1.f, 1.0f } } }, 0.0f, origin, scale);
+			sprite->Draw(tex.hCpu, tex.size, position, nullptr, XMVECTORF32{ { { 1.F, 0.F, 1.F, 1.0F } } }, 0.0F, origin, scale);
 		}
 	}
 	sprite->End();

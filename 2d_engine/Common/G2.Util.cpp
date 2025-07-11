@@ -186,7 +186,18 @@ ComPtr<ID3DBlob> readFileToBlob(const std::string& fileName)
 	return ret_blob;
 }
 
+ID3D12DescriptorHeap* CreateDescHeap(UINT descCount)
+{
+	auto device = std::any_cast<ID3D12Device*>(IG2GraphicsD3D::instance()->getDevice());
 
+	ID3D12DescriptorHeap* retSrvHeap{};
+	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+	heapDesc.NumDescriptors = descCount;
+	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&retSrvHeap));
+	return retSrvHeap;
+}
 
 DXException::DXException(HRESULT _hr,const std::string& _functionName,const std::string& _fileName,int _lineNumber)
 	: errorCode(_hr),functionName(_functionName),fileName(_fileName),lineNumber(_lineNumber)

@@ -11,7 +11,6 @@
 #include <DirectXMath.h>
 #include <d3dx12/d3dx12.h>
 #include "AppConst.h"
-#include "ShaderUploadChain.h"
 
 #include "ResourceUploadBatch.h"
 #include "VertexTypes.h"
@@ -28,8 +27,6 @@
 #include "SpriteFont.h"
 #include "DescriptorHeap.h"
 #include "CommonStates.h"
-#include "WICTextureLoader.h"
-
 
 typedef PrimitiveBatch<DirectX::VertexPositionColor>		XTK_BATCH;
 

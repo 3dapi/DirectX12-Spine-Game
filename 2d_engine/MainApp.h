@@ -48,9 +48,9 @@ protected:
 	unique_ptr<XTK_BATCH>				m_batch			;
 
 	// control
-	uint8_t								m_keyOld		[256]{};
-	uint8_t								m_keyNew		[256]{};
-	uint8_t								m_keyCur		[256]{};
+	uint8_t								m_keyOld		[EAPP_MAX_KEY]{};
+	uint8_t								m_keyNew		[EAPP_MAX_KEY]{};
+	uint8_t								m_keyCur		[EAPP_MAX_KEY]{};
 
 	XMMATRIX							m_spineVPlobby		;
 	XMMATRIX							m_spineVPplay		;

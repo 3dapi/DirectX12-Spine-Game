@@ -20,6 +20,7 @@ enum EAPP_CONST
 {
 	EAPP_FRAME_RESOURCE_CHAIN_NUMBER	= 2,		// Cycle through the circular frame resource array.
 	EAPP_DESC_HEAP_SIZE					= 1024,		// Descriptor heap size
+	EAPP_MAX_KEY						= 256,		// Descriptor heap size
 };
 
 enum EAPP_ATTRIB

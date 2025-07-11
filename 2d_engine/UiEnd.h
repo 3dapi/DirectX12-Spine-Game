@@ -13,10 +13,9 @@ using Microsoft::WRL::ComPtr;
 class UiEnd : public UiBase
 {
 protected:
-	ComPtr<ID3D12DescriptorHeap>	m_srvHeapFont	{};
-	ComPtr<ID3D12DescriptorHeap>	m_srvHeapUI		{};
-	map<string, UI_TEXTURE>			m_uiTex			;
-	unique_ptr<SpriteFont>			m_font			{};
+	ComPtr<ID3D12DescriptorHeap>	m_srvHeapUI{};
+	map<string, UI_TEXTURE>			m_uiTex;
+	unique_ptr<SpriteFont>			m_font{};
 
 public:
 	UiEnd();

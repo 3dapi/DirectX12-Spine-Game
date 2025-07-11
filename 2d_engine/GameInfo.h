@@ -12,26 +12,28 @@
 #include "AppCommon.h"
 #include "GameCharacter.h"
 
-using namespace G2;
-
 class GameInfo
 {
 public:
-	int					m_gameScore{};
+	static GameInfo* instance();
+	static void      deleteInstance();
+
+public:
+	int					m_gameScore	{};
 	bool				m_enablePlay{ true };
 	float				m_maxMobPos	{1000.0F};		// mob boundary
+	int					m_maxMob	{16};			// play max mob count
 
 protected:
 	class GamePlayer*	m_player	{};
 
 public:
 	GameInfo();
-	GamePlayer*		MainPlayer();
+	virtual ~GameInfo();
 
-	bool	IsCollisionPlayer(class GameCharacter* p);
-	void	IncreaseScore(int score);
+	GamePlayer*	MainPlayer();
+	bool		IsCollisionPlayer(class GameCharacter* p);
+	void		IncreaseScore(int score);
 };
-
-extern GameInfo* g_gameInfo;
 
 #endif

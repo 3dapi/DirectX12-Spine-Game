@@ -20,7 +20,7 @@
 #include "GraphicsMemory.h"
 #include "ScenePlay.h"
 #include "SpineFactory.h"
-
+#include "UiPlay.h"
 
 using namespace std;
 using std::any_cast;
@@ -43,8 +43,10 @@ int ScenePlay::Init(const std::any& initial_value)
 {
 	int hr = S_OK;
 
-	g_gameInfo->m_gameScore  = 0;
-	g_gameInfo->m_enablePlay = true;
+	auto pGameInfo = GameInfo::instance();
+
+	pGameInfo->m_gameScore  = 0;
+	pGameInfo->m_enablePlay = true;
 
 	SAFE_DELETE(m_pUi);
 	m_pUi = new UiPlay;
@@ -63,6 +65,7 @@ int ScenePlay::Init(const std::any& initial_value)
 
 int ScenePlay::Destroy()
 {
+	SAFE_DELETE_VECTOR(m_vecMob);
 	SAFE_DELETE(m_pUi);
 
 	return S_OK;
@@ -73,17 +76,18 @@ int ScenePlay::Update(const std::any& t)
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto dt = gt.DeltaTime();
 
+	auto pGameInfo   = GameInfo::instance();
 	auto playerState = m_mainPlayer->State();
 	auto playerPos   = m_mainPlayer->Position();
 
-	if (g_gameInfo->m_enablePlay && 0 >= m_mainPlayer->HP())
+	if (pGameInfo->m_enablePlay && 0 >= m_mainPlayer->HP())
 	{
-		g_gameInfo->m_enablePlay = false;
+		pGameInfo->m_enablePlay = false;
 	}
 
 
 	// 지난 시간만큼 HP를 채운다.
-	if (g_gameInfo->m_enablePlay)
+	if (pGameInfo->m_enablePlay)
 	{
 		auto newHp = m_mainPlayer->HP() + dt * 100;
 		if (100 < newHp)
@@ -99,7 +103,7 @@ int ScenePlay::Update(const std::any& t)
 			continue;
 
 		auto mobPosition = mob->Position();
-		if (EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK == playerState && g_gameInfo->IsCollisionPlayer(mob))
+		if (EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK == playerState && pGameInfo->IsCollisionPlayer(mob))
 		{
 			bool isTarget = false;
 			// 플레이어 앞쪽만 타겟팅.
@@ -120,7 +124,7 @@ int ScenePlay::Update(const std::any& t)
 
 			if (isTarget)
 			{
-				g_gameInfo->IncreaseScore(100);
+				pGameInfo->IncreaseScore(100);
 
 				auto newHp = mob->HP() - m_mainPlayer->Damage();
 				if (0 > newHp)
@@ -129,7 +133,7 @@ int ScenePlay::Update(const std::any& t)
 			}
 		}
 
-		if (EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK != playerState && 0< mob->HP() && g_gameInfo->IsCollisionPlayer(mob))
+		if (EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK != playerState && 0< mob->HP() && pGameInfo->IsCollisionPlayer(mob))
 		{
 			auto newHp = m_mainPlayer->HP() - mob->Damage();
 			if (0 > newHp)
@@ -153,8 +157,7 @@ int ScenePlay::Update(const std::any& t)
 		SetupMobMovemoent(mob);
 	}
 
-
-	if (g_gameInfo->m_enablePlay)
+	if (pGameInfo->m_enablePlay)
 	{
 		bool isKeyEvent = false;
 		// 이동.
@@ -207,6 +210,8 @@ int ScenePlay::Update(const std::any& t)
 
 int ScenePlay::Render()
 {
+	auto pGameInfo = GameInfo::instance();
+
 	if (m_pUi)
 	{
 		m_pUi->Draw();
@@ -223,7 +228,7 @@ int ScenePlay::Render()
 				objRender.push_back(model);
 		}
 	}
-	if (g_gameInfo->m_enablePlay)
+	if (pGameInfo->m_enablePlay)
 	{
 		auto model = dynamic_cast<SpineRender*>(m_mainPlayer->ModelObject());
 		if (model)
@@ -252,6 +257,8 @@ int ScenePlay::Render()
 
 int ScenePlay::Notify(const std::string& name, const std::any& t)
 {
+	auto pGameInfo = GameInfo::instance();
+
 	if(name == "KeyEvent")
 	{
 		auto keyState = any_cast<const uint8_t*>(t);
@@ -260,7 +267,7 @@ int ScenePlay::Notify(const std::string& name, const std::any& t)
 	else if (name == "MouseUp")
 	{
 		auto mousePos = any_cast<const ::POINT&>(t);
-		if(!g_gameInfo->m_enablePlay)
+		if(!pGameInfo->m_enablePlay)
 			IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_END);
 	}
 
@@ -269,7 +276,9 @@ int ScenePlay::Notify(const std::string& name, const std::any& t)
 
 int ScenePlay::CreateMainPlayerModel()
 {
-	m_mainPlayer = g_gameInfo->MainPlayer();
+	auto pGameInfo = GameInfo::instance();
+
+	m_mainPlayer = pGameInfo->MainPlayer();
 	if (!m_mainPlayer)
 		return E_FAIL;
 
@@ -300,6 +309,8 @@ int ScenePlay::CreateMainPlayerModel()
 
 int ScenePlay::GenerateMob()
 {
+	auto pGameInfo = GameInfo::instance();
+
 	vector<EAPP_MODEL> charModel
 	{
 		EAPP_MODEL::EMODEL_RAPTOR,
@@ -307,6 +318,10 @@ int ScenePlay::GenerateMob()
 		EAPP_MODEL::EMODEL_ALIEN,
 	};
 
+	if(m_vecMob.empty())
+	{
+		m_vecMob.resize(pGameInfo->m_maxMob, {});
+	}
 	for (size_t i = 0; i < m_vecMob.size(); ++i)
 	{
 		int modelIndex = G2::randomRange((int)0, (int)charModel.size()-1);

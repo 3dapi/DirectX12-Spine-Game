@@ -33,6 +33,8 @@ G2::IG2AppFrame* G2::IG2AppFrame::instance()
 
 MainApp::MainApp()
 {
+	// GameInfo 객체 생성 확인.
+	auto pGameInfo = GameInfo::instance();
 }
 
 MainApp::~MainApp()
@@ -168,11 +170,14 @@ int MainApp::destroy()
 	if(!m_scene.empty())
 		m_scene.clear();
 
+	GameInfo::deleteInstance();
+
 	FactorySpine::instance()->UnLoadAll();
+	FactoryTexture::instance()->UnLoadAll();
+	FactoryShader::instance()->UnLoadAll();
 	FactoryPipelineState::instance()->UnLoadAll();
 	FactorySignature::instance()->UnLoadAll();
-	FactoryShader::instance()->UnLoadAll();
-	FactoryTexture::instance()->UnLoadAll();
+
 	return S_OK;
 }
 

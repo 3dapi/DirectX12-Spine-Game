@@ -207,7 +207,7 @@ int EngineD3D::InitDevice()
 	assert(m_msaa4Quality > 0 && "Unexpected MSAA quality level.");
 
 #ifdef _DEBUG
-	LogAdapters();
+	//LogAdapters();
 #endif
 
 	CreateCommandObjects();

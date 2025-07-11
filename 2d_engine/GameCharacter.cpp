@@ -163,6 +163,11 @@ PG2OBJECT GameCharacter::ModelObject() const
 	return m_modelObj;
 }
 
+GameCharacter::~GameCharacter()
+{
+	SAFE_DELETE(m_modelObj);
+}
+
 void GameCharacter::State(EAPP_CHAR_STATE v)
 {
 	// state 가 같으면 변경을 안하다.
@@ -206,6 +211,11 @@ int GamePlayer::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE s
 	m_dir   = 1.0F;
 	m_dif   = XMFLOAT4{ 1.0F, 1.0F, 1.0F, 1.0F };
 	m_modelType = modelType;
+
+	if(m_modelObj)
+	{
+		SAFE_DELETE(m_modelObj);
+	}
 	m_modelObj  = modelObj;
 
 	this->State(state);
@@ -257,6 +267,8 @@ int GameMob::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE stat
 	// model object가 있는 경우에만 교체.
 	if (modelObj)
 	{
+		SAFE_DELETE(m_modelObj);
+
 		m_modelType = modelType;
 		m_modelObj = modelObj;
 	}
@@ -282,14 +294,15 @@ int GameMob::Update(const GameTimer& t)
 {
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto dt = gt.DeltaTime();
+	auto pGameInfo = GameInfo::instance();
 
-	if (!g_gameInfo->IsCollisionPlayer(this) || !g_gameInfo->m_enablePlay)
+	if (!pGameInfo->IsCollisionPlayer(this) || !pGameInfo->m_enablePlay)
 	{
-		if (-g_gameInfo->m_maxMobPos > this->m_pos.x)
+		if (-pGameInfo->m_maxMobPos > this->m_pos.x)
 		{
 			m_dir = +1.0;
 		}
-		else if (g_gameInfo->m_maxMobPos < this->m_pos.x)
+		else if (pGameInfo->m_maxMobPos < this->m_pos.x)
 		{
 			m_dir = -1.0;
 		}

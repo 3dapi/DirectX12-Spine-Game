@@ -20,8 +20,6 @@
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
 #include "SpineFactory.h"
-#include "UiLobby.h"
-
 
 using namespace std;
 using namespace DirectX;
@@ -32,7 +30,7 @@ class SceneLobby: public G2::IG2Scene
 {
 protected:
 	vector<unique_ptr<SpineRender> >	m_char	{ 2 };
-	UiLobby*							m_pUi	{};
+	class UiBase*						m_pUi	{};
 
 public:
 	SceneLobby();

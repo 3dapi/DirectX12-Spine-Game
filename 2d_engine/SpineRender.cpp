@@ -408,8 +408,8 @@ int SpineRender::InitSpine()
 {
 	auto spineManager = FactorySpine::instance();
 	auto resourceRoot = string("asset/spine/");
-	decltype(auto) atlasPath = resourceRoot + m_attrib.spine_name + string("/") + m_attrib.atlasPath;
-	decltype(auto) skelPath = resourceRoot + m_attrib.spine_name + string("/") + m_attrib.skelPath;
+	auto atlasPath = resourceRoot + m_attrib.spine_name + string("/") + m_attrib.atlasPath;
+	auto skelPath = resourceRoot + m_attrib.spine_name + string("/") + m_attrib.skelPath;
 	auto itemSpine = spineManager->Load(m_attrib.spine_name, atlasPath, skelPath);
 	if (!itemSpine)
 		return E_FAIL;

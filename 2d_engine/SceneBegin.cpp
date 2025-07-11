@@ -21,6 +21,7 @@
 #include "SceneBegin.h"
 #include "SpineRender.h"
 #include "GameInfo.h"
+#include "UiBegin.h"
 
 using namespace std;
 using std::any_cast;

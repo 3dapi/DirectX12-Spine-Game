@@ -31,6 +31,8 @@ protected:
 	EAPP_MODEL		m_modelType	{ EAPP_MODEL::EMODEL_NONE };
 	PG2OBJECT		m_modelObj	{};
 public:
+	virtual ~GameCharacter();
+
 	virtual	void			State(EAPP_CHAR_STATE v);
 	virtual	EAPP_CHAR_STATE	State() const;
 

@@ -21,6 +21,7 @@
 #include "SceneLobby.h"
 #include "SpineFactory.h"
 #include "GameInfo.h"
+#include "UiLobby.h"
 
 using namespace std;
 using std::any_cast;
@@ -134,15 +135,17 @@ int SceneLobby::Notify(const std::string& name, const std::any& t)
 
 void SceneLobby::CheckSelectCharacter(const ::POINT& mousePos)
 {
+	auto pGameInfo = GameInfo::instance();
+
 	// character knight 선택
 	if(chckPointInRect (mousePos.x, mousePos.y, 340, 170, 600, 430))
 	{
-		g_gameInfo->MainPlayer()->ModelType(EAPP_MODEL::EMODEL_KNIGHT);
+		pGameInfo->MainPlayer()->ModelType(EAPP_MODEL::EMODEL_KNIGHT);
 		return;
 	}
 	else
 	{
-		if (g_gameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)
+		if (pGameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)
 		{
 			if (chckPointInRect(mousePos.x, mousePos.y, 450, 500, 830, 560))
 			{
@@ -151,7 +154,7 @@ void SceneLobby::CheckSelectCharacter(const ::POINT& mousePos)
 			}
 			else
 			{
-				g_gameInfo->MainPlayer()->ModelType(EAPP_MODEL::EMODEL_NONE);
+				pGameInfo->MainPlayer()->ModelType(EAPP_MODEL::EMODEL_NONE);
 				return;
 			}
 		}

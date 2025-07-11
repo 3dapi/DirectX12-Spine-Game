@@ -28,6 +28,7 @@ public:
 	virtual int		Update(float deltaTime) = 0;
 	virtual int		Destroy()               = 0;
 	virtual int		Draw()                  = 0;
+	virtual int		DrawFront()             = 0;
 };
 
 #endif

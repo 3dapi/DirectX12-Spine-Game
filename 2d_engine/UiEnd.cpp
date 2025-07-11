@@ -25,7 +25,9 @@ UiEnd::~UiEnd()
 
 int UiEnd::Destroy()
 {
+	m_font.reset();
 	m_srvHeapUI.Reset();
+	m_uiTex.clear();
 
 	return S_OK;
 }
@@ -97,12 +99,13 @@ int UiEnd::Draw()
 	auto cmdList      = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 	auto sprite       = std::any_cast<SpriteBatch*              >(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE));
 	::SIZE screenSize = *any_cast<::SIZE*                       >(d3d->getAttrib(ATT_SCREEN_SIZE));
+	auto pGameInfo    = GameInfo::instance();
 
 	ID3D12DescriptorHeap* heaps[] = { m_srvHeapUI.Get() };
 	cmdList->SetDescriptorHeaps(1, heaps);
 	sprite->Begin(cmdList);
 	{
-		wstring wstr = L"SCORE: " + std::to_wstring(g_gameInfo->m_gameScore);
+		wstring wstr = L"SCORE: " + std::to_wstring(pGameInfo->m_gameScore);
 		m_font->DrawString(sprite, wstr.c_str(), XMFLOAT2(400, 200), Colors::Yellow, 0, XMFLOAT2(0, 0), 1.5F);
 	}
 	sprite->End();

@@ -27,7 +27,7 @@ public:
 	int		Update(float)	override;
 	int		Destroy()		override;
 	int		Draw()			override;
-	int		DrawFront();
+	int		DrawFront()		override;
 };
 
 #endif

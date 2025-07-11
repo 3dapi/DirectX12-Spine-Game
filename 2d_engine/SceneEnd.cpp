@@ -19,6 +19,7 @@
 #include "GraphicsMemory.h"
 #include "SceneEnd.h"
 #include "SpineFactory.h"
+#include "UiEnd.h"
 
 using namespace std;
 using std::any_cast;

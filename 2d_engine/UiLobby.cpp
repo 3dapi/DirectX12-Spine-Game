@@ -25,8 +25,10 @@ UiLobby::~UiLobby()
 
 int UiLobby::Destroy()
 {
+	m_font.reset();
 	m_srvHeapUI.Reset();
 	m_uiTex.clear();
+
 	return S_OK;
 }
 
@@ -99,13 +101,14 @@ int UiLobby::Draw()
 	auto cmdList      = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 	auto sprite       = std::any_cast<SpriteBatch*              >(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE));
 	::SIZE screenSize = *any_cast<::SIZE*                       >(d3d->getAttrib(ATT_SCREEN_SIZE));
+	auto pGameInfo    = GameInfo::instance();
 
 	ID3D12DescriptorHeap* heaps[] = { m_srvHeapUI.Get() };
 	cmdList->SetDescriptorHeaps(1, heaps);
 
 	sprite->Begin(cmdList);
 	{
-		float alpha = (g_gameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)? 1.0F * m_blend : 0.4F;
+		float alpha = (pGameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)? 1.0F * m_blend : 0.4F;
 		{
 			auto& tex = m_uiTex["ui/ui_select_char"];
 			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 20.0F), DirectX::XMVectorSet(1.0F, 1.0F, 0.6F, 1.0F));
@@ -128,12 +131,13 @@ int UiLobby::DrawFront()
 	auto cmdList      = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 	auto sprite       = std::any_cast<SpriteBatch*              >(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE));
 	::SIZE screenSize = *any_cast<::SIZE*                       >(d3d->getAttrib(ATT_SCREEN_SIZE));
+	auto pGameInfo    = GameInfo::instance();
 
 	ID3D12DescriptorHeap* heaps[] = { m_srvHeapUI.Get() };
 	cmdList->SetDescriptorHeaps(1, heaps);
 	sprite->Begin(cmdList);
 	{
-		if (g_gameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)
+		if (pGameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)
 		{
 			auto& tex = m_uiTex["ui/ui_game_start"];
 			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 500), DirectX::XMVectorSet(1.0F, 1.0F, 1.0F, m_blend));

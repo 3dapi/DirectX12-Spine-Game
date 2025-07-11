@@ -14,7 +14,6 @@
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
 #include "SpineFactory.h"
-#include "UiBegin.h"
 
 using namespace std;
 using namespace G2;
@@ -23,7 +22,7 @@ class SceneBegin: public G2::IG2Scene
 {
 protected:
 	vector<unique_ptr<SpineRender> >	m_char	;
-	UiBegin*							m_pUi	{};
+	class UiBase*						m_pUi	{};
 
 public:
 	SceneBegin();

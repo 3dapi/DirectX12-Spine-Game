@@ -9,18 +9,33 @@
 #include "GameInfo.h"
 #include "GameCharacter.h"
 
-GameInfo* g_gameInfo = new GameInfo;
+using namespace G2;
+
+static GameInfo* _inst = new GameInfo;
+
+GameInfo* GameInfo::instance()
+{
+	return _inst;
+}
+void GameInfo::deleteInstance()
+{
+	SAFE_DELETE(_inst);
+}
 
 GameInfo::GameInfo()
 {
 	m_player = new GamePlayer;
 }
 
+GameInfo::~GameInfo()
+{
+	SAFE_DELETE(m_player);
+}
+
 GamePlayer* GameInfo::MainPlayer()
 {
 	return m_player;
 }
-
 
 bool GameInfo::IsCollisionPlayer(class GameCharacter* p)
 {

@@ -43,6 +43,17 @@ inline void SAFE_DELETE_ARR(T*& p)
 	}
 }
 
+// NOTE: for std::vector 
+template<typename T>
+inline void SAFE_DELETE_VECTOR(std::vector<T*>& vec) {
+	for (auto& p : vec) {
+		if (p) {
+			delete p;
+		}
+	}
+	vec.clear();
+}
+
 template<typename T>
 inline void SAFE_RELEASE(T*& p)
 {

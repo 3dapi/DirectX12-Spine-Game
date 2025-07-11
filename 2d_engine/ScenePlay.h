@@ -6,7 +6,6 @@
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
 #include "GameInfo.h"
-#include "UiPlay.h"
 
 using namespace std;
 using namespace DirectX;
@@ -16,12 +15,11 @@ using namespace G2;
 class ScenePlay: public G2::IG2Scene
 {
 protected:
-	static const int		MAX_MOB			= 12;
 	GamePlayer*				m_mainPlayer	{};
-	vector<GameMob*>		m_vecMob		{ MAX_MOB };
+	vector<GameMob*>		m_vecMob		;
 	vector<uint8_t>			m_keyEvent		;
+	class UiBase*			m_pUi			{};
 
-	UiPlay*					m_pUi			{};
 public:
 	ScenePlay();
 	virtual ~ScenePlay();

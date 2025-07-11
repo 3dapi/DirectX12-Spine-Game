@@ -25,7 +25,10 @@ UiPlay::~UiPlay()
 
 int UiPlay::Destroy()
 {
+	m_font.reset();
 	m_srvHeapUI.Reset();
+	m_uiTex.clear();
+
 	return S_OK;
 }
 
@@ -100,6 +103,8 @@ int UiPlay::Draw()
 	auto sprite  = std::any_cast<SpriteBatch*>(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE));
 	::SIZE screenSize = *any_cast<::SIZE*>(d3d->getAttrib(ATT_SCREEN_SIZE));
 
+	auto pGameInfo = GameInfo::instance();
+
 	ID3D12DescriptorHeap* heaps[] = { m_srvHeapUI.Get() };
 	cmdList->SetDescriptorHeaps(1, heaps);
 	sprite->Begin(cmdList);
@@ -111,12 +116,12 @@ int UiPlay::Draw()
 			sprite->Draw(tex.hCpu, tex.size, position);
 		}
 		{
-			wstring wstr = L"SCORE: " + std::to_wstring(g_gameInfo->m_gameScore);
+			wstring wstr = L"SCORE: " + std::to_wstring(pGameInfo->m_gameScore);
 			m_font->DrawString(sprite, wstr.c_str(), XMFLOAT2(10, 10), Colors::Yellow, 0, XMFLOAT2(0, 0), 1.5F);
 		}
 		// HP
 		{
-			auto hp = (int)g_gameInfo->MainPlayer()->HP();
+			auto hp = (int)pGameInfo->MainPlayer()->HP();
 			wstring wstr = L"HP: " + std::to_wstring(hp);
 			m_font->DrawString(sprite, wstr.c_str(), XMFLOAT2(10, 60), Colors::Red, 0, XMFLOAT2(0, 0), 1.5F);
 
@@ -126,7 +131,7 @@ int UiPlay::Draw()
 			XMFLOAT2 scale = { (hp +0.4F)*6.0F /100.0F, 0.25F};
 			sprite->Draw(tex.hCpu, tex.size, position, nullptr, XMVECTORF32{ { { 1.F, 0.F, 0.F, 1.0F } } }, 0.0F, origin, scale);
 		}
-		if (!g_gameInfo->m_enablePlay)
+		if (!pGameInfo->m_enablePlay)
 		{
 			auto& tex = m_uiTex["ui/ui_gameover"];
 			XMFLOAT2 position = { screenSize.cx / 2.0F - tex.size.x / 2.0F, 100.0F };
@@ -146,12 +151,13 @@ int UiPlay::DrawFront()
 	auto cmdList      = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 	auto sprite       = std::any_cast<SpriteBatch*              >(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE));
 	::SIZE screenSize = *any_cast<::SIZE*                       >(d3d->getAttrib(ATT_SCREEN_SIZE));
+	auto pGameInfo    = GameInfo::instance();
 
 	ID3D12DescriptorHeap* heaps[] = { m_srvHeapUI.Get() };
 	cmdList->SetDescriptorHeaps(1, heaps);
 	sprite->Begin(cmdList);
 	{
-		if (!g_gameInfo->m_enablePlay)
+		if (!pGameInfo->m_enablePlay)
 		{
 			auto& tex = m_uiTex["ui/ui_touch_the_screen"];
 			XMFLOAT2 position = { screenSize.cx / 2.0F - tex.size.x / 2.0F + 100.0F, 520.0F };

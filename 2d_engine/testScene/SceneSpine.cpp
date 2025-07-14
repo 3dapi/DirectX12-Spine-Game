@@ -81,10 +81,19 @@ int SceneSpine::Init(const std::any& initial_value)
 	{
 //		{"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {-800.0F, -300.0F}, "walk", "default", detachSlotSpineBoy },
 //		{"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {-450.0F, -300.0F}, "walk", "goblin" , {} },
-		{"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, { 0.0F,  0.0F}, "walk", "weapon/sword", detachSlotHero },
+		//{"hero"         , "hero-pro.atlas"         , "hero-pro.json"         , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.00F, { 0.0F,  0.0F}, "walk", "weapon/sword", detachSlotHero },
 		//{"spineboy"     , "spineboy-pma.atlas"     , "spineboy-pro.json"     , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.49F, { 100.0F, -300.0F}, "walk", "default", {} },
 		//{"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 6.0F, 1.0F, 0.90F, { 450.0F, -300.0F}, "walk", "default", {} },
-		//{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 800.0F, -300.0F}, "run" , "default", {} },
+		{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 800.0F, -300.0F}, "run" , "default", {} },
+		{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 800.0F, -300.0F}, "run" , "default", {} },
+		{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 800.0F, -300.0F}, "run" , "default", {} },
+		{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 800.0F, -300.0F}, "run" , "default", {} },
+		{"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, { 800.0F, -300.0F}, "run" , "default", {} },
+		{"alien", "alien.atlas", "alien-pro.json", randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, {800.0F, -300.0F}, "run", "default", {}},
+		{"alien", "alien.atlas", "alien-pro.json", randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, {800.0F, -300.0F}, "run", "default", {}},
+		{"alien", "alien.atlas", "alien-pro.json", randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, {800.0F, -300.0F}, "run", "default", {}},
+		{"alien", "alien.atlas", "alien-pro.json", randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, {800.0F, -300.0F}, "run", "default", {}},
+		{"alien", "alien.atlas", "alien-pro.json", randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, {800.0F, -300.0F}, "run", "default", {}},
 	};
 
 	for(size_t i=0; i< spine_rsc.size(); ++i)

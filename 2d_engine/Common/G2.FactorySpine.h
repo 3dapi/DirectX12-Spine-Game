@@ -23,7 +23,7 @@ struct TD3D_SPINE
 {
 	std::string				name		;	// spine name
 	std::string				fileAtlas	;	// atlas file
-	std::string				fileSkel	;	// skelecton file
+	std::string				fileSkel	;	// skeleton file
 	spine::Atlas*			atlas		{};
 	spine::SkeletonData*	skelData	{};
 	~TD3D_SPINE() {
@@ -63,8 +63,10 @@ public:
 
 
 struct SPINE_DRAW_BUFFER {
-	UINT						numVb		{};		// vertex count
-	UINT						numIb		{};		// index count
+	UINT						countVtx	{};		// vertex count
+	UINT						strideVtx	{};
+	UINT						countIdx	{};		// index count
+
 	ComPtr<ID3D12Resource>		rscPosGPU	{};		// position buffer default heap resource
 	ComPtr<ID3D12Resource>		rscPosCPU	{};		// position buffer upload heap resource
 	D3D12_VERTEX_BUFFER_VIEW	vbvPos		{};		// position buffer view
@@ -82,9 +84,9 @@ struct SPINE_DRAW_BUFFER {
 	D3D12_INDEX_BUFFER_VIEW		ibv			{};		// index buffer view
 
 	~SPINE_DRAW_BUFFER();
-	int Setup(ID3D12Device* d3dDevice, UINT widthVertex, UINT widthIndex
-				, const CD3DX12_HEAP_PROPERTIES& heapPropsGPU, const CD3DX12_HEAP_PROPERTIES& heapPropsUpload
-				, const CD3DX12_RESOURCE_DESC& vtxBufDesc, const CD3DX12_RESOURCE_DESC& idxBufDesc);
+	int Setup(ID3D12Device* d3dDevice, const CD3DX12_RESOURCE_DESC& vtxBufDesc, const CD3DX12_RESOURCE_DESC& idxBufDesc);
+	int ResizeVtx(ID3D12Device* d3dDevice, const CD3DX12_RESOURCE_DESC& bufDesc);
+	int ResizeIdx(ID3D12Device* d3dDevice, const CD3DX12_RESOURCE_DESC& bufDesc);
 };
 
 } // namespace G2

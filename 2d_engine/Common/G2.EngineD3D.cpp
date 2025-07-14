@@ -328,7 +328,8 @@ void EngineD3D::CreateCommandObjects()
 	// Start off in a closed state.  This is because the first time we refer 
 	// to the command list we will Reset it, and it needs to be closed before
 	// calling Reset.
-	m_d3dCommandList->Close();
+	int hr = m_d3dCommandList->Close();
+	ThrowIfFailed(hr);
 }
 
 void EngineD3D::CreateSwapChain()
@@ -393,7 +394,8 @@ int EngineD3D::Resize()
 		m_d3dSwapChain->SetFullscreenState(FALSE, nullptr);
 	}
 
-	ThrowIfFailed(m_d3dCommandList->Reset(m_d3dCommandAlloc.Get(), nullptr));
+	hr = m_d3dCommandList->Reset(m_d3dCommandAlloc.Get(), nullptr);
+	ThrowIfFailed(hr);
 
 	// Release the previous resources we will be recreating.
 	for (int i = 0; i < FRAME_BUFFER_COUNT; ++i)
@@ -494,7 +496,7 @@ int EngineD3D::WaitGpu()
 	if (rcv_gpu != currentFenceValue)
 	{
 		// 작업이 완료될 때까지 기다림.
-		ThrowIfFailed(m_d3dFence->SetEventOnCompletion(m_d3dFenceIndex, m_fenceEvent));
+		ThrowIfFailed(m_d3dFence->SetEventOnCompletion(currentFenceValue, m_fenceEvent));
 		std::ignore = WaitForSingleObjectEx(m_fenceEvent, INFINITE, FALSE);
 	}
 	//작업이 완료. 현재 값을 증가시켜 고유 값을 유지함.

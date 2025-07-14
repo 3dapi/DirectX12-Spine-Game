@@ -198,10 +198,12 @@ int MainApp::Render()
 	hr = d3d->command(EG2GRAPHICS_D3D::CMD_FENCE_WAIT);
 
 	hr = d3dCommandAlloc->Reset();
+	ThrowIfFailed(hr);
 	if (FAILED(hr))
 		return hr;
 
 	hr = d3dCommandList->Reset(d3dCommandAlloc, nullptr);
+	ThrowIfFailed(hr);
 	if (FAILED(hr))
 		return hr;
 
@@ -222,6 +224,7 @@ int MainApp::Render()
 
 	d3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(d3dBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 	hr = d3dCommandList->Close();
+	ThrowIfFailed(hr);
 	if (FAILED(hr))
 		return hr;
 

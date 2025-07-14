@@ -217,9 +217,11 @@ int SpineRender::UpdateDrawBuffer()
 	auto cmdQue     = std::any_cast<ID3D12CommandQueue*       >(d3d->getCommandQueue());
 
 	hr = cmdAlloc->Reset();
+	ThrowIfFailed(hr);
 	if(FAILED(hr))
 		return hr;
 	hr = cmdList->Reset(cmdAlloc, nullptr);
+	ThrowIfFailed(hr);
 	if(FAILED(hr))
 		return hr;
 	
@@ -229,9 +231,14 @@ int SpineRender::UpdateDrawBuffer()
 	const auto slotCount = drawOrder.size();
 	for(size_t i = 0; i < slotCount; ++i)
 	{
-		auto* slot = drawOrder[i];
-		auto name = slot->getData().getName().buffer();
-		auto* attachment = slot->getAttachment();
+		auto*	slot       = drawOrder[i];
+		auto	name       = slot->getData().getName().buffer();
+		auto*	attachment = slot->getAttachment();
+
+		bool	updated_pos{};
+		bool	updated_dif{};
+		bool	updated_tex{};
+		bool	updated_idx{};
 
 		if(!attachment)
 			continue;
@@ -298,6 +305,7 @@ int SpineRender::UpdateDrawBuffer()
 
 			// Upload → GPU 복사 (Position)
 			{
+				updated_pos = true;
 				XMFLOAT2* ptrPos = nullptr;
 				buf->rscPosCPU->Map(0, nullptr, (void**)&ptrPos);
 				meshAttachment->computeWorldVertices(*slot, 0, meshAttachment->getWorldVerticesLength(), (float*)ptrPos, 0, 2);
@@ -305,6 +313,7 @@ int SpineRender::UpdateDrawBuffer()
 			}
 			// Upload → GPU 복사 (texture coord)
 			{
+				updated_tex = true;
 				XMFLOAT2* ptrTex = nullptr;
 				buf->rscTexCPU->Map(0, nullptr, (void**)&ptrTex);
 				avx2_memcpy(ptrTex, spineTex, texSize);
@@ -312,6 +321,7 @@ int SpineRender::UpdateDrawBuffer()
 			}
 			// Upload → GPU 복사 (diffuse)
 			{
+				updated_dif = true;
 				uint32_t* ptrDif = nullptr;
 				buf->rscDifCPU->Map(0, nullptr, (void**)&ptrDif);
 				avx2_memset32(ptrDif, rgba, vtxCount);
@@ -319,6 +329,7 @@ int SpineRender::UpdateDrawBuffer()
 			}
 			// Index
 			{
+				updated_idx = true;
 				uint16_t* ptrIdx = nullptr;
 				buf->rscIdxCPU->Map(0, nullptr, (void**)&ptrIdx);
 				avx2_memcpy(ptrIdx, spineIdx, idxSize);
@@ -348,6 +359,7 @@ int SpineRender::UpdateDrawBuffer()
 
 			// Position
 			{
+				updated_pos = true;
 				XMFLOAT2* ptrPos = nullptr;
 				buf->rscPosCPU->Map(0, nullptr, (void**)&ptrPos);
 				regionAttachment->computeWorldVertices(*slot, (float*)ptrPos, 0, 2);
@@ -355,6 +367,7 @@ int SpineRender::UpdateDrawBuffer()
 			}
 			// texture coord
 			{
+				updated_tex = true;
 				XMFLOAT2* ptrTex = nullptr;
 				buf->rscTexCPU->Map(0, nullptr, (void**)&ptrTex);
 				avx2_memcpy(ptrTex, spineTex, texSize);
@@ -362,6 +375,7 @@ int SpineRender::UpdateDrawBuffer()
 			}
 			// diffuse
 			{
+				updated_dif = true;
 				uint32_t* ptrDif = nullptr;
 				buf->rscDifCPU->Map(0, nullptr, (void**)&ptrDif);
 				avx2_memset32(ptrDif, rgba, vtxCount);
@@ -369,6 +383,7 @@ int SpineRender::UpdateDrawBuffer()
 			}
 			// Index
 			{
+				updated_idx = true;
 				uint16_t* ptrIdx = nullptr;
 				buf->rscIdxCPU->Map(0, nullptr, (void**)&ptrIdx);
 				avx2_memcpy(ptrIdx, spineIdx, idxSize);
@@ -376,21 +391,46 @@ int SpineRender::UpdateDrawBuffer()
 			}
 		}
 
-		cmdList->CopyBufferRegion(buf->rscPosGPU.Get(), 0, buf->rscPosCPU.Get(), 0, posSize);
-		CD3DX12_RESOURCE_BARRIER barPos = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscPosGPU.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-		cmdList->ResourceBarrier(1, &barPos);
+		// 1. GPU 버퍼 COPY_DEST 상태로 전이
+		// 2. 업로드 힙에서 복사
+		// 3. 복사 완료 원 상태로 전이
 
-		cmdList->CopyBufferRegion(buf->rscDifGPU.Get(), 0, buf->rscDifCPU.Get(), 0, difSize);
-		CD3DX12_RESOURCE_BARRIER barDif = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscDifGPU.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-		cmdList->ResourceBarrier(1, &barDif);
+		if(updated_pos)
+		{
+			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscPosGPU.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
+			cmdList->ResourceBarrier(1, &toCopy);
 
-		cmdList->CopyBufferRegion(buf->rscTexGPU.Get(), 0, buf->rscTexCPU.Get(), 0, texSize);
-		CD3DX12_RESOURCE_BARRIER barTex = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscTexGPU.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-		cmdList->ResourceBarrier(1, &barTex);
+			cmdList->CopyBufferRegion(buf->rscPosGPU.Get(), 0, buf->rscPosCPU.Get(), 0, posSize);
+			CD3DX12_RESOURCE_BARRIER barPos = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscPosGPU.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+			cmdList->ResourceBarrier(1, &barPos);
+		}
+		if(updated_dif)
+		{
+			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscDifGPU.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
+			cmdList->ResourceBarrier(1, &toCopy);
 
-		cmdList->CopyBufferRegion(buf->rscIdxGPU.Get(), 0, buf->rscIdxCPU.Get(), 0, idxSize);
-		CD3DX12_RESOURCE_BARRIER barIdx = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscIdxGPU.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
-		cmdList->ResourceBarrier(1, &barIdx);
+			cmdList->CopyBufferRegion(buf->rscDifGPU.Get(), 0, buf->rscDifCPU.Get(), 0, difSize);
+			CD3DX12_RESOURCE_BARRIER barDif = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscDifGPU.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+			cmdList->ResourceBarrier(1, &barDif);
+		}
+		if (updated_tex)
+		{
+			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscTexGPU.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
+			cmdList->ResourceBarrier(1, &toCopy);
+
+			cmdList->CopyBufferRegion(buf->rscTexGPU.Get(), 0, buf->rscTexCPU.Get(), 0, texSize);
+			CD3DX12_RESOURCE_BARRIER barTex = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscTexGPU.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+			cmdList->ResourceBarrier(1, &barTex);
+		}
+		if (updated_idx)
+		{
+			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscIdxGPU.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
+			cmdList->ResourceBarrier(1, &toCopy);
+
+			cmdList->CopyBufferRegion(buf->rscIdxGPU.Get(), 0, buf->rscIdxCPU.Get(), 0, idxSize);
+			CD3DX12_RESOURCE_BARRIER barIdx = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscIdxGPU.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+			cmdList->ResourceBarrier(1, &barIdx);
+		}
 
 		// Bind
 		buf->numVb  = vtxCount;
@@ -400,10 +440,13 @@ int SpineRender::UpdateDrawBuffer()
 		buf->vbvTex = {buf->rscTexGPU->GetGPUVirtualAddress(), texSize, sizeof(XMFLOAT2)};
 		buf->ibv    = {buf->rscIdxGPU->GetGPUVirtualAddress(), idxSize, DXGI_FORMAT_R16_UINT };
 	}
-
+	d3d->command(CMD_WAIT_GPU);
 	hr = cmdList->Close();
 	if(FAILED(hr))
+	{
+		ThrowIfFailed(hr);
 		return hr;
+	}
 	ID3D12CommandList* ppCmdLists[] = {cmdList};
 	cmdQue->ExecuteCommandLists(_countof(ppCmdLists), ppCmdLists);
 	d3d->command(CMD_WAIT_GPU);

@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <tuple>
 #include <d3d12.h>
+#include "Common/G2.FactoryCamera.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
 #include "Common/G2.FactorySIgnature.h"
@@ -37,6 +38,14 @@ SceneSpine::~SceneSpine()
 
 int SceneSpine::Init(const std::any& initial_value)
 {
+	auto cameraSpine = FactoryCamera::instance()->FindRes(IG2Camera::SPINE_2D);
+	if(cameraSpine)
+	{
+		cameraSpine->Position({0.0f, +200.0f, -700.0f});
+		cameraSpine->LookAt  ({0.0f, +200.0f,    0.0f});
+		cameraSpine->Update  ();
+	}
+
 	vector<string> detachSlotSpineBoy = {
 		"spineboy-torso", "head", "eyes-open", "mouth-smile", "visor",
 		"gun", "front-arm", "front-bracer", "front-hand",

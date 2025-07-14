@@ -176,7 +176,7 @@ int SPINE_DRAW_BUFFER::Setup(ID3D12Device* device, UINT widthVertex, UINT widthI
 {
 	int hr = S_OK;
 	// GPU position buffer
-	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &vtxBufDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&rscPosGPU));
+	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &vtxBufDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&rscPosGPU));
 	if(FAILED(hr))
 		return hr;
 	// CPU upload position buffer
@@ -184,7 +184,7 @@ int SPINE_DRAW_BUFFER::Setup(ID3D12Device* device, UINT widthVertex, UINT widthI
 	if(FAILED(hr))
 		return hr;
 	// GPU diffuse buffer
-	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &vtxBufDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&rscDifGPU));
+	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &vtxBufDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&rscDifGPU));
 	if(FAILED(hr))
 		return hr;
 	// CPU upload diffuse buffer
@@ -192,7 +192,7 @@ int SPINE_DRAW_BUFFER::Setup(ID3D12Device* device, UINT widthVertex, UINT widthI
 	if(FAILED(hr))
 		return hr;
 	// GPU texture coord buffer
-	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &vtxBufDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&rscTexGPU));
+	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &vtxBufDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&rscTexGPU));
 	if(FAILED(hr))
 		return hr;
 	// CPU upload texture coord buffer
@@ -200,7 +200,7 @@ int SPINE_DRAW_BUFFER::Setup(ID3D12Device* device, UINT widthVertex, UINT widthI
 	if(FAILED(hr))
 		return hr;
 	// GPU index buffer
-	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &idxBufDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(&rscIdxGPU));
+	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &idxBufDesc, D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&rscIdxGPU));
 	if(FAILED(hr))
 		return hr;
 	// CPU upload index buffer

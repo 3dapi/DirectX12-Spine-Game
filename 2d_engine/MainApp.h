@@ -51,8 +51,6 @@ protected:
 
 	XMMATRIX							m_spineVPlobby		;
 	XMMATRIX							m_spineVPplay		;
-	IG2Camera*							m_camera2DLobby		{};
-	IG2Camera*							m_camera2DPlay		{};
 
 protected:
 	EAPP_SCENE							m_sceneIdxCur	{ EAPP_SCENE::EAPP_SCENE_BEGIN};

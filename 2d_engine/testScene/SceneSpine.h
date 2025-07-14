@@ -41,6 +41,7 @@ public:
 	int		Destroy()					override;
 	int		Update(const std::any& t)	override;
 	int		Render()					override;
+	int		Notify(const std::string&, const std::any&)	override;
 };
 
 #endif

@@ -1,4 +1,6 @@
-﻿#include <Windows.h>
+﻿#include <any>
+#include <type_traits>
+#include <Windows.h>
 #include <d3d12.h>
 #include <DirectXMath.h>
 #include <wrl/client.h>
@@ -10,6 +12,18 @@ using namespace G2;
 
 int G2Camera::Init(const std::any& initialValue)
 {
+	if(initialValue.has_value())
+	{
+		try
+		{
+			m_name = any_cast<const string&>(initialValue);
+		}
+		catch (const bad_any_cast& e)
+		{
+			return E_FAIL;
+		}
+			
+	}
 	return S_OK;
 }
 int G2Camera::Update(const std::any& t)
@@ -72,6 +86,7 @@ G2CameraUI::G2CameraUI()
 
 int G2CameraUI::Init(const std::any& initialValue)
 {
+	G2Camera::Init(initialValue);
 	::SIZE  screenSize = *any_cast<::SIZE*>(IG2GraphicsD3D::instance()->getAttrib(ATT_SCREEN_SIZE));
 	m_vcFNF = { (float)screenSize.cx, (float)screenSize.cy, 1.0f, 5000.0f };
 	m_tmPrj = XMMatrixOrthographicLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
@@ -79,6 +94,8 @@ int G2CameraUI::Init(const std::any& initialValue)
 	m_vcLook = { 0.0f, 0.0f,   0.0f };
 	m_tmViw = XMMatrixLookAtLH(XMLoadFloat3(&m_vcEye), XMLoadFloat3(&m_vcLook), XMLoadFloat3(&m_vcUp));
 	m_tmVP = m_tmViw * m_tmPrj;
+
+	Update();
 	return S_OK;
 }
 
@@ -102,6 +119,7 @@ G2Camera2D::G2Camera2D()
 
 int G2Camera2D::Init(const std::any& initialValue /* = */ )
 {
+	G2Camera::Init(initialValue);
 	float aspectRatio = *any_cast<float*>(IG2GraphicsD3D::instance()->getAttrib(ATT_ASPECTRATIO));
 	m_vcFNF = { XM_PI / 3.0F, aspectRatio, 1.0f, 5000.0f };
 	m_tmPrj = XMMatrixPerspectiveFovLH(m_vcFNF.x, m_vcFNF.y, m_vcFNF.z, m_vcFNF.w);
@@ -113,7 +131,7 @@ int G2Camera2D::Init(const std::any& initialValue /* = */ )
 	XMVECTORF32 look = { m_vcLook.x, m_vcLook.y, m_vcLook.z, 0.0f };
 	XMVECTORF32  up  = { m_vcUp.x  , m_vcUp.y , m_vcUp.z   , 0.0f };
 
-	m_tmViw  = XMMatrixLookAtLH(eye, look, up);	m_tmVP = m_tmViw * m_tmPrj;	return S_OK;}
+	m_tmViw  = XMMatrixLookAtLH(eye, look, up);	m_tmVP = m_tmViw * m_tmPrj;	Update();	return S_OK;}
 
 int G2Camera2D::Update(const std::any& t)
 {
@@ -134,7 +152,7 @@ int G2Camera2D::Update(const std::any& t)
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-IG2Camera* IG2Camera::create(EG2CAMERA type)
+IG2Camera* IG2Camera::create(const std::string& name, EG2CAMERA type)
 {
 	IG2Camera* ret = nullptr;
 	if(EG2CAM_UI == type)
@@ -155,7 +173,7 @@ IG2Camera* IG2Camera::create(EG2CAMERA type)
 	}
 
 	if (ret)
-		ret->Init();
+		ret->Init(name);
 
 	return ret;
 }

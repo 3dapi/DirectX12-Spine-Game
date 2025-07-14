@@ -153,14 +153,14 @@ int MainApp::init(const std::any& initialValue /* = */)
 		m_spineVPplay = tmViw * tmPrj;
 	}
 
-	//m_camera2DLobby = std::unique_ptr<IG2Camera>(IG2Camera::create(EG2CAMERA::EG2CAM_2D));
+	m_camera2DLobby = IG2Camera::create("2d model", EG2CAMERA::EG2CAM_2D);
 	//auto cam2DPlay = IG2Camera::create(EG2CAMERA::EG2CAM_2D);
-	//cam2DPlay->Position({ 0.0f, 100.0f, -700.0f });
-	//cam2DPlay->LookAt  ({ 0.0f, 100.0f, -700.0f });
-	//cam2DPlay->Update();
+	m_camera2DLobby->Position({ 0.0f, 100.0f, -700.0f });
+	m_camera2DLobby->LookAt  ({ 0.0f, 100.0f, -700.0f });
+	m_camera2DLobby->Update();
 
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_BEGIN);
+	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_SPINE);
 
 	return S_OK;
 }
@@ -345,6 +345,7 @@ void MainApp::ChangeScene(EAPP_SCENE target)
 			case EAPP_SCENE_LOBBY:	m_scene[m_sceneIdxCur] = std::make_unique<SceneLobby>();	break;
 			case EAPP_SCENE_PLAY:	m_scene[m_sceneIdxCur] = std::make_unique<ScenePlay>();		break;
 			case EAPP_SCENE_END:	m_scene[m_sceneIdxCur] = std::make_unique<SceneEnd>();		break;
+			case EAPP_SCENE_SPINE:	m_scene[m_sceneIdxCur] = std::make_unique<SceneSpine>();	break;
 		}
 	}
 	m_scene[m_sceneIdxCur]->Init();

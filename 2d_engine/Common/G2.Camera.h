@@ -2,8 +2,10 @@
 #ifndef _G2_CAMERA_H_
 #define _G2_CAMERA_H_
 
+#include <string>
 #include <DirectXMath.h>
 
+using namespace std;
 using namespace DirectX;
 
 enum EG2CAMERA
@@ -41,7 +43,7 @@ struct IG2Camera
 	virtual void		MoveUp      (float speed) = 0;
 	virtual void		MoveDown    (float speed) = 0;
 
-	static IG2Camera*	create(EG2CAMERA type);
+	static IG2Camera*	create(const std::string& name, EG2CAMERA type);
 };
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -49,6 +51,7 @@ struct IG2Camera
 class G2Camera : public IG2Camera
 {
 protected:
+	string		m_name		;
 	bool		m_beUpdate {};
 	XMMATRIX	m_tmViw		= XMMatrixIdentity();
 	XMMATRIX	m_tmPrj		= XMMatrixIdentity();

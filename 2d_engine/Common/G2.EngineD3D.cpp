@@ -476,9 +476,11 @@ int EngineD3D::WaitGpu()
 {
 	HRESULT hr = S_OK;
 
-	// gpu 작업이 완료되었는지 확인. signal에는 어떤 값도 상관 없음.
+	// gpu 작업이 완료되었는지 확인. signal 에는 어떤 값도 상관 없음.
 	// 고유 값을 주면 좋은데, 일단 현재 값을 넣어봄.
-	hr = m_d3dCommandQueue->Signal(m_d3dFence.Get(), m_d3dFenceIndex);
+	UINT64 currentFenceValue = m_d3dFenceIndex;
+	++currentFenceValue;
+	hr = m_d3dCommandQueue->Signal(m_d3dFence.Get(), currentFenceValue);
 	if(FAILED(hr))
 	{
 		debugToOutputWindow("FAILED: EngineD3D::FlushCommandQueue:: Signal");
@@ -488,15 +490,15 @@ int EngineD3D::WaitGpu()
 	// 바로 받음.
 	auto rcv_gpu = m_d3dFence->GetCompletedValue();
 
-	// signal에 준 값과 같은지 판정. 입력 값과 같은지 확인.
-	if (rcv_gpu != m_d3dFenceIndex)
+	// signal 에 준 값과 같은지 판정. 입력 값과 같은지 확인.
+	if (rcv_gpu != currentFenceValue)
 	{
 		// 작업이 완료될 때까지 기다림.
 		ThrowIfFailed(m_d3dFence->SetEventOnCompletion(m_d3dFenceIndex, m_fenceEvent));
 		std::ignore = WaitForSingleObjectEx(m_fenceEvent, INFINITE, FALSE);
 	}
 	//작업이 완료. 현재 값을 증가시켜 고유 값을 유지함.
-	++m_d3dFenceIndex;
+	m_d3dFenceIndex = currentFenceValue;
 
 	return S_OK;
 }

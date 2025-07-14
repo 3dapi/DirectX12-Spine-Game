@@ -49,9 +49,6 @@ protected:
 	uint8_t								m_keyNew		[EAPP_MAX_KEY]{};
 	uint8_t								m_keyCur		[EAPP_MAX_KEY]{};
 
-	XMMATRIX							m_spineVPlobby		;
-	XMMATRIX							m_spineVPplay		;
-
 protected:
 	EAPP_SCENE							m_sceneIdxCur	{ EAPP_SCENE::EAPP_SCENE_BEGIN};
 	EAPP_SCENE							m_sceneIdxNew	{ EAPP_SCENE::EAPP_SCENE_BEGIN };

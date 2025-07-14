@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <tuple>
 #include <d3d12.h>
+#include "Common/G2.FactoryCamera.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
 #include "Common/G2.FactorySIgnature.h"
@@ -42,6 +43,14 @@ ScenePlay::~ScenePlay()
 int ScenePlay::Init(const std::any& initial_value)
 {
 	int hr = S_OK;
+
+	auto cameraSpine = FactoryCamera::instance()->FindRes(IG2Camera::SPINE_2D);
+	if(cameraSpine)
+	{
+		cameraSpine->Position({0.0f, +200.0f,-700.0f});
+		cameraSpine->LookAt  ({0.0f, +200.0f,   0.0f});
+		cameraSpine->Update  ();
+	}
 
 	auto pGameInfo = GameInfo::instance();
 
@@ -282,7 +291,7 @@ int ScenePlay::CreateMainPlayerModel()
 	if (!m_mainPlayer)
 		return E_FAIL;
 
-	//           model type  positgion scale  direction
+	//           model type  position scale  direction
 	tuple<EAPP_MODEL, float, float> charModel
 	{
 		EAPP_MODEL::EMODEL_KNIGHT, 0.5F,  1.0F,

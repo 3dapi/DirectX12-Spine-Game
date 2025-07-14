@@ -18,7 +18,7 @@ int G2Camera::Init(const std::any& initialValue)
 		{
 			m_name = any_cast<const string&>(initialValue);
 		}
-		catch (const bad_any_cast& e)
+		catch (const bad_any_cast&)
 		{
 			return E_FAIL;
 		}
@@ -144,7 +144,7 @@ int G2Camera2D::Update(const std::any& t)
 		XMVECTORF32 eye  = { m_vcEye.x , m_vcEye.y , m_vcEye.z , 0.0f };
 		XMVECTORF32 look = { m_vcLook.x, m_vcLook.y, m_vcLook.z, 0.0f };
 		XMVECTORF32  up  = { m_vcUp.x  , m_vcUp.y , m_vcUp.z   , 0.0f };
-		//m_tmViw = XMMatrixLookAtLH(eye, look, up);
+		m_tmViw = XMMatrixLookAtLH(eye, look, up);
 		m_tmVP = m_tmViw * m_tmPrj;
 	}
 	return S_OK;

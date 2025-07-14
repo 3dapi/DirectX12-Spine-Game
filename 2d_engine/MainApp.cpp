@@ -6,6 +6,7 @@
 #include <d3d12.h>
 #include "MainApp.h"
 #include "ResourceUploadBatch.h"
+#include "Common/G2.FactoryCamera.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
 #include "Common/G2.FactorySIgnature.h"
@@ -52,12 +53,6 @@ std::any MainApp::getAttrib(int nAttrib)
 		case EAPP_ATTRIB::EAPP_ATT_XTK_GRAPHIC_MEM:	return m_xtkGraphicMem.get();
 		case EAPP_ATTRIB::EAPP_ATT_XTK_DESC_HEAP:	return m_xtkDescHeap.get();
 		case EAPP_ATTRIB::EAPP_ATT_XTK_BATCH:		return m_batch.get();
-		case EAPP_ATTRIB::EAPP_ATT_CUR_SPINE_VP: {
-			if (m_sceneIdxCur == EAPP_SCENE_PLAY)
-				return &m_spineVPplay;
-			else
-				return &m_spineVPlobby;
-		}
 	}
 	return D3DWinApp::getAttrib(nAttrib);
 }
@@ -135,30 +130,13 @@ int MainApp::init(const std::any& initialValue /* = */)
 	m_xtkDescHeap   = std::make_unique<DescriptorHeap>(device, EAPP_DESC_HEAP_SIZE);
 	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(device);
 
-	// lobby spine camera
-	auto aspectRatio = m_screenSize.cx / float(m_screenSize.cy);
-	XMVECTORF32  up = { 0.0f, 1.0f, 0.0f, 0.0f };
-	XMMATRIX tmPrj = XMMatrixPerspectiveFovLH(XM_PI / 3.0F, aspectRatio, 1.0f, 5000.0f);
+	FactoryCamera::instance()->Load(IG2Camera::SPINE_2D, EG2CAMERA::EG2CAM_2D);
 	{
-		XMVECTORF32 eye = { 0.0f, 0.0f, -700.0f, 0.0f };
-		XMVECTORF32  at = { 0.0f, 0.0f, 0.0f, 0.0f };
-		XMMATRIX     tmViw = XMMatrixLookAtLH(eye, at, up);
-		m_spineVPlobby = tmViw * tmPrj;
+		auto cameraSpine = FactoryCamera::instance()->FindRes(IG2Camera::SPINE_2D);
+		cameraSpine->Position({0.0f, 0.0f,-700.0f});
+		cameraSpine->LookAt  ({0.0f, 0.0f,   0.0f});
+		cameraSpine->Update  ();
 	}
-	// play spine camera
-	{
-		XMVECTORF32 eye = { 0.0f, 200.0f, -700.0f, 0.0f };
-		XMVECTORF32  at = { 0.0f, 200.0f, 0.0f, 0.0f };
-		XMMATRIX     tmViw = XMMatrixLookAtLH(eye, at, up);
-		m_spineVPplay = tmViw * tmPrj;
-	}
-
-	m_camera2DLobby = IG2Camera::create("2d model", EG2CAMERA::EG2CAM_2D);
-	//auto cam2DPlay = IG2Camera::create(EG2CAMERA::EG2CAM_2D);
-	m_camera2DLobby->Position({ 0.0f, 100.0f, -700.0f });
-	m_camera2DLobby->LookAt  ({ 0.0f, 100.0f, -700.0f });
-	m_camera2DLobby->Update();
-
 	//AFEW::WORK
 	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_SPINE);
 
@@ -239,7 +217,7 @@ int MainApp::Render()
 	if (m_scene[m_sceneIdxCur])
 		m_scene[m_sceneIdxCur]->Render();
 
-	// xtk memory clear.!!!!!!
+	// XTK memory clear.!!!!!!
 	m_xtkGraphicMem->Commit(commandQue);
 
 	d3dCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(d3dBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));

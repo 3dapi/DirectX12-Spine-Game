@@ -4,7 +4,7 @@
 #define CONSOLE_DEBUG 1
 #endif
 
-#ifdef CONSOLE_DEBUG
+#if defined(CONSOLE_DEBUG) && (CONSOLE_DEBUG==1)
 #pragma comment(linker, "/subsystem:console")
 #endif
 
@@ -12,7 +12,7 @@
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
 
-#ifdef CONSOLE_DEBUG
+#if defined(CONSOLE_DEBUG) && (CONSOLE_DEBUG==1)
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
@@ -20,7 +20,7 @@
 #include "MainApp.h"
 
 
-#ifdef CONSOLE_DEBUG
+#if defined(CONSOLE_DEBUG) && (CONSOLE_DEBUG==1)
 int main(int, char**)
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);

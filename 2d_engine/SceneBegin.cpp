@@ -4,6 +4,7 @@
 #include <tuple>
 #include <utility>
 #include <d3d12.h>
+#include "Common/G2.FactoryCamera.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
 #include "Common/G2.FactorySIgnature.h"
@@ -46,15 +47,24 @@ int SceneBegin::Init(const std::any& initial_value)
 	auto cmdList = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	//           model type  positgion scale  direction
+	// spine camera
+	auto cameraSpine = FactoryCamera::instance()->FindRes(IG2Camera::SPINE_2D);
+	if(cameraSpine)
+	{
+		cameraSpine->Position({0.0f, +300.0f,-700.0f});
+		cameraSpine->LookAt  ({0.0f, +300.0f,   0.0f});
+		cameraSpine->Update  ();
+	}
+
+	//           model type  position scale  direction
 	vector<tuple<EAPP_MODEL, XMFLOAT2, float, float> >	charModel
 	{
-		{ EAPP_MODEL::EMODEL_RAPTOR	, {-840.0F, -300.0F}, 1.0F,  1.0F, },
-		{ EAPP_MODEL::EMODEL_GOBLIN	, {-400.0F, -300.0F}, 1.0F,  1.0F, },
-		{ EAPP_MODEL::EMODEL_KNIGHT	, {-120.0F, -300.0F}, 0.7F,  1.0F, },
-		{ EAPP_MODEL::EMODEL_BOY	, { 260.0F, -300.0F}, 0.7F, -1.0F, },
-		{ EAPP_MODEL::EMODEL_STMAN	, { 550.0F, -300.0F}, 1.0F, -1.0F, },
-		{ EAPP_MODEL::EMODEL_ALIEN	, { 800.0F, -300.0F}, 1.0F, -1.0F, },
+		{ EAPP_MODEL::EMODEL_RAPTOR	, {-840.0F, 0.0F}, 1.0F,  1.0F, },
+		{ EAPP_MODEL::EMODEL_GOBLIN	, {-400.0F, 0.0F}, 1.0F,  1.0F, },
+		{ EAPP_MODEL::EMODEL_KNIGHT	, {-120.0F, 0.0F}, 0.7F,  1.0F, },
+		{ EAPP_MODEL::EMODEL_BOY	, { 260.0F, 0.0F}, 0.7F, -1.0F, },
+		{ EAPP_MODEL::EMODEL_STMAN	, { 550.0F, 0.0F}, 1.0F, -1.0F, },
+		{ EAPP_MODEL::EMODEL_ALIEN	, { 800.0F, 0.0F}, 1.0F, -1.0F, },
 	};	
 
 	for(size_t i = 0; i < charModel.size(); ++i)

@@ -1,6 +1,7 @@
 ﻿
 #include <any>
 #include <d3d12.h>
+#include "Common/G2.FactoryCamera.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
 #include "Common/G2.FactorySIgnature.h"
@@ -70,7 +71,12 @@ int SpineRender::Destroy()
 
 int SpineRender::Update(const std::any& t)
 {
-	auto tmVP = *std::any_cast<XMMATRIX*>(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_CUR_SPINE_VP));
+	XMMATRIX tmVP = XMMatrixIdentity();
+	auto camera = FactoryCamera::instance()->FindRes(IG2Camera::SPINE_2D);
+	if(camera)
+	{
+		tmVP = camera->ViewProjectMatrix();
+	}
 
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto deltaTime = gt.DeltaTime();

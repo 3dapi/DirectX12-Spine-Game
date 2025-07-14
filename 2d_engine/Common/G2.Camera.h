@@ -19,8 +19,12 @@ enum EG2CAMERA
 	EG2CAM_COUNT	,				// total count
 };
 
+
 struct IG2Camera
 {
+	inline const static string SPINE_2D		= "spine-2d";
+
+
 	virtual ~IG2Camera() {};
 	virtual int			Type() const = 0;
 	virtual int			Init(const std::any& initialValue = {}) = 0;

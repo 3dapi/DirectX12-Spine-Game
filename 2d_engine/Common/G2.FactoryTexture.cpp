@@ -33,12 +33,11 @@ TD3D_TEXTURE* FactoryTexture::ResourceLoad(const std::string& name, const std::s
 		return {};
 
 	// load
-	ComPtr<ID3D12Resource> rs_tx = tex;
 	auto pItem = std::make_unique<TD3D_TEXTURE>();
 	pItem->name = name;
 	pItem->file = file;
 	pItem->size = DirectX::GetTextureSize(tex);
-	pItem->r = std::move(rs_tx);
+	pItem->r = tex;
 
 	//c++17
 	auto [it, success] = m_db.insert({ name, std::move(pItem) });
@@ -83,7 +82,7 @@ ID3D12Resource* FactoryTexture::FindRes(const std::string& name) const
 	auto itr = this->m_db.find(name);
 	if (itr != this->m_db.end())
 	{
-		return itr->second.get()->r.Get();
+		return itr->second.get()->r;
 	}
 	return {};
 }

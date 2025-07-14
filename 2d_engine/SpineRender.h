@@ -3,6 +3,7 @@
 #ifndef _SpineRender_H_
 #define _SpineRender_H_
 
+#include <functional>
 #include <map>
 #include <vector>
 #include <any>
@@ -26,6 +27,7 @@ using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 using namespace G2;
 
+class SpineAnimationListener;
 
 struct SPINE_ATTRIB
 {
@@ -45,6 +47,7 @@ struct SPINE_ATTRIB
 
 class SpineRender : public G2::IG2Object
 {
+	friend class SpineAnimationListener;
 protected:
 	// spine resource
 	G2::TD3D_SPINE*				m_spineRsc			{};
@@ -52,23 +55,20 @@ protected:
 	spine::Skeleton*			m_spineSkeleton		{};
 	spine::AnimationStateData*	m_spineAniStateData	{};
 	spine::AnimationState*		m_spineAniState		{};
-
+	SpineAnimationListener*		m_spineListener		{};
 	vector<string>				m_spineAnimation	;
 	SPINE_ATTRIB				m_attrib			{};
 
 protected:
 	// Direct3D resources for cube geometry.
 	UINT							m_descriptorSize	{};
-	ComPtr<ID3D12DescriptorHeap>	m_cbvHeap			{};
+	ID3D12DescriptorHeap*			m_cbvHeap			{};
 	D3D12_GPU_DESCRIPTOR_HANDLE		m_descGpuHandle		{};
 	D3D12_CPU_DESCRIPTOR_HANDLE		m_descCpuHandle		{};
-	UINT							m_maxVtxCount		{};
-	UINT							m_maxIdxCount		{};
 
-	vector<SPINE_DRAW_BUFFER>		m_drawBuf			;
-	int								m_drawCount			{};
+	map<int, SPINE_DRAW_BUFFER*>	m_drawBuf			;
 	D3D12_GPU_DESCRIPTOR_HANDLE		m_textureHandle		{};		// spine texture handle
-	ComPtr<ID3D12Resource>			m_cnstMVP			{};
+	ID3D12Resource*					m_cnstMVP			{};
 	uint8_t*						m_ptrMVP			{};
 
 protected:
@@ -105,6 +105,16 @@ protected:
 	int		InitD3DResource();
 	int		UpdateDrawBuffer();
 	void	SetupDrawBuffer();
+
+	void	AnimationEvent(spine::AnimationState* state, spine::EventType type, spine::TrackEntry* entry, spine::Event* event);
+};
+
+class SpineAnimationListener : public spine::AnimationStateListenerObject
+{
+public:
+	SpineRender* m_thzz{};
+public:
+	void callback(spine::AnimationState* state, spine::EventType type, spine::TrackEntry* entry, spine::Event* event) override;
 };
 
 #endif

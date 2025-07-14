@@ -156,12 +156,8 @@ int EngineD3D::init(const std::any& initialValue)
 
 int EngineD3D::destroy()
 {
-	if(m_fenceEvent)
-	{
-		CloseHandle(m_fenceEvent);
-		m_fenceEvent = nullptr;
-	}
-	return this->ReleaseDevice();
+	int hr = this->ReleaseDevice();
+	return hr;
 }
 
 
@@ -184,6 +180,7 @@ int EngineD3D::InitDevice()
 			return hr;
 	}
 	ThrowIfFailed(m_d3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_d3dFence)));
+	m_d3dFence->SetName(L"m_d3dFence");
 
 	m_sizeDescriptorB = m_d3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	m_sizeDescriptorD = m_d3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
@@ -258,6 +255,7 @@ int EngineD3D::CreateDevice()
 		hr = D3D12CreateDevice(pAdapter, featureLevels[i], IID_PPV_ARGS(&m_d3dDevice));
 		if (SUCCEEDED(hr))
 		{
+			m_d3dDevice->SetName(L"D3D12Device");
 			m_featureLevel = featureLevels[i];
 			m_driverType = D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_HARDWARE;
 			break;
@@ -305,8 +303,22 @@ int EngineD3D::ReleaseDevice()
 	m_d3dDepthBuffer.Reset();
 	m_heapBackBuffer.Reset();
 	m_heapDepthStencil.Reset();
-	m_d3dDevice.Reset();
+
 	m_dxgiFactory.Reset();
+
+	if(m_fenceEvent)
+	{
+		CloseHandle(m_fenceEvent);
+		m_fenceEvent = nullptr;
+	}
+
+	ComPtr<ID3D12DebugDevice> debugDevice;
+	if(SUCCEEDED(m_d3dDevice->QueryInterface(IID_PPV_ARGS(&debugDevice))))
+	{
+		debugDevice->ReportLiveDeviceObjects(D3D12_RLDO_DETAIL);
+	}
+
+	m_d3dDevice.Reset();
 
 	return S_OK;
 }
@@ -317,13 +329,16 @@ void EngineD3D::CreateCommandObjects()
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 	ThrowIfFailed(m_d3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_d3dCommandQueue)));
+	m_d3dCommandQueue->SetName(L"m_d3dCommandQueue");
 	ThrowIfFailed(m_d3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_d3dCommandAlloc.GetAddressOf())));
+	m_d3dCommandAlloc->SetName(L"m_d3dCommandAlloc");
 	ThrowIfFailed(m_d3dDevice->CreateCommandList(
 		0,
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
 		m_d3dCommandAlloc.Get(), // Associated command allocator
 		nullptr,                   // Initial PipelineStateObject
 		IID_PPV_ARGS(m_d3dCommandList.GetAddressOf())));
+	m_d3dCommandList->SetName(L"m_d3dCommandList");
 
 	// Start off in a closed state.  This is because the first time we refer 
 	// to the command list we will Reset it, and it needs to be closed before
@@ -369,6 +384,7 @@ void EngineD3D::CreateRtvAndDsvDescriptorHeaps()
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	rtvHeapDesc.NodeMask = 0;
 	ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(m_heapBackBuffer.GetAddressOf())));
+	m_heapBackBuffer->SetName(L"m_heapBackBuffer");
 
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
 	dsvHeapDesc.NumDescriptors = 1;
@@ -376,6 +392,7 @@ void EngineD3D::CreateRtvAndDsvDescriptorHeaps()
 	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	dsvHeapDesc.NodeMask = 0;
 	ThrowIfFailed(m_d3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(m_heapDepthStencil.GetAddressOf())));
+	m_heapDepthStencil->SetName(L"m_heapDepthStencil");
 }
 
 int EngineD3D::Resize()
@@ -445,6 +462,7 @@ int EngineD3D::Resize()
 	optClear.DepthStencil.Depth = 1.0f;
 	optClear.DepthStencil.Stencil = 0;
 	ThrowIfFailed(m_d3dDevice->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &descDepth, D3D12_RESOURCE_STATE_COMMON, &optClear, IID_PPV_ARGS(m_d3dDepthBuffer.GetAddressOf())));
+	m_d3dDepthBuffer->SetName(L"m_d3dDepthBuffer");
 
 	// Create descriptor to mip level 0 of entire resource using the format of the resource.
 	m_d3dDevice->CreateDepthStencilView(m_d3dDepthBuffer.Get(), nullptr, DepthStencilView());

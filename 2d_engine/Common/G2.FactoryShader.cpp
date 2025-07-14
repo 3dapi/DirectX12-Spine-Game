@@ -37,7 +37,7 @@ TD3D_SHADER* FactoryShader::ResourceLoad(const string& name, const string& file,
 	if (r == nullptr)
 		return {};
 
-	pItem->r.Attach(r);
+	pItem->r = r;
 	//c++17
 	auto [it, success] = m_db.insert({ name, std::move(pItem) });
 	auto ret = it->second.get();
@@ -69,7 +69,7 @@ ID3DBlob* FactoryShader::FindRes(const std::string& name) const
 	auto itr = this->m_db.find(name);
 	if (itr != this->m_db.end())
 	{
-		return itr->second.get()->r.Get();
+		return itr->second.get()->r;
 	}
 	return {};
 }

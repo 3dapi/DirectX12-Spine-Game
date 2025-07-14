@@ -57,6 +57,7 @@ int D3DWinApp::Run()
         }
     }
 
+	this->destroy();
 	G2::IG2Graphics::instance()->destroy();
 
 	return (int)msg.wParam;

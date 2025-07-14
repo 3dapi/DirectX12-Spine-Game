@@ -136,6 +136,7 @@ ID3D12Resource* DXCreateTextureFromFile(const std::string& szFileName)
 		uploadOp.wait();  // GPU 업로드 완료 대기
 		// 뷰는 descriptor heap 생성 후에 만듦.
 	}
+	ret->SetName(wFile.c_str());
 	return ret;
 }
 

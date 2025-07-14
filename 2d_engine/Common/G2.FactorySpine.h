@@ -67,26 +67,26 @@ struct SPINE_DRAW_BUFFER {
 	UINT						strideVtx	{};
 	UINT						countIdx	{};		// index count
 
-	ComPtr<ID3D12Resource>		rscPosGPU	{};		// position buffer default heap resource
-	ComPtr<ID3D12Resource>		rscPosCPU	{};		// position buffer upload heap resource
+	ID3D12Resource*				rscPosGPU	{};		// position buffer default heap resource
+	ID3D12Resource*				rscPosCPU	{};		// position buffer upload heap resource
 	D3D12_VERTEX_BUFFER_VIEW	vbvPos		{};		// position buffer view
 
-	ComPtr<ID3D12Resource>		rscDifGPU	{};		// diffuse buffer default heap resource
-	ComPtr<ID3D12Resource>		rscDifCPU	{};		// diffuse buffer upload heap resource
+	ID3D12Resource*				rscDifGPU	{};		// diffuse buffer default heap resource
+	ID3D12Resource*				rscDifCPU	{};		// diffuse buffer upload heap resource
 	D3D12_VERTEX_BUFFER_VIEW	vbvDif		{};		// diffuse buffer view
 
-	ComPtr<ID3D12Resource>		rscTexGPU	{};		// texture coord buffer default heap resource
-	ComPtr<ID3D12Resource>		rscTexCPU	{};		// texture coord buffer upload heap resource
+	ID3D12Resource*				rscTexGPU	{};		// texture coord buffer default heap resource
+	ID3D12Resource*				rscTexCPU	{};		// texture coord buffer upload heap resource
 	D3D12_VERTEX_BUFFER_VIEW	vbvTex		{};		// texture buffer view
 
-	ComPtr<ID3D12Resource>		rscIdxGPU	{};		// index buffer default heap resource
-	ComPtr<ID3D12Resource>		rscIdxCPU	{};		// index buffer upload heap resource
+	ID3D12Resource*				rscIdxGPU	{};		// index buffer default heap resource
+	ID3D12Resource*				rscIdxCPU	{};		// index buffer upload heap resource
 	D3D12_INDEX_BUFFER_VIEW		ibv			{};		// index buffer view
 
 	~SPINE_DRAW_BUFFER();
-	int Setup(ID3D12Device* d3dDevice, const CD3DX12_RESOURCE_DESC& vtxBufDesc, const CD3DX12_RESOURCE_DESC& idxBufDesc);
-	int ResizeVtx(ID3D12Device* d3dDevice, const CD3DX12_RESOURCE_DESC& bufDesc);
-	int ResizeIdx(ID3D12Device* d3dDevice, const CD3DX12_RESOURCE_DESC& bufDesc);
+	int Setup(ID3D12Device* d3dDevice, UINT countVtx, UINT countIdx, const std::wstring& debugName);
+	int ResizeVtx(ID3D12Device* d3dDevice, UINT count);
+	int ResizeIdx(ID3D12Device* d3dDevice, UINT count);
 };
 
 } // namespace G2

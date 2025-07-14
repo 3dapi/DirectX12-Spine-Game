@@ -54,17 +54,26 @@ int SpineRender::Destroy()
 	SAFE_DELETE(	m_spineSkeleton		);
 	SAFE_DELETE(	m_spineAniStateData	);
 	SAFE_DELETE(	m_spineAniState		);
+	SAFE_DELETE(	m_spineListener		);
+	if(!m_spineAnimation.empty())
+		m_spineAnimation.clear();
 
-	m_cbvHeap		.Reset();
-	m_maxVtxCount	= {};
-	m_maxIdxCount	= {};
+	SAFE_RELEASE(	m_cbvHeap	);
 	m_descGpuHandle = {};
 	m_descCpuHandle	= {};
 
-	m_cnstMVP		->Unmap(0, nullptr);
-	m_cnstMVP		.Reset();
-	m_ptrMVP		= {};
+	for(auto& [index, buf] : m_drawBuf)
+	{
+		SAFE_DELETE( buf );
+	}
+
 	m_textureHandle	= {};
+	if(m_cnstMVP)
+	{
+		m_cnstMVP		->Unmap(0, nullptr);
+		SAFE_RELEASE(	m_cnstMVP	);
+		m_ptrMVP		= {};
+	}
 
 	return S_OK;
 }
@@ -120,7 +129,7 @@ int SpineRender::Render()
 	auto psoItem = psoManager->FindRes("PLS2D_SPINE0");
 
 	cmdList->SetGraphicsRootSignature(rsoItem);
-	ID3D12DescriptorHeap* descriptorHeaps[] = {m_cbvHeap.Get()};
+	ID3D12DescriptorHeap* descriptorHeaps[] = {m_cbvHeap};
 	cmdList->SetDescriptorHeaps(1, descriptorHeaps);
 
 	CD3DX12_GPU_DESCRIPTOR_HANDLE cbvHandle(m_descGpuHandle, frameIndex, m_descriptorSize);
@@ -128,15 +137,14 @@ int SpineRender::Render()
 	cmdList->SetGraphicsRootDescriptorTable(1, m_textureHandle);
 	cmdList->SetPipelineState(psoItem);
 
-	for(int i=0; i<m_drawCount; ++i)
+	for(const auto& [i, buf] : m_drawBuf)
 	{
-		auto& buf = m_drawBuf[i];
-		cmdList->IASetVertexBuffers(0, 1, &buf.vbvPos);
-		cmdList->IASetVertexBuffers(1, 1, &buf.vbvDif);
-		cmdList->IASetVertexBuffers(2, 1, &buf.vbvTex);
-		cmdList->IASetIndexBuffer(&buf.ibv);
+		cmdList->IASetVertexBuffers(0, 1, &buf->vbvPos);
+		cmdList->IASetVertexBuffers(1, 1, &buf->vbvDif);
+		cmdList->IASetVertexBuffers(2, 1, &buf->vbvTex);
+		cmdList->IASetIndexBuffer(&buf->ibv);
 		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		cmdList->DrawIndexedInstanced(buf.ibv.SizeInBytes/sizeof(uint16_t), 1, 0, 0, 0);
+		cmdList->DrawIndexedInstanced(buf->ibv.SizeInBytes/sizeof(uint16_t), 1, 0, 0, 0);
 	}
 
 	return S_OK;
@@ -225,11 +233,12 @@ int SpineRender::UpdateDrawBuffer()
 	if(FAILED(hr))
 		return hr;
 	
-	m_drawCount = {};
+	SetupDrawBuffer();
+
 	//printf("------------------------------------------------------------\n\n");
 	const auto& drawOrder = m_spineSkeleton->getDrawOrder();
-	const auto slotCount = drawOrder.size();
-	for(size_t i = 0; i < slotCount; ++i)
+	const auto slotCount = (int)drawOrder.size();
+	for(int i = 0; i < slotCount; ++i)
 	{
 		auto*	slot       = drawOrder[i];
 		auto	name       = slot->getData().getName().buffer();
@@ -252,7 +261,6 @@ int SpineRender::UpdateDrawBuffer()
 		if (!(isMesh || isResion))
 			continue;
 
-
 		//printf("order: %d  name %s\n", (int)i, name);
 
 		if (isMesh)
@@ -271,12 +279,21 @@ int SpineRender::UpdateDrawBuffer()
 				continue;
 			regionAttachment = region;
 		}
+		else
+		{
+			continue;
+		}
 
-		buf = &m_drawBuf[m_drawCount++];
+		auto itr = m_drawBuf.find(i);
+		if(itr == m_drawBuf.end())
+		{
+			continue;
+		}
+		buf = itr->second;
 
 		uint32_t    rgba        = 0xFFFFFFFF;
-		UINT        idxCount    = {};
-		UINT        vtxCount    = {};
+		UINT        countIdx    = {};
+		UINT        countVtx    = {};
 		UINT        posSize     = {};
 		UINT        difSize     = {};
 		UINT        texSize     = {};
@@ -287,8 +304,12 @@ int SpineRender::UpdateDrawBuffer()
 			float*    spineTex = const_cast<float*>(meshAttachment->getUVs().buffer());
 			uint16_t* spineIdx = meshAttachment->getTriangles().buffer();
 			
-			vtxCount    = (UINT)meshAttachment->getWorldVerticesLength() / 2;
-			idxCount    = (UINT)meshAttachment->getTriangles().size();
+			countVtx    = (UINT)meshAttachment->getWorldVerticesLength() / 2;
+			countIdx    = (UINT)meshAttachment->getTriangles().size();
+			if(!countVtx || !countIdx)
+			{
+				continue;
+			}
 
 			spine::Color c = slot->getColor();
 			spine::Color m = meshAttachment->getColor();
@@ -298,10 +319,10 @@ int SpineRender::UpdateDrawBuffer()
 				((uint32_t)(m_color.y * c.g * m.g * 255) << 8) |
 				((uint32_t)(m_color.x * c.b * m.b * 255) << 0);
 
-			posSize = sizeof(XMFLOAT2) * vtxCount;
-			difSize = sizeof(uint32_t) * vtxCount;
-			texSize = sizeof(XMFLOAT2) * vtxCount;
-			idxSize = sizeof(uint16_t) * idxCount;
+			posSize = sizeof(XMFLOAT2) * countVtx;
+			difSize = sizeof(uint32_t) * countVtx;
+			texSize = sizeof(XMFLOAT2) * countVtx;
+			idxSize = sizeof(uint16_t) * countIdx;
 
 			// Upload → GPU 복사 (Position)
 			{
@@ -324,7 +345,7 @@ int SpineRender::UpdateDrawBuffer()
 				updated_dif = true;
 				uint32_t* ptrDif = nullptr;
 				buf->rscDifCPU->Map(0, nullptr, (void**)&ptrDif);
-				avx2_memset32(ptrDif, rgba, vtxCount);
+				avx2_memset32(ptrDif, rgba, countVtx);
 				buf->rscDifCPU->Unmap(0, nullptr);
 			}
 			// Index
@@ -341,8 +362,8 @@ int SpineRender::UpdateDrawBuffer()
 			static const uint16_t spineIdx[] = { 0, 1, 2, 2, 3, 0 };
 			float* spineTex = const_cast<float*>(regionAttachment->getUVs().buffer());
 
-			vtxCount    = 4;
-			idxCount    = 6;
+			countVtx    = 4;
+			countIdx    = 6;
 
 			auto c = slot->getColor();
 			auto r = regionAttachment->getColor();
@@ -352,10 +373,10 @@ int SpineRender::UpdateDrawBuffer()
 				((uint32_t)(m_color.y * c.g * r.g * 255) << 8) |
 				((uint32_t)(m_color.x * c.b * r.b * 255) << 0);
 
-			posSize = sizeof(XMFLOAT2) * vtxCount;
-			difSize = sizeof(uint32_t) * vtxCount;
-			texSize = sizeof(XMFLOAT2) * vtxCount;
-			idxSize = sizeof(uint16_t) * idxCount;
+			posSize = sizeof(XMFLOAT2) * countVtx;
+			difSize = sizeof(uint32_t) * countVtx;
+			texSize = sizeof(XMFLOAT2) * countVtx;
+			idxSize = sizeof(uint16_t) * countIdx;
 
 			// Position
 			{
@@ -378,7 +399,7 @@ int SpineRender::UpdateDrawBuffer()
 				updated_dif = true;
 				uint32_t* ptrDif = nullptr;
 				buf->rscDifCPU->Map(0, nullptr, (void**)&ptrDif);
-				avx2_memset32(ptrDif, rgba, vtxCount);
+				avx2_memset32(ptrDif, rgba, countVtx);
 				buf->rscDifCPU->Unmap(0, nullptr);
 			}
 			// Index
@@ -397,44 +418,44 @@ int SpineRender::UpdateDrawBuffer()
 
 		if(updated_pos)
 		{
-			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscPosGPU.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
+			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscPosGPU, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
 			cmdList->ResourceBarrier(1, &toCopy);
 
-			cmdList->CopyBufferRegion(buf->rscPosGPU.Get(), 0, buf->rscPosCPU.Get(), 0, posSize);
-			CD3DX12_RESOURCE_BARRIER barPos = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscPosGPU.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+			cmdList->CopyBufferRegion(buf->rscPosGPU, 0, buf->rscPosCPU, 0, posSize);
+			CD3DX12_RESOURCE_BARRIER barPos = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscPosGPU, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 			cmdList->ResourceBarrier(1, &barPos);
 		}
 		if(updated_dif)
 		{
-			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscDifGPU.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
+			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscDifGPU, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
 			cmdList->ResourceBarrier(1, &toCopy);
 
-			cmdList->CopyBufferRegion(buf->rscDifGPU.Get(), 0, buf->rscDifCPU.Get(), 0, difSize);
-			CD3DX12_RESOURCE_BARRIER barDif = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscDifGPU.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+			cmdList->CopyBufferRegion(buf->rscDifGPU, 0, buf->rscDifCPU, 0, difSize);
+			CD3DX12_RESOURCE_BARRIER barDif = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscDifGPU, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 			cmdList->ResourceBarrier(1, &barDif);
 		}
 		if (updated_tex)
 		{
-			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscTexGPU.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
+			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscTexGPU, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
 			cmdList->ResourceBarrier(1, &toCopy);
 
-			cmdList->CopyBufferRegion(buf->rscTexGPU.Get(), 0, buf->rscTexCPU.Get(), 0, texSize);
-			CD3DX12_RESOURCE_BARRIER barTex = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscTexGPU.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+			cmdList->CopyBufferRegion(buf->rscTexGPU, 0, buf->rscTexCPU, 0, texSize);
+			CD3DX12_RESOURCE_BARRIER barTex = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscTexGPU, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 			cmdList->ResourceBarrier(1, &barTex);
 		}
 		if (updated_idx)
 		{
-			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscIdxGPU.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
+			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscIdxGPU, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
 			cmdList->ResourceBarrier(1, &toCopy);
 
-			cmdList->CopyBufferRegion(buf->rscIdxGPU.Get(), 0, buf->rscIdxCPU.Get(), 0, idxSize);
-			CD3DX12_RESOURCE_BARRIER barIdx = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscIdxGPU.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+			cmdList->CopyBufferRegion(buf->rscIdxGPU, 0, buf->rscIdxCPU, 0, idxSize);
+			CD3DX12_RESOURCE_BARRIER barIdx = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscIdxGPU, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
 			cmdList->ResourceBarrier(1, &barIdx);
 		}
 
 		// Bind
-		buf->numVb  = vtxCount;
-		buf->numIb  = idxCount;
+		buf->countVtx  = countVtx;
+		buf->countIdx  = countIdx;
 		buf->vbvPos = {buf->rscPosGPU->GetGPUVirtualAddress(), posSize, sizeof(XMFLOAT2)};
 		buf->vbvDif = {buf->rscDifGPU->GetGPUVirtualAddress(), difSize, sizeof(uint32_t)};
 		buf->vbvTex = {buf->rscTexGPU->GetGPUVirtualAddress(), texSize, sizeof(XMFLOAT2)};
@@ -492,6 +513,10 @@ int SpineRender::InitSpine()
 
 	m_spineAniStateData = new AnimationStateData(m_spineRsc->skelData);
 	m_spineAniState = new AnimationState(m_spineAniStateData);
+
+	m_spineListener = new SpineAnimationListener;
+	m_spineListener->m_thzz = this;
+	m_spineAniState->setListener(m_spineListener);
 	m_spineAniStateData->setDefaultMix(0.2f);
 
 	auto itr = std::find_if(m_spineAnimation.begin(), m_spineAnimation.end(), [&](const string& it)      { return m_attrib.aniName == it; });
@@ -525,13 +550,13 @@ int SpineRender::InitSpine()
 	}
 #endif
 
-	SetupDrawBuffer();
 	return S_OK;
 }
 
 int SpineRender::InitD3DResource()
 {
 	HRESULT hr = S_OK;
+
 	auto d3d        =  IG2GraphicsD3D::instance();
 	auto device     = std::any_cast<ID3D12Device*             >(d3d->getDevice());
 	m_descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -551,6 +576,7 @@ int SpineRender::InitD3DResource()
 		hr = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_cbvHeap));
 		if(FAILED(hr))
 			return hr;
+		m_cbvHeap->SetName(L"Spine m_cbvHeap");
 		m_descGpuHandle = m_cbvHeap->GetGPUDescriptorHandleForHeapStart();
 		m_descCpuHandle = m_cbvHeap->GetCPUDescriptorHandleForHeapStart();
 	}
@@ -600,6 +626,7 @@ int SpineRender::InitD3DResource()
 		if(FAILED(hr))
 			return hr;
 
+		rootSignature->SetName(L"spine signature");
 		rsoManager->Add("PLS2D_SPINE0", rootSignature);
 	}
 
@@ -619,8 +646,8 @@ int SpineRender::InitD3DResource()
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
 			psoDesc.InputLayout = { (D3D12_INPUT_ELEMENT_DESC*)VTX2D_DT::INPUT_LAYOUT_SPLIT.data(), (UINT)VTX2D_DT::INPUT_LAYOUT_SPLIT.size() };
 			psoDesc.pRootSignature = rsoItem;
-			psoDesc.VS = CD3DX12_SHADER_BYTECODE(vs->r.Get());
-			psoDesc.PS = CD3DX12_SHADER_BYTECODE(ps->r.Get());
+			psoDesc.VS = CD3DX12_SHADER_BYTECODE(vs->r);
+			psoDesc.PS = CD3DX12_SHADER_BYTECODE(ps->r);
 			psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 			psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;	// 우-> 좌 변경 대응.
 
@@ -653,6 +680,7 @@ int SpineRender::InitD3DResource()
 			if (FAILED(hr))
 				return hr;
 
+			pipelineState->SetName(L"spine pso");
 			psoManager->Add("PLS2D_SPINE0", pipelineState);
 		}
 	}
@@ -669,6 +697,8 @@ int SpineRender::InitD3DResource()
 												, nullptr, IID_PPV_ARGS(&m_cnstMVP));
 		if(FAILED(hr))
 			return hr;
+
+		m_cnstMVP->SetName(L"spine m_cnstMVP");
 	}
 	{
 		UINT d3dDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -733,52 +763,108 @@ int SpineRender::InitD3DResource()
 
 void SpineRender::SetupDrawBuffer()
 {
-	// 최대 버퍼 길이 찾기
-	size_t maxVertexCount = 0;
-	size_t maxIndexCount = 0;
-	auto drawOrder = m_spineSkeleton->getDrawOrder();
-	for (size_t i = 0; i < drawOrder.size(); ++i)
+	auto d3d        =  IG2GraphicsD3D::instance();
+	auto device     = std::any_cast<ID3D12Device*>(d3d->getDevice());
+
+	const auto& drawOrder = m_spineSkeleton->getDrawOrder();
+	const auto slotCount = (int)drawOrder.size();
+	vector<bool> drawList((size_t)slotCount, false);
+
+	for(int i = 0; i < slotCount; ++i)
 	{
-		spine::Slot* slot = drawOrder[i];
-		spine::Attachment* attachment = slot->getAttachment();
-		if (!attachment)
+		auto*	slot       = drawOrder[i];
+		auto	name       = slot->getData().getName().buffer();
+		auto*	attachment = slot->getAttachment();
+		UINT	countIdx   = {};
+		UINT	countVtx   = {};
+		if(!attachment)
 			continue;
+
 		if (attachment->getRTTI().isExactly(spine::MeshAttachment::rtti))
 		{
-			auto* mesh = static_cast<spine::MeshAttachment*>(attachment);
-			size_t vtxCount = mesh->getWorldVerticesLength() / 2;
-			if (vtxCount > maxVertexCount)
-				maxVertexCount = vtxCount;
+			auto* meshAttachment = static_cast<spine::MeshAttachment*>(attachment);
+			auto* texRegion = meshAttachment->getRegion();
+			if (!texRegion)
+				continue;
+			countVtx = (UINT)meshAttachment->getWorldVerticesLength() / 2;
+			countIdx = (UINT)meshAttachment->getTriangles().size();
+			if(!countVtx || !countIdx)
+			{
+				continue;
+			}
+			drawList[i] = true;
+		}
+		else if (attachment->getRTTI().isExactly(spine::RegionAttachment::rtti))
+		{
+			auto* regionAttachment = static_cast<spine::RegionAttachment*>(attachment);
+			auto* texRegion = regionAttachment->getRegion();
+			if (!texRegion)
+				continue;
 
-			size_t idxCount = mesh->getTriangles().size();
-			if (idxCount > maxIndexCount)
-				maxIndexCount = idxCount;
+			countVtx = 4;
+			countIdx = 6;
+			drawList[i] = true;
+		}
+		else
+		{
+			continue;
+		}
+
+		SPINE_DRAW_BUFFER*	buf  = {};
+		auto itr = m_drawBuf.find(i);
+		if(itr == m_drawBuf.end())
+		{
+			m_drawBuf[i] = new SPINE_DRAW_BUFFER;
+		}
+		itr = m_drawBuf.find(i);
+		if(itr == m_drawBuf.end())
+		{
+			continue;
+		}
+		if(!countVtx || !countIdx)
+		{
+			int c;
+			c = 0;
+		}
+		auto wName = ansiToWstr(m_spineRsc->name);
+		buf = itr->second;
+		if(	0 == buf->countVtx || buf->countVtx != countVtx ||
+			0 == buf->countIdx || buf->countIdx != countIdx)
+			buf->Setup(device, countVtx, countIdx, wName);
+	}
+
+	for(int i=0; i<(int)drawList.size(); ++i)
+	{
+		SPINE_DRAW_BUFFER* buf = {};
+		//유효하지 않은 인덱스 삭제.
+		if(drawList[i])
+			continue;		
+		auto itr = m_drawBuf.find(i);
+		if(itr != m_drawBuf.end())
+		{
+			buf = itr->second;
+			if(buf)
+			{
+				delete buf;
+			}
+			m_drawBuf.erase(itr);
 		}
 	}
+}
 
-	// buffer 최댓값으로 설정.
-	m_maxVtxCount = UINT((maxVertexCount > 8) ? maxVertexCount : 8);
-	m_maxIdxCount = UINT((maxIndexCount > 8) ? maxIndexCount : 8);
+void SpineRender::AnimationEvent(spine::AnimationState* state, spine::EventType type, spine::TrackEntry* entry, spine::Event* event)
+{
+	//auto anim = entry->getAnimation();
+	//printf("SpineRender::AnimationEvent:: %d Track: %d, Name: %s, Duration: %f\n"
+	//	, (int)type
+	//	, entry->getTrackIndex()
+	//	, anim->getName().buffer()
+	//	, anim->getDuration());
+}
 
-	if (!m_drawBuf.empty())
-		m_drawBuf.clear();
-
-	m_drawBuf.resize(drawOrder.size(), {});
-
-	// 7. vertex, index buffer uploader 생성
-	const UINT widthVertex = m_maxVtxCount * sizeof(XMFLOAT2);
-	const UINT widthIndex = m_maxIdxCount * sizeof(uint16_t);
-	CD3DX12_HEAP_PROPERTIES heapPropsGPU(D3D12_HEAP_TYPE_DEFAULT);
-	CD3DX12_HEAP_PROPERTIES heapPropsUpload(D3D12_HEAP_TYPE_UPLOAD);
-	CD3DX12_RESOURCE_DESC   vtxBufDesc = CD3DX12_RESOURCE_DESC::Buffer(widthVertex);
-	CD3DX12_RESOURCE_DESC	idxBufDesc = CD3DX12_RESOURCE_DESC::Buffer(widthIndex);
-
-	// setup draw buffer
-	auto d3d = IG2GraphicsD3D::instance();
-	auto device = std::any_cast<ID3D12Device*>(d3d->getDevice());
-	for (size_t i = 0; i < m_drawBuf.size(); ++i)
-	{
-		m_drawBuf[i].Setup(device, widthVertex, widthIndex, heapPropsGPU, heapPropsUpload, vtxBufDesc, idxBufDesc);
-	}
+void SpineAnimationListener::callback(spine::AnimationState* state, spine::EventType type, spine::TrackEntry* entry, spine::Event* event)
+{
+	if(m_thzz)
+		m_thzz->AnimationEvent(state, type, entry, event);
 }
 

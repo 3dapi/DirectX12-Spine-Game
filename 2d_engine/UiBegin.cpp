@@ -51,7 +51,7 @@ int UiBegin::Init()
 	{
 		auto r = texManager->Load(name, file);
 		r->name;
-		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r.Get(), r->size, {} }));
+		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r, r->size, {} }));
 	}
 
 	m_srvHeapUI = G2::CreateDescHeap((UINT)m_uiTex.size() + 1);

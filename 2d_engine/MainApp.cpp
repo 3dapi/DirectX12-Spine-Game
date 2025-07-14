@@ -150,6 +150,12 @@ int MainApp::destroy()
 
 	GameInfo::deleteInstance();
 
+	m_xtkSprite		.reset();
+	m_xtkGraphicMem	.reset();
+	m_xtkDescHeap	.reset();
+	m_batch			.reset();
+
+	FactoryCamera::instance()->UnLoadAll();
 	FactorySpine::instance()->UnLoadAll();
 	FactoryTexture::instance()->UnLoadAll();
 	FactoryShader::instance()->UnLoadAll();

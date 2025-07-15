@@ -87,12 +87,13 @@ CreateGdiStringBuffer(const std::string& fontName, int fontHeight, const std::st
 
 	auto oldFont = (HFONT)SelectObject(hDC, hFont);
 	GetTextExtentPoint32A(hDC, text.c_str(), (int)text.length(), &bmpSize);
+
 	SelectObject(hDC, oldFont);
 	ReleaseDC(nullptr, hDC);
 
 	// 4의 배수로 맞춤
 	const int width  = (bmpSize.cx +4)/4 * 4;
-	const int height = (bmpSize.cy +4)/4 * 4;
+	const int height = bmpSize.cy;
 
 	std::vector<uint32_t> pxlBitmap(size_t(width * height), 0);
 
@@ -135,7 +136,7 @@ CreateGdiStringBuffer(const std::string& fontName, int fontHeight, const std::st
 		uint32_t g = (p >> 8) & 0xFF;
 		uint32_t r = (p >>16) & 0xFF;
 		uint32_t a = (b + g + r) /3;
-		p         |= ((a<<24) & 0xFF000000);
+		p         |= (a<<24);
 	}
 
 	// c++14일 경우 명시적으로 move 호출
@@ -143,24 +144,28 @@ CreateGdiStringBuffer(const std::string& fontName, int fontHeight, const std::st
 	return std::make_tuple(std::move(pxlBitmap), width, height);
 }
 
-ID3D12Resource* FactoryFontResource::CreateStringTexture(const std::string& fontName, int fontHeight, const std::string& text)
+std::tuple<ID3D12Resource*, XMUINT2, XMUINT2>
+FactoryFontResource::CreateStringTexture(const std::string& fontName, int fontHeight, const std::string& text)
 {
-	ID3D12Resource* retTexture{};
+	ID3D12Resource* texFont{};
 	HRESULT hr = S_OK;
 	auto d3d        = IG2GraphicsD3D::instance();
 	auto device     = std::any_cast<ID3D12Device*             >(d3d->getDevice());
 	auto cmdList    = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 
-	auto[buf, width, height] = ::G2::CreateGdiStringBuffer(fontName, fontHeight, text);
+	const UINT texW = 2048;
+	const UINT texH = 128;
+
+	auto[buf, srcW, srcH] = ::G2::CreateGdiStringBuffer(fontName, fontHeight, text);
 
 	// D3D12 리소스 생성
 	ComPtr<ID3D12Resource> rscCPU{};
-	auto bufDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_B8G8R8A8_UNORM, (UINT64)width, (UINT)height, 1, 1);
+	auto bufDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_B8G8R8A8_UNORM, (UINT64)texW, (UINT)texH, 1, 1);
 	CD3DX12_HEAP_PROPERTIES heapPropsGPU(D3D12_HEAP_TYPE_DEFAULT);
 	CD3DX12_HEAP_PROPERTIES heapPropsUpload(D3D12_HEAP_TYPE_UPLOAD);
 
 	hr = device->CreateCommittedResource(&heapPropsGPU, D3D12_HEAP_FLAG_NONE, &bufDesc, D3D12_RESOURCE_STATE_COPY_DEST,
-									nullptr, IID_PPV_ARGS(&retTexture));
+									nullptr, IID_PPV_ARGS(&texFont));
 	if(FAILED(hr))
 		return {};
 
@@ -170,21 +175,21 @@ ID3D12Resource* FactoryFontResource::CreateStringTexture(const std::string& font
 	device->GetCopyableFootprints(&bufDesc, 0, 1, 0, &footprint, &numRows, &rowSizeInBytes, &totalBytes);
 
 	size_t rowPitch = footprint.Footprint.RowPitch;
-	size_t paddedSize = rowPitch * height;
+	size_t paddedSize = rowPitch * texH;
 
 	std::vector<uint8_t> paddedBuf(paddedSize, 0);
 
 	// 각 row 복사
-	for(UINT y = 0; y < height; ++y)
+	for(UINT y = 0; y < srcH; ++y)
 	{
-		avx2_memcpy(&paddedBuf[y * rowPitch], &buf[y * width], width * sizeof(uint32_t)); // 4바이트
+		avx2_memcpy(&paddedBuf[y * rowPitch], &buf[y * srcW], srcW * sizeof(uint32_t));
 	}
 
 	// subresource
 	D3D12_SUBRESOURCE_DATA sub = {};
 	sub.pData = paddedBuf.data();
 	sub.RowPitch = rowPitch;
-	sub.SlicePitch = rowPitch * height;
+	sub.SlicePitch = rowPitch * texH;
 
 	auto bufSize = CD3DX12_RESOURCE_DESC::Buffer(totalBytes);
 	device->CreateCommittedResource(&heapPropsUpload, D3D12_HEAP_FLAG_NONE, &bufSize, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&rscCPU));
@@ -192,17 +197,80 @@ ID3D12Resource* FactoryFontResource::CreateStringTexture(const std::string& font
 	hr = d3d->command(CMD_COMMAND_BEGIN);
 	if(FAILED(hr))
 	{
-		SAFE_RELEASE(retTexture);
+		SAFE_RELEASE(texFont);
 		return {};
 	}
-	UpdateSubresources<1>(cmdList, retTexture, rscCPU.Get(), 0, 0, 1, &sub);
-	CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(retTexture, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	UpdateSubresources<1>(cmdList, texFont, rscCPU.Get(), 0, 0, 1, &sub);
+	CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(texFont, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	cmdList->ResourceBarrier(1, &barrier);
 
 	d3d->command(CMD_COMMAND_END);
 
-	return retTexture;
+	return std::make_tuple(texFont, XMUINT2{(uint32_t)texW, (uint32_t)texH}, XMUINT2{(uint32_t)srcW, (uint32_t)srcH});
 }
+
+std::tuple<ID3D12Resource*, XMUINT2, XMUINT2>
+FactoryFontResource::UpdateStringTexture(ID3D12Resource* texFont, const std::string& fontName, int fontHeight, const std::string& text)
+{
+	HRESULT hr = S_OK;
+	auto d3d = IG2GraphicsD3D::instance();
+	auto device = std::any_cast<ID3D12Device*>(d3d->getDevice());
+	auto cmdList = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
+
+	const UINT texW = 2048;
+	const UINT texH = 128;
+
+	auto [buf, srcW, srcH] = ::G2::CreateGdiStringBuffer(fontName, fontHeight, text);
+
+	// GPU 텍스처 크기에 맞춰 footprint 계산
+	auto bufDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_B8G8R8A8_UNORM, texW, texH, 1, 1);
+	CD3DX12_HEAP_PROPERTIES heapPropsUpload(D3D12_HEAP_TYPE_UPLOAD);
+
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint{};
+	UINT numRows = 0;
+	UINT64 rowSizeInBytes = 0, totalBytes = 0;
+	device->GetCopyableFootprints(&bufDesc, 0, 1, 0, &footprint, &numRows, &rowSizeInBytes, &totalBytes);
+
+	size_t rowPitch = footprint.Footprint.RowPitch;
+	size_t paddedSize = rowPitch * texH;
+	std::vector<uint8_t> paddedBuf(paddedSize, 0);
+
+	// 실제 텍스트 크기 만큼만 복사
+	for(UINT y = 0; y < srcH; ++y)
+	{
+		avx2_memcpy(&paddedBuf[y * rowPitch], &buf[y * srcW], srcW * sizeof(uint32_t));
+	}
+
+	D3D12_SUBRESOURCE_DATA sub = {};
+	sub.pData = paddedBuf.data();
+	sub.RowPitch = rowPitch;
+	sub.SlicePitch = rowPitch * texH;
+
+	ComPtr<ID3D12Resource> rscCPU;
+	auto uploadDesc = CD3DX12_RESOURCE_DESC::Buffer(totalBytes);
+	device->CreateCommittedResource(&heapPropsUpload, D3D12_HEAP_FLAG_NONE, &uploadDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&rscCPU));
+
+	hr = d3d->command(CMD_COMMAND_BEGIN);
+	if(FAILED(hr))
+		return {};
+
+	// 상태 전이: PIXEL_SHADER_RESOURCE → COPY_DEST
+	CD3DX12_RESOURCE_BARRIER preBarrier = CD3DX12_RESOURCE_BARRIER::Transition(texFont, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	cmdList->ResourceBarrier(1, &preBarrier);
+
+	auto rcv = UpdateSubresources<1>(cmdList, texFont, rscCPU.Get(), 0, 0, 1, &sub);
+	if(!rcv)
+		return {};
+
+	// 복사 후 상태 전이
+	CD3DX12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(texFont, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	cmdList->ResourceBarrier(1, &barrier);
+
+	d3d->command(CMD_COMMAND_END);
+
+	return std::make_tuple(texFont, XMUINT2{(uint32_t)texW, (uint32_t)texH}, XMUINT2{(uint32_t)srcW, (uint32_t)srcH});
+}
+
 
 
 TD3D_FontResource::~TD3D_FontResource()

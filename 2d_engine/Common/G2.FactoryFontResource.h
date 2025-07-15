@@ -8,8 +8,11 @@
 #include <vector>
 #include <Windows.h>
 #include <d3d12.h>
+#include <DirectXMath.h>
 #include <wrl/client.h>
 #include "G2.Factory.h"
+
+using namespace DirectX;
 
 namespace G2 {
 
@@ -30,8 +33,11 @@ public:
 	int ResourceUnLoad(const std::string& name) override;
 	std::string FindRes(const std::string& name) const;
 
-	static ID3D12Resource*
+	static std::tuple<ID3D12Resource*, XMUINT2, XMUINT2>
 		CreateStringTexture(const std::string& fontName, int fontHeight, const std::string& text);
+
+	static std::tuple<ID3D12Resource*, XMUINT2, XMUINT2>
+		UpdateStringTexture(ID3D12Resource* tex, const std::string& fontName, int fontHeight, const std::string& text);
 };
 
 } // namespace G2

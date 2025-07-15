@@ -39,8 +39,8 @@ int SceneFont::Init(const std::any&)
 	auto cmdQue     = std::any_cast<ID3D12CommandQueue*       >(d3d->getCommandQueue());
 	auto cmdAlloc   = std::any_cast<ID3D12CommandAllocator*   >(d3d->getCommandAllocator());
 
-	std::string text = "다람쥐 헌 쳇바퀴에 타고파";
-	auto fontTex = FactoryFontResource::CreateStringTexture("고도 B", 78, text);
+	std::string text = "Touch the Screen";
+	auto [fontTex, srcSize, texSize] = FactoryFontResource::CreateStringTexture("고도 B", 72, text);
 
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
@@ -57,7 +57,7 @@ int SceneFont::Init(const std::any&)
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r, r->size, {} }));
 	}
 
-	m_uiTex.insert(std::make_pair("ui_temp: font message", UI_TEXTURE{ fontTex, FactoryTexture::GetTextureSize(fontTex), {} }));
+	m_uiTex.insert(std::make_pair("ui_temp: font message", UI_TEXTURE{ fontTex, srcSize, {}, texSize}));
 
 	m_srvHeapUI = G2::CreateDescHeap((UINT)m_uiTex.size() + 1);
 	auto hCpu = m_srvHeapUI->GetCPUDescriptorHandleForHeapStart();
@@ -76,8 +76,19 @@ int SceneFont::Init(const std::any&)
 	return S_OK;
 }
 
-int SceneFont::Update(const std::any&)
+int SceneFont::Update(const std::any& t)
 {
+	int hr = S_OK;
+	GameTimer gt = std::any_cast<GameTimer>(t);
+
+	auto& tex = m_uiTex["ui_temp: font message"];
+	std::string text = "SceneFont::Update: " + std::to_string(gt.DeltaTime());
+	auto [fontTex, srcSize, texSize] = FactoryFontResource::UpdateStringTexture(tex.res, "고도 B", 48, text);
+	if(fontTex)
+	{
+		tex.size     = srcSize;
+		tex.texSize  = texSize;
+	}
 	return S_OK;
 }
 
@@ -102,11 +113,12 @@ int SceneFont::Render()
 		}
 		{
 			auto& tex = m_uiTex["ui_temp: font message"];
-			XMFLOAT2 position = {screenSize.cx / 2.0F - tex.size.x / 2.0F, 100.0F};
+			XMFLOAT2 position = {100.0F, 100.0F};
 			XMFLOAT2 origin = {0, 0};
-			XMFLOAT2 scale = {1.0F, 1.0F};
+			XMFLOAT2 scale = {1.0F, 1.0f};
 			XMVECTOR color = XMVectorSet(1.f, 0.f, 1.f, 1.0F);
-			sprite->Draw(tex.hGpu, tex.size, position, nullptr, color, 0.0F, origin, scale);
+			RECT rc{0,0, (LONG)tex.texSize.x, (LONG)tex.texSize.y};
+			sprite->Draw(tex.hGpu, tex.size, position, &rc, color, 0.0F, origin, scale);
 		}
 	}
 	sprite->End();

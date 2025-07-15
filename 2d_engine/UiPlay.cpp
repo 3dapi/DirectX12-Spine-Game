@@ -1,6 +1,7 @@
 ﻿#include <any>
 #include <utility>
 #include <d3d12.h>
+#include "Common/G2.FactoryFontResource.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactorySIgnature.h"
 #include "Common/G2.Util.h"
@@ -55,6 +56,17 @@ int UiPlay::Init()
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r, r->size, {} }));
 	}
 
+	{
+		std::string text = "Score: ";
+		auto [fontTex, srcSize, texSize] = FactoryFontResource::CreateStringTexture("고도 B", 24, text);
+		m_uiTex.insert(std::make_pair("ui_font score", UI_TEXTURE{fontTex, srcSize, {}, texSize}));
+	}
+	{
+		std::string text = "HP: ";
+		auto [fontTex, srcSize, texSize] = FactoryFontResource::CreateStringTexture("고도 B", 24, text);
+		m_uiTex.insert(std::make_pair("ui_font hp", UI_TEXTURE{fontTex, srcSize, {}, texSize}));	
+	}
+
 	m_srvHeapUI = G2::CreateDescHeap((UINT)m_uiTex.size() + 1);
 	auto hCpu = m_srvHeapUI->GetCPUDescriptorHandleForHeapStart();
 	auto hGpu = m_srvHeapUI->GetGPUDescriptorHandleForHeapStart();
@@ -82,6 +94,8 @@ int UiPlay::Init()
 
 int UiPlay::Update(float dt)
 {
+	auto pGameInfo = GameInfo::instance();
+
 	m_blend += dt * m_blendDir;
 	if (1.0F < m_blend)
 	{
@@ -93,6 +107,28 @@ int UiPlay::Update(float dt)
 		m_blendDir = +1.0f;
 		m_blend = 0.0f;
 	}
+
+	{
+		auto& tex = m_uiTex["ui_font score"];
+		std::string text = "Score: " + std::to_string(pGameInfo->m_gameScore);
+		auto [fontTex, srcSize, texSize] = FactoryFontResource::UpdateStringTexture(tex.res, "고도 B", 24, text);
+		if(fontTex)
+		{
+			tex.size = srcSize;
+			tex.texSize = texSize;
+		}
+	}
+	{
+		auto& tex = m_uiTex["ui_font hp"];
+		std::string text = "HP: " + std::to_string((int)pGameInfo->MainPlayer()->HP());
+		auto [fontTex, srcSize, texSize] = FactoryFontResource::UpdateStringTexture(tex.res, "고도 B", 24, text);
+		if(fontTex)
+		{
+			tex.size = srcSize;
+			tex.texSize = texSize;
+		}
+	}
+
 	return S_OK;
 }
 
@@ -115,15 +151,26 @@ int UiPlay::Draw()
 			XMFLOAT2 position = { 0.0F, 0.0F };
 			sprite->Draw(tex.hGpu, tex.size, position);
 		}
+		// score
 		{
-			wstring wstr = L"SCORE: " + std::to_wstring(pGameInfo->m_gameScore);
-			m_font->DrawString(sprite, wstr.c_str(), XMFLOAT2(10, 10), Colors::Yellow, 0, XMFLOAT2(0, 0), 1.5F);
+			auto& texScore = m_uiTex["ui_font score"];
+			XMFLOAT2 position = {10.0F, 10.0F};
+			XMFLOAT2 origin = {0.0F, 0.0F};
+			XMFLOAT2 scale = {1.0F, 1.0f};
+			sprite->Draw(texScore.hGpu, texScore.size, position, nullptr, Colors::Yellow, 0.0F, origin, scale);
 		}
 		// HP
 		{
+			auto& texHp = m_uiTex["ui_font hp"];
+			XMFLOAT2 position = {10.0F, 70.0F};
+			XMFLOAT2 origin = {0.0F, 0.0F};
+			XMFLOAT2 scale = {1.0F, 1.0f};
+			sprite->Draw(texHp.hGpu, texHp.size, position, nullptr, Colors::Red, 0.0F, origin, scale);
+		}
+		{
 			auto hp = (int)pGameInfo->MainPlayer()->HP();
-			wstring wstr = L"HP: " + std::to_wstring(hp);
-			m_font->DrawString(sprite, wstr.c_str(), XMFLOAT2(10, 60), Colors::Red, 0, XMFLOAT2(0, 0), 1.5F);
+			//wstring wstr = L"HP: " + std::to_wstring(hp);
+			//m_font->DrawString(sprite, wstr.c_str(), XMFLOAT2(10, 60), Colors::Red, 0, XMFLOAT2(0, 0), 1.5F);
 
 			auto& tex = m_uiTex["ui/ui_rect"];
 			XMFLOAT2 position = { 145, 75.0F };

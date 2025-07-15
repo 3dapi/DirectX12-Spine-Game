@@ -117,8 +117,7 @@ int SceneFont::Render()
 			XMFLOAT2 origin = {0, 0};
 			XMFLOAT2 scale = {1.0F, 1.0f};
 			XMVECTOR color = XMVectorSet(1.f, 0.f, 1.f, 1.0F);
-			RECT rc{0,0, (LONG)tex.texSize.x, (LONG)tex.texSize.y};
-			sprite->Draw(tex.hGpu, tex.size, position, &rc, color, 0.0F, origin, scale);
+			sprite->Draw(tex.hGpu, tex.size, position, nullptr, color, 0.0F, origin, scale);
 		}
 	}
 	sprite->End();

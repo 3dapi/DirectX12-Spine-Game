@@ -144,7 +144,7 @@ int MainApp::init(const std::any& initialValue /* = */)
 
 
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_FONT);
+	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_PLAY);
 
 	return S_OK;
 }

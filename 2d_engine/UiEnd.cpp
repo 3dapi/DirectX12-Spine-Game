@@ -1,6 +1,7 @@
 ﻿#include <any>
 #include <utility>
 #include <d3d12.h>
+#include "Common/G2.FactoryFontResource.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactorySIgnature.h"
 #include "Common/G2.Util.h"
@@ -53,6 +54,12 @@ int UiEnd::Init()
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r, r->size, {} }));
 	}
 
+	{
+		std::string text = "Score: ";
+		auto [fontTex, srcSize, texSize] = FactoryFontResource::CreateStringTexture("고도 B", 32, text);
+		m_uiTex.insert(std::make_pair("ui_font score", UI_TEXTURE{fontTex, srcSize, {}, texSize}));
+	}
+
 	m_srvHeapUI = G2::CreateDescHeap((UINT)m_uiTex.size() + 1);
 	auto hCpu = m_srvHeapUI->GetCPUDescriptorHandleForHeapStart();
 	auto hGpu = m_srvHeapUI->GetGPUDescriptorHandleForHeapStart();
@@ -79,6 +86,8 @@ int UiEnd::Init()
 
 int UiEnd::Update(float dt)
 {
+	auto pGameInfo    = GameInfo::instance();
+
 	m_blend += dt * m_blendDir;
 	if (1.0F < m_blend)
 	{
@@ -90,6 +99,17 @@ int UiEnd::Update(float dt)
 		m_blendDir = +1.0f;
 		m_blend = 0.0f;
 	}
+
+	{
+		auto& tex = m_uiTex["ui_font score"];
+		std::string text = "Score: " + std::to_string(pGameInfo->m_gameScore);
+		auto [fontTex, srcSize, texSize] = FactoryFontResource::UpdateStringTexture(tex.res, "고도 B", 32, text);
+		if(fontTex)
+		{
+			tex.size = srcSize;
+			tex.texSize = texSize;
+		}
+	}
 	return S_OK;
 }
 
@@ -99,14 +119,17 @@ int UiEnd::Draw()
 	auto cmdList      = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 	auto sprite       = std::any_cast<SpriteBatch*              >(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE));
 	::SIZE screenSize = *any_cast<::SIZE*                       >(d3d->getAttrib(ATT_SCREEN_SIZE));
-	auto pGameInfo    = GameInfo::instance();
 
 	ID3D12DescriptorHeap* heaps[] = { m_srvHeapUI.Get() };
 	cmdList->SetDescriptorHeaps(1, heaps);
 	sprite->Begin(cmdList);
+	// score
 	{
-		wstring wstr = L"SCORE: " + std::to_wstring(pGameInfo->m_gameScore);
-		m_font->DrawString(sprite, wstr.c_str(), XMFLOAT2(400, 200), Colors::Yellow, 0, XMFLOAT2(0, 0), 1.5F);
+		auto& texScore = m_uiTex["ui_font score"];
+		XMFLOAT2 position = {400.0F, 200.0F};
+		XMFLOAT2 origin = {0.0F, 0.0F};
+		XMFLOAT2 scale = {1.5F, 1.5f};
+		sprite->Draw(texScore.hGpu, texScore.size, position, nullptr, Colors::Yellow, 0.0F, origin, scale);
 	}
 	sprite->End();
 

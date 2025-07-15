@@ -138,7 +138,7 @@ int MainApp::init(const std::any& initialValue /* = */)
 		cameraSpine->Update  ();
 	}
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_SPINE);
+	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_BEGIN);
 
 	return S_OK;
 }

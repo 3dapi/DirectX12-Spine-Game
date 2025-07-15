@@ -4,12 +4,14 @@
 #define __G2_GEOMETRY_H__
 
 #include <array>
+#include <string>
 #include <Windows.h>
 #include <wrl.h>
 #include <d3d12.h>
 #include <DirectXMath.h>
 #include <d3dx12/d3dx12.h>
 
+using namespace std;
 using namespace Microsoft::WRL;
 using namespace DirectX;
 
@@ -171,42 +173,36 @@ struct VTX_POINT		// point sprite: position + size
 
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 // resource vertex buffer
-class StaticResBuf
+
+struct ResBuf
 {
-public:
-	virtual ~StaticResBuf() {
-		if(!cpuData.empty())
-			cpuData.clear();
-		gpu.Reset();
-		upLoader.Reset();
-	}
-	int CreateDefaultBufferWithUploader(ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);public:
-public:
-	std::vector<uint8_t>   cpuData		;	// cpu memory
-	ComPtr<ID3D12Resource> gpu			{};	// default gpu memory
-	ComPtr<ID3D12Resource> upLoader		{};	// upLoader
-	UINT                   size			{};	// buffer size: 이전 버퍼를 사용할 경우 VertexBufferView, 또는 IndexBufferView 만 설정하는 경우에 필요한 size.
-	UINT                   stride		{};	// vertex byte stride
-	UINT                   entryCount	{};	// vertex or index numbers
+	UINT				count		{};
+	UINT				stride		{};
+	ID3D12Resource*		rscGPU		{};		// buffer default heap resource
+	ID3D12Resource*		rscCPU		{};		// buffer upload heap resource
+	void*				ptr			{};		// mapping pointer
+
+	~ResBuf();
+	int		Setup(ID3D12Device* device, UINT count, UINT stride, const wstring& debugName= L"ResBuf");
+	void	Destroy();
+	void	UploadToGpu(ID3D12GraphicsCommandList* cmdList);
+	void	Copy(void* src, UINT64 size);
+	UINT	Size() const { return count * stride; }
+	void*	Ptr() { return ptr; }
 };
-
-class StaticResBufVtx : public StaticResBuf
+struct ResBufVtx : public ResBuf
 {
-public:
-	D3D12_VERTEX_BUFFER_VIEW VertexBufferView() const;
-	int Init(const void* buf_ptr, size_t buf_size, size_t stride, ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);
+	D3D12_VERTEX_BUFFER_VIEW	bv;
+	void						SetupBufferView();
+	D3D12_VERTEX_BUFFER_VIEW*	GetVertexBufferView();
 };
-
-// resource index buffer
-class StaticResBufIdx : public StaticResBuf
+struct ResBufIdx: public ResBuf
 {
-public:
-	DXGI_FORMAT     idxFormat		{DXGI_FORMAT_R16_UINT};
-
-	D3D12_INDEX_BUFFER_VIEW IndexBufferView() const;
-	int Init(const void* buf_ptr, size_t buf_size, DXGI_FORMAT format, ID3D12Device* device, ID3D12GraphicsCommandList* cmdList);
+	D3D12_INDEX_BUFFER_VIEW		bv;
+	D3D12_PRIMITIVE_TOPOLOGY	primitive {D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST};
+	void						SetupBufferView();
+	D3D12_INDEX_BUFFER_VIEW*	GetIndexBufferView();
 };
 
 } // namespace G2

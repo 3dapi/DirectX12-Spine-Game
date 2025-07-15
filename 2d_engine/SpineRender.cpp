@@ -126,7 +126,7 @@ int SpineRender::Render()
 	auto rsoItem    = rsoManager->FindRes("PLS2D_SPINE0");
 
 	auto psoManager = FactoryPipelineState::instance();
-	auto psoItem = psoManager->FindRes("PLS2D_SPINE0");
+	auto psoItem    = psoManager->FindRes("PLS2D_SPINE0");
 
 	cmdList->SetGraphicsRootSignature(rsoItem);
 	ID3D12DescriptorHeap* descriptorHeaps[] = {m_cbvHeap};
@@ -139,12 +139,12 @@ int SpineRender::Render()
 
 	for(const auto& [i, buf] : m_drawBuf)
 	{
-		cmdList->IASetVertexBuffers(0, 1, &buf->vbvPos);
-		cmdList->IASetVertexBuffers(1, 1, &buf->vbvDif);
-		cmdList->IASetVertexBuffers(2, 1, &buf->vbvTex);
-		cmdList->IASetIndexBuffer(&buf->ibv);
-		cmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		cmdList->DrawIndexedInstanced(buf->ibv.SizeInBytes/sizeof(uint16_t), 1, 0, 0, 0);
+		cmdList->IASetVertexBuffers(0, 1, buf->resPos.GetVertexBufferView());
+		cmdList->IASetVertexBuffers(1, 1, buf->resDif.GetVertexBufferView());
+		cmdList->IASetVertexBuffers(2, 1, buf->resTex.GetVertexBufferView());
+		cmdList->IASetIndexBuffer(        buf->resIdx.GetIndexBufferView() );
+		cmdList->IASetPrimitiveTopology(  buf->resIdx.primitive);
+		cmdList->DrawIndexedInstanced(    buf->resIdx.count, 1, 0, 0, 0);
 	}
 
 	return S_OK;
@@ -327,34 +327,26 @@ int SpineRender::UpdateDrawBuffer()
 			// Upload → GPU 복사 (Position)
 			{
 				updated_pos = true;
-				XMFLOAT2* ptrPos = nullptr;
-				buf->rscPosCPU->Map(0, nullptr, (void**)&ptrPos);
+				XMFLOAT2* ptrPos = (XMFLOAT2*)buf->resPos.Ptr();
 				meshAttachment->computeWorldVertices(*slot, 0, meshAttachment->getWorldVerticesLength(), (float*)ptrPos, 0, 2);
-				buf->rscPosCPU->Unmap(0, nullptr);
 			}
 			// Upload → GPU 복사 (texture coord)
 			{
 				updated_tex = true;
-				XMFLOAT2* ptrTex = nullptr;
-				buf->rscTexCPU->Map(0, nullptr, (void**)&ptrTex);
+				XMFLOAT2* ptrTex = (XMFLOAT2*)buf->resTex.Ptr();
 				avx2_memcpy(ptrTex, spineTex, texSize);
-				buf->rscTexCPU->Unmap(0, nullptr);
 			}
 			// Upload → GPU 복사 (diffuse)
 			{
 				updated_dif = true;
-				uint32_t* ptrDif = nullptr;
-				buf->rscDifCPU->Map(0, nullptr, (void**)&ptrDif);
+				uint32_t* ptrDif = (uint32_t*)buf->resDif.Ptr();
 				avx2_memset32(ptrDif, rgba, countVtx);
-				buf->rscDifCPU->Unmap(0, nullptr);
 			}
 			// Index
 			{
 				updated_idx = true;
-				uint16_t* ptrIdx = nullptr;
-				buf->rscIdxCPU->Map(0, nullptr, (void**)&ptrIdx);
+				uint16_t* ptrIdx = (uint16_t*)buf->resIdx.Ptr();
 				avx2_memcpy(ptrIdx, spineIdx, idxSize);
-				buf->rscIdxCPU->Unmap(0, nullptr);
 			}
 		}
 		else if (isResion)
@@ -381,34 +373,26 @@ int SpineRender::UpdateDrawBuffer()
 			// Position
 			{
 				updated_pos = true;
-				XMFLOAT2* ptrPos = nullptr;
-				buf->rscPosCPU->Map(0, nullptr, (void**)&ptrPos);
+				XMFLOAT2* ptrPos = (XMFLOAT2*)buf->resPos.Ptr();
 				regionAttachment->computeWorldVertices(*slot, (float*)ptrPos, 0, 2);
-				buf->rscPosCPU->Unmap(0, nullptr);
 			}
 			// texture coord
 			{
 				updated_tex = true;
-				XMFLOAT2* ptrTex = nullptr;
-				buf->rscTexCPU->Map(0, nullptr, (void**)&ptrTex);
+				XMFLOAT2* ptrTex = (XMFLOAT2*)buf->resTex.Ptr();
 				avx2_memcpy(ptrTex, spineTex, texSize);
-				buf->rscTexCPU->Unmap(0, nullptr);
 			}
 			// diffuse
 			{
 				updated_dif = true;
-				uint32_t* ptrDif = nullptr;
-				buf->rscDifCPU->Map(0, nullptr, (void**)&ptrDif);
+				uint32_t* ptrDif = (uint32_t*)buf->resDif.Ptr();
 				avx2_memset32(ptrDif, rgba, countVtx);
-				buf->rscDifCPU->Unmap(0, nullptr);
 			}
 			// Index
 			{
 				updated_idx = true;
-				uint16_t* ptrIdx = nullptr;
-				buf->rscIdxCPU->Map(0, nullptr, (void**)&ptrIdx);
+				uint16_t* ptrIdx = (uint16_t*)buf->resIdx.Ptr();
 				avx2_memcpy(ptrIdx, spineIdx, idxSize);
-				buf->rscIdxCPU->Unmap(0, nullptr);
 			}
 		}
 
@@ -418,48 +402,28 @@ int SpineRender::UpdateDrawBuffer()
 
 		if(updated_pos)
 		{
-			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscPosGPU, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
-			cmdList->ResourceBarrier(1, &toCopy);
-
-			cmdList->CopyBufferRegion(buf->rscPosGPU, 0, buf->rscPosCPU, 0, posSize);
-			CD3DX12_RESOURCE_BARRIER barPos = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscPosGPU, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-			cmdList->ResourceBarrier(1, &barPos);
+			buf->resPos.UploadToGpu(cmdList);
 		}
 		if(updated_dif)
 		{
-			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscDifGPU, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
-			cmdList->ResourceBarrier(1, &toCopy);
-
-			cmdList->CopyBufferRegion(buf->rscDifGPU, 0, buf->rscDifCPU, 0, difSize);
-			CD3DX12_RESOURCE_BARRIER barDif = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscDifGPU, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-			cmdList->ResourceBarrier(1, &barDif);
+			buf->resDif.UploadToGpu(cmdList);
 		}
 		if (updated_tex)
 		{
-			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscTexGPU, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
-			cmdList->ResourceBarrier(1, &toCopy);
-
-			cmdList->CopyBufferRegion(buf->rscTexGPU, 0, buf->rscTexCPU, 0, texSize);
-			CD3DX12_RESOURCE_BARRIER barTex = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscTexGPU, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-			cmdList->ResourceBarrier(1, &barTex);
+			buf->resTex.UploadToGpu(cmdList);
 		}
 		if (updated_idx)
 		{
-			CD3DX12_RESOURCE_BARRIER toCopy = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscIdxGPU, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
-			cmdList->ResourceBarrier(1, &toCopy);
-
-			cmdList->CopyBufferRegion(buf->rscIdxGPU, 0, buf->rscIdxCPU, 0, idxSize);
-			CD3DX12_RESOURCE_BARRIER barIdx = CD3DX12_RESOURCE_BARRIER::Transition(buf->rscIdxGPU, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER);
-			cmdList->ResourceBarrier(1, &barIdx);
+			buf->resIdx.UploadToGpu(cmdList);
 		}
 
 		// Bind
 		buf->countVtx  = countVtx;
 		buf->countIdx  = countIdx;
-		buf->vbvPos = {buf->rscPosGPU->GetGPUVirtualAddress(), posSize, sizeof(XMFLOAT2)};
-		buf->vbvDif = {buf->rscDifGPU->GetGPUVirtualAddress(), difSize, sizeof(uint32_t)};
-		buf->vbvTex = {buf->rscTexGPU->GetGPUVirtualAddress(), texSize, sizeof(XMFLOAT2)};
-		buf->ibv    = {buf->rscIdxGPU->GetGPUVirtualAddress(), idxSize, DXGI_FORMAT_R16_UINT };
+		buf->resPos.SetupBufferView();
+		buf->resDif.SetupBufferView();
+		buf->resTex.SetupBufferView();
+		buf->resIdx.SetupBufferView();
 	}
 	d3d->command(CMD_WAIT_GPU);
 	hr = cmdList->Close();
@@ -589,7 +553,7 @@ int SpineRender::InitD3DResource()
 	{
 		ID3D12RootSignature*	rootSignature	{};
 		// sampler register 갯수는 상관 없음.
-		CD3DX12_STATIC_SAMPLER_DESC staticSampler[] =
+		vector<CD3DX12_STATIC_SAMPLER_DESC> staticSampler =
 		{
 			{ 0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP},
 			{ 1, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP},
@@ -598,20 +562,20 @@ int SpineRender::InitD3DResource()
 		};
 
 		// 2 = 상수 레지스터 1 + 텍스처 레지스터 1
-		CD3DX12_DESCRIPTOR_RANGE descRange[NUM_CB_TX];
+		vector<CD3DX12_DESCRIPTOR_RANGE> descRange(NUM_CB_TX, CD3DX12_DESCRIPTOR_RANGE{});
 		descRange[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0); // b0
 		descRange[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0); // t0
 
-		CD3DX12_ROOT_PARAMETER rootParams[2];
+		vector<CD3DX12_ROOT_PARAMETER> rootParams(NUM_CB_TX, CD3DX12_ROOT_PARAMETER{});
 		rootParams[0].InitAsDescriptorTable(1, &descRange[0], D3D12_SHADER_VISIBILITY_VERTEX);		// cbv
 		rootParams[1].InitAsDescriptorTable(1, &descRange[1], D3D12_SHADER_VISIBILITY_PIXEL);		// src
 
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc;
 		rootSigDesc.Init(
-			_countof(rootParams),
-			rootParams,
-			4,					// sampler register 숫자.
-			staticSampler,		// sampler register desc
+			(UINT)rootParams.size(),
+			&rootParams[0],
+			(UINT)staticSampler.size(),					// sampler register 숫자.
+			&staticSampler[0],							// sampler register desc
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
 			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |

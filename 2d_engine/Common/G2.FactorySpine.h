@@ -12,6 +12,7 @@
 #include <wrl/client.h>
 #include <spine/spine.h>
 #include "G2.Factory.h"
+#include "G2.Geometry.h"
 
 using namespace std;
 using namespace DirectX;
@@ -61,32 +62,18 @@ public:
 	static vector<string> getAnimationList(spine::Skeleton*);
 };
 
-
 struct SPINE_DRAW_BUFFER {
-	UINT						countVtx	{};		// vertex count
-	UINT						strideVtx	{};
-	UINT						countIdx	{};		// index count
+	UINT	countVtx	{};		// vertex count
+	UINT	strideVtx	{};
+	UINT	countIdx	{};		// index count
 
-	ID3D12Resource*				rscPosGPU	{};		// position buffer default heap resource
-	ID3D12Resource*				rscPosCPU	{};		// position buffer upload heap resource
-	D3D12_VERTEX_BUFFER_VIEW	vbvPos		{};		// position buffer view
-
-	ID3D12Resource*				rscDifGPU	{};		// diffuse buffer default heap resource
-	ID3D12Resource*				rscDifCPU	{};		// diffuse buffer upload heap resource
-	D3D12_VERTEX_BUFFER_VIEW	vbvDif		{};		// diffuse buffer view
-
-	ID3D12Resource*				rscTexGPU	{};		// texture coord buffer default heap resource
-	ID3D12Resource*				rscTexCPU	{};		// texture coord buffer upload heap resource
-	D3D12_VERTEX_BUFFER_VIEW	vbvTex		{};		// texture buffer view
-
-	ID3D12Resource*				rscIdxGPU	{};		// index buffer default heap resource
-	ID3D12Resource*				rscIdxCPU	{};		// index buffer upload heap resource
-	D3D12_INDEX_BUFFER_VIEW		ibv			{};		// index buffer view
+	ResBufVtx	resPos	{};
+	ResBufVtx	resDif	{};
+	ResBufVtx	resTex	{};
+	ResBufIdx	resIdx	{};
 
 	~SPINE_DRAW_BUFFER();
 	int Setup(ID3D12Device* d3dDevice, UINT countVtx, UINT countIdx, const std::wstring& debugName);
-	int ResizeVtx(ID3D12Device* d3dDevice, UINT count);
-	int ResizeIdx(ID3D12Device* d3dDevice, UINT count);
 };
 
 } // namespace G2

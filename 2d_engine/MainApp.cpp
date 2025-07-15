@@ -6,6 +6,7 @@
 #include <d3d12.h>
 #include "MainApp.h"
 #include "ResourceUploadBatch.h"
+#include "Common/G2.FactoryFontResource.h"
 #include "Common/G2.FactoryCamera.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
@@ -14,11 +15,12 @@
 #include "Common/G2.FactorySpine.h"
 #include "Common/G2.Geometry.h"
 #include "Common/G2.Util.h"
-#include "SceneSpine.h"
 #include "SceneBegin.h"
 #include "SceneLobby.h"
 #include "ScenePlay.h"
 #include "SceneEnd.h"
+#include "SceneSpine.h"
+#include "SceneFont.h"
 
 using namespace std;
 
@@ -137,8 +139,12 @@ int MainApp::init(const std::any& initialValue /* = */)
 		cameraSpine->LookAt  ({0.0f, 0.0f,   0.0f});
 		cameraSpine->Update  ();
 	}
+
+	FactoryFontResource::instance()->Load("고도 B", "asset/font/GodoB.ttf");
+
+
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_BEGIN);
+	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_FONT);
 
 	return S_OK;
 }
@@ -155,6 +161,7 @@ int MainApp::destroy()
 	m_xtkDescHeap	.reset();
 	m_batch			.reset();
 
+	FactoryFontResource::instance()->UnLoadAll();
 	FactoryCamera::instance()->UnLoadAll();
 	FactorySpine::instance()->UnLoadAll();
 	FactoryTexture::instance()->UnLoadAll();
@@ -333,6 +340,7 @@ void MainApp::ChangeScene(EAPP_SCENE target)
 			case EAPP_SCENE_PLAY:	m_scene[m_sceneIdxCur] = std::make_unique<ScenePlay>();		break;
 			case EAPP_SCENE_END:	m_scene[m_sceneIdxCur] = std::make_unique<SceneEnd>();		break;
 			case EAPP_SCENE_SPINE:	m_scene[m_sceneIdxCur] = std::make_unique<SceneSpine>();	break;
+			case EAPP_SCENE_FONT:	m_scene[m_sceneIdxCur] = std::make_unique<SceneFont>();		break;
 		}
 	}
 	m_scene[m_sceneIdxCur]->Init();

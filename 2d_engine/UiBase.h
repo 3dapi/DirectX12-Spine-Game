@@ -15,7 +15,7 @@ struct UI_TEXTURE
 {
 	ID3D12Resource*					res;
 	XMUINT2							size;
-	D3D12_GPU_DESCRIPTOR_HANDLE		hCpu;
+	D3D12_GPU_DESCRIPTOR_HANDLE		hGpu;
 };
 typedef map<string, UI_TEXTURE>		UI_MAP;
 

@@ -3,22 +3,25 @@
 #ifndef __G2_FACTORY_TEXTURE_H__
 #define __G2_FACTORY_TEXTURE_H__
 
+#include <string>
 #include <Windows.h>
 #include <wrl.h>
 #include <d3d12.h>
 #include <DirectXMath.h>
 #include "G2.Factory.h"
 
+using namespace std;
+using namespace DirectX;
 using namespace Microsoft::WRL;
 
 namespace G2 {
 
 struct TD3D_TEXTURE
 {
-	std::string				name;	// texture name
-	std::string				file;	// texture file
-	DirectX::XMUINT2		size;	// texture size
-	ID3D12Resource*			r{};	// resource
+	string				name;	// texture name
+	string				file;	// texture file
+	XMUINT2				size;	// texture size
+	ID3D12Resource*		r{};	// resource
 	~TD3D_TEXTURE() {
 		if(r) {
 			r->Release();
@@ -38,6 +41,8 @@ public:
 	int ResourceUnLoadAll()                             override;
 	// find ID3D12Resource*
 	ID3D12Resource* FindRes(const std::string& name) const;
+
+	static XMUINT2 GetTextureSize(ID3D12Resource* texture);
 };
 
 } // namespace G2

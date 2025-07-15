@@ -555,18 +555,35 @@ int EngineD3D::Present()
 
 int EngineD3D::CommandListBegin()
 {
-	auto hr = m_d3dCommandList->Reset(m_d3dCommandAlloc.Get(), nullptr);
-	ThrowIfFailed(hr);
+	int hr = S_OK;
+	hr = m_d3dCommandAlloc->Reset();
+	if(FAILED(hr))
+	{
+		ThrowIfFailed(hr);
+		return hr;
+	}
+	hr = m_d3dCommandList->Reset(m_d3dCommandAlloc.Get(), nullptr);
+	if(FAILED(hr))
+	{
+		ThrowIfFailed(hr);
+		return hr;
+	}
 	return hr;
 }
 
 int EngineD3D::CommandListEnd()
 {
-	auto hr = m_d3dCommandList->Close();
-	ThrowIfFailed(hr);
-	ID3D12CommandList* cmdsLists[] ={m_d3dCommandList.Get()};
-	m_d3dCommandQueue->ExecuteCommandLists(_countof(cmdsLists),cmdsLists);
-	// Wait until resize is complete.
+	int hr = S_OK;
+	hr = m_d3dCommandList->Close();
+	if(FAILED(hr))
+	{
+		ThrowIfFailed(hr);
+		return hr;
+	}
+
+	// execute the uploading
+	ID3D12CommandList* ppCmdLists[] = {m_d3dCommandList.Get()};
+	m_d3dCommandQueue->ExecuteCommandLists(_countof(ppCmdLists), ppCmdLists);
 	WaitGpu();
 	return hr;
 }

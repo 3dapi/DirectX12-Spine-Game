@@ -87,4 +87,9 @@ ID3D12Resource* FactoryTexture::FindRes(const std::string& name) const
 	return {};
 }
 
+XMUINT2 FactoryTexture::GetTextureSize(ID3D12Resource* texture)
+{
+	return DirectX::GetTextureSize(texture);
+}
+
 } // namespace G2

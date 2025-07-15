@@ -1,43 +1,47 @@
 ﻿#include <any>
 #include <utility>
 #include <d3d12.h>
-#include "Common/G2.FactoryTexture.h"
+#include "Common/G2.FactoryFontResource.h"
 #include "Common/G2.FactorySIgnature.h"
 #include "Common/G2.Util.h"
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
 #include "GameInfo.h"
-#include "UiEnd.h"
+#include "SceneFont.h"
 
 using std::any_cast;
 using namespace std;
 using namespace DirectX;
 using namespace G2;
 
-UiEnd::UiEnd()
+SceneFont::SceneFont()
 {
 }
 
-UiEnd::~UiEnd()
+SceneFont::~SceneFont()
 {
 	Destroy();
 }
 
-int UiEnd::Destroy()
+int SceneFont::Destroy()
 {
-	m_font.reset();
 	m_srvHeapUI.Reset();
-	m_uiTex.clear();
 
 	return S_OK;
 }
 
-int UiEnd::Init()
+int SceneFont::Init(const std::any&)
 {
+	HRESULT hr = S_OK;
 	auto d3d        = IG2GraphicsD3D::instance();
 	auto device     = std::any_cast<ID3D12Device*             >(d3d->getDevice());
 	auto cmdList    = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 	auto cmdQue     = std::any_cast<ID3D12CommandQueue*       >(d3d->getCommandQueue());
+	auto cmdAlloc   = std::any_cast<ID3D12CommandAllocator*   >(d3d->getCommandAllocator());
+
+	std::string text = "다람쥐 헌 쳇바퀴에 타고파";
+	auto fontTex = FactoryFontResource::CreateStringTexture("고도 B", 78, text);
+
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	vector<tuple<string, string>>  uiTextureList
@@ -53,6 +57,8 @@ int UiEnd::Init()
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r, r->size, {} }));
 	}
 
+	m_uiTex.insert(std::make_pair("ui_temp: font message", UI_TEXTURE{ fontTex, FactoryTexture::GetTextureSize(fontTex), {} }));
+
 	m_srvHeapUI = G2::CreateDescHeap((UINT)m_uiTex.size() + 1);
 	auto hCpu = m_srvHeapUI->GetCPUDescriptorHandleForHeapStart();
 	auto hGpu = m_srvHeapUI->GetGPUDescriptorHandleForHeapStart();
@@ -66,54 +72,16 @@ int UiEnd::Init()
 		hCpu.ptr += descriptorSize;
 		hGpu.ptr += descriptorSize;
 	}
-	ResourceUploadBatch resourceUpload(device);
-	{
-		resourceUpload.Begin();
-		{
-			m_font = std::make_unique<SpriteFont>(device, resourceUpload, L"asset/font/SegoeUI_18.spritefont", hCpu, hGpu);
-		}
-		resourceUpload.End(cmdQue).wait();
-	}
+
 	return S_OK;
 }
 
-int UiEnd::Update(float dt)
+int SceneFont::Update(const std::any&)
 {
-	m_blend += dt * m_blendDir;
-	if (1.0F < m_blend)
-	{
-		m_blendDir = -1.0f;
-		m_blend = 1.0f;
-	}
-	else if (0.0F > m_blend)
-	{
-		m_blendDir = +1.0f;
-		m_blend = 0.0f;
-	}
 	return S_OK;
 }
 
-int UiEnd::Draw()
-{
-	auto d3d          =  IG2GraphicsD3D::instance();
-	auto cmdList      = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
-	auto sprite       = std::any_cast<SpriteBatch*              >(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE));
-	::SIZE screenSize = *any_cast<::SIZE*                       >(d3d->getAttrib(ATT_SCREEN_SIZE));
-	auto pGameInfo    = GameInfo::instance();
-
-	ID3D12DescriptorHeap* heaps[] = { m_srvHeapUI.Get() };
-	cmdList->SetDescriptorHeaps(1, heaps);
-	sprite->Begin(cmdList);
-	{
-		wstring wstr = L"SCORE: " + std::to_wstring(pGameInfo->m_gameScore);
-		m_font->DrawString(sprite, wstr.c_str(), XMFLOAT2(400, 200), Colors::Yellow, 0, XMFLOAT2(0, 0), 1.5F);
-	}
-	sprite->End();
-
-	return S_OK;
-}
-
-int UiEnd::DrawFront()
+int SceneFont::Render()
 {
 	auto d3d = IG2GraphicsD3D::instance();
 	auto cmdList = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
@@ -129,11 +97,24 @@ int UiEnd::DrawFront()
 			XMFLOAT2 position = { screenSize.cx / 2.0F - tex.size.x / 2.0F + 100.0F, 520.0F };
 			XMFLOAT2 origin = { 0, 0 };
 			XMFLOAT2 scale = { 0.6F, 0.6F };
-			XMVECTOR color = XMVectorSet(1.f, 1.f, 1.f, m_blend);
+			XMVECTOR color = XMVectorSet(1.f, 1.f, 1.f, 1.0F);
+			sprite->Draw(tex.hGpu, tex.size, position, nullptr, color, 0.0F, origin, scale);
+		}
+		{
+			auto& tex = m_uiTex["ui_temp: font message"];
+			XMFLOAT2 position = {screenSize.cx / 2.0F - tex.size.x / 2.0F, 100.0F};
+			XMFLOAT2 origin = {0, 0};
+			XMFLOAT2 scale = {1.0F, 1.0F};
+			XMVECTOR color = XMVectorSet(1.f, 0.f, 1.f, 1.0F);
 			sprite->Draw(tex.hGpu, tex.size, position, nullptr, color, 0.0F, origin, scale);
 		}
 	}
 	sprite->End();
 
+	return S_OK;
+}
+
+int SceneFont::Notify(const std::string& name, const std::any& t)
+{
 	return S_OK;
 }

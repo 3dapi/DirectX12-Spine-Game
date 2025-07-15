@@ -62,7 +62,7 @@ int UiLobby::Init()
 	{
 		decltype(itr.second.res) res = itr.second.res;
 		device->CreateShaderResourceView(res, nullptr, hCpu);
-		itr.second.hCpu = hGpu;
+		itr.second.hGpu = hGpu;
 
 		// 다음 리소스 대응.
 		hCpu.ptr += descriptorSize;
@@ -112,16 +112,16 @@ int UiLobby::Draw()
 		float alpha = (pGameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)? 1.0F * m_blend : 0.4F;
 		{
 			auto& tex = m_uiTex["ui/ui_select_char"];
-			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 20.0F), DirectX::XMVectorSet(1.0F, 1.0F, 0.6F, 1.0F));
+			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 20.0F), DirectX::XMVectorSet(1.0F, 1.0F, 0.6F, 1.0F));
 		}
 		{
 			auto& tex = m_uiTex["ui/ui_box"];
-			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(190, 150), DirectX::XMVectorSet(1.0F, 0.0F, 1.0F, alpha));
-			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(580, 150), DirectX::XMVectorSet(0.0F, 0.0F, 1.0F, 0.4F));
+			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(190, 150), DirectX::XMVectorSet(1.0F, 0.0F, 1.0F, alpha));
+			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(580, 150), DirectX::XMVectorSet(0.0F, 0.0F, 1.0F, 0.4F));
 		}
 		{
 			auto& tex = m_uiTex["ui/ui_doc_key"];
-			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(950, 300), DirectX::XMVectorSet(0.8F, 0.8F, 0.8F, 1.0F));
+			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(950, 300), DirectX::XMVectorSet(0.8F, 0.8F, 0.8F, 1.0F));
 		}
 
 		sprite->End();
@@ -145,7 +145,7 @@ int UiLobby::DrawFront()
 		if (pGameInfo->MainPlayer()->ModelType() == EAPP_MODEL::EMODEL_KNIGHT)
 		{
 			auto& tex = m_uiTex["ui/ui_game_start"];
-			sprite->Draw(tex.hCpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 500), DirectX::XMVectorSet(1.0F, 1.0F, 1.0F, m_blend));
+			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 500), DirectX::XMVectorSet(1.0F, 1.0F, 1.0F, m_blend));
 		}
 	}
 	sprite->End();

@@ -45,6 +45,7 @@ static map<EAPP_MODEL, SPINE_ATTRIB> spine_rsc =
 	{ EAPP_MODEL::EMODEL_GOBLIN	 , {"goblins"      , "goblins-pma.atlas"      , "goblins-pro.json"      , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 1.25F, {0.0F, 0.0F}, "walk", "goblin" , {} }                 },
 	{ EAPP_MODEL::EMODEL_ALIEN	 , {"alien"        , "alien.atlas"            , "alien-pro.json"        , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.60F, {0.0F, 0.0F}, "walk", "default", {} }                 },
 	{ EAPP_MODEL::EMODEL_STMAN	 , {"stretchyman"  , "stretchyman-pma.atlas"  , "stretchyman-pro.json"  , randomRange(0.0F, 1.0F), 6.0F, 1.0F, 0.60F, {0.0F, 0.0F}, "walk", "default", {} }                 },
+	{ EAPP_MODEL::EMODEL_BOSS	 , {"raptor"       , "raptor.atlas"           , "raptor-pro.json"       , randomRange(0.0F, 1.0F), 1.0F, 1.0F, 0.45F, {0.0F, 0.0F}, "walk", "default", {} }                 },
 };
 
 SPINE_ATTRIB* FactorySpineObject::FindSpineAttribute(EAPP_MODEL model)

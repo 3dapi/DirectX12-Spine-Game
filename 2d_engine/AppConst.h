@@ -80,6 +80,7 @@ enum class EAPP_MODEL : int
 	EMODEL_GOBLIN	,			// goblin
 	EMODEL_ALIEN	,			// alien
 	EMODEL_STMAN	,			// stretchyman
+	EMODEL_BOSS		,			// raptor boss
 	EMODEL_COUNT	,
 };
 

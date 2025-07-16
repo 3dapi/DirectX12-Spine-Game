@@ -296,26 +296,38 @@ int GameMob::Update(const GameTimer& t)
 	auto dt = gt.DeltaTime();
 	auto pGameInfo = GameInfo::instance();
 
-	if (!pGameInfo->IsCollisionPlayer(this) || !pGameInfo->m_enablePlay)
+	// 살아 있을 때만....
+	if(0< this->m_hp)
 	{
-		if (-pGameInfo->m_maxMobPos > this->m_pos.x)
+		if (!pGameInfo->IsCollisionPlayer(this) || !pGameInfo->m_enablePlay)
 		{
-			m_dir = +1.0;
-		}
-		else if (pGameInfo->m_maxMobPos < this->m_pos.x)
-		{
-			m_dir = -1.0;
-		}
+			if (-pGameInfo->m_maxMobPos > this->m_pos.x)
+			{
+				m_dir = +1.0;
+			}
+			else if (pGameInfo->m_maxMobPos < this->m_pos.x)
+			{
+				m_dir = -1.0;
+			}
 
-		if (0 > m_dir)
-			MoveLeft(dt);
-		else
-			MoveRight(dt);
+			if(EAPP_CHAR_STATE::ESTATE_CHAR_IDLE != this->m_state)
+			{
+				if (0 > m_dir)
+					MoveLeft(dt);
+				else
+					MoveRight(dt);
+			}
+		}
 	}
+
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
 	{
-		if (30 > m_hp)
+		if(0 >= m_hp)
+		{
+			spineObj->Color({0.4F,0.4F,0.4F,0.4F});
+		}
+		else if (30 > m_hp)
 		{
 			spineObj->Color({ 1.0F, 0.4F, 0.4F, 0.5F });
 		}

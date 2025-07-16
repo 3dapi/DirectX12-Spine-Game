@@ -144,7 +144,7 @@ int MainApp::init(const std::any& initialValue /* = */)
 
 
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_BEGIN);
+	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_PLAY);
 
 	return S_OK;
 }
@@ -276,7 +276,7 @@ void MainApp::OnMouseMove(WPARAM btnState, const ::POINT& p)
 
 void MainApp::OnKeyboardInput()
 {
-	// Keyboar debugging
+	// Keyboard debugging
 	//for (int i = 0; i < EAPP_MAX_KEY; ++i)
 	//{
 	//	if (GetAsyncKeyState(i) & 0x8000)

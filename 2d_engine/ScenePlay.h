@@ -12,6 +12,7 @@ using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 using namespace G2;
 
+
 class ScenePlay: public G2::IG2Scene
 {
 protected:
@@ -19,6 +20,8 @@ protected:
 	vector<GameMob*>		m_vecMob		;
 	vector<uint8_t>			m_keyEvent		;
 	class UiBase*			m_pUi			{};
+	bool					m_stageComplete		{false};
+	bool					m_stageChangeing	{false};
 
 public:
 	ScenePlay();
@@ -33,7 +36,10 @@ public:
 	int		Notify(const std::string& name, const std::any& t)	override;
 
 	int		CreateMainPlayerModel();
-	int		GenerateMob();
+	int		StageSetup();
+	int		StageChange(const GameTimer& gt);
+	int		StageChangingUpdate(const GameTimer& gt);
+	int		StageComplete();
 	int		SetupMobMovemoent(GameMob*);
 };
 

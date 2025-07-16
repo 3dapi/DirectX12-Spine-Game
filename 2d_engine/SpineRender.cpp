@@ -150,6 +150,26 @@ int SpineRender::Render()
 	return S_OK;
 }
 
+int SpineRender::SetListener(const string& name, PG2LISTENER cb)
+{
+	auto itr = m_listener.find(name);
+	if(itr == m_listener.end())
+	{
+		if(cb)
+		{
+			m_listener.insert(make_pair(name, cb));
+			return S_OK;
+		}
+		return E_FAIL;
+	}
+	if(!cb)
+	{
+		m_listener.erase(itr);
+		return S_OK;
+	}
+	return E_FAIL;
+}
+
 void SpineRender::Position(const XMFLOAT2& v)
 {
 	m_pos = v;
@@ -818,12 +838,32 @@ void SpineRender::SetupDrawBuffer()
 
 void SpineRender::AnimationEvent(spine::AnimationState* state, spine::EventType type, spine::TrackEntry* entry, spine::Event* event)
 {
-	//auto anim = entry->getAnimation();
-	//printf("SpineRender::AnimationEvent:: %d Track: %d, Name: %s, Duration: %f\n"
-	//	, (int)type
-	//	, entry->getTrackIndex()
-	//	, anim->getName().buffer()
-	//	, anim->getDuration());
+	static char* eventString[]
+	{
+		"start"		,
+		"interrupt"	,
+		"end"		,
+		"complete"	,
+		"dispose"	,
+		"event"		,
+	};
+
+	auto anim = entry->getAnimation();
+
+	auto eventName = eventString[(int)type];
+	auto aniName   = anim->getName().buffer();
+
+	//printf("SpineRender::AnimationEvent:: %s Track: %d, Name: %s, Duration: %f\n"
+	//		, eventString[(int)type]
+	//		, entry->getTrackIndex()
+	//		, anim->getName().buffer()
+	//		, anim->getDuration());
+
+	for(auto& [k, v]: m_listener)
+	{
+		if(v)
+			v->Notify(string(aniName), string(eventName));
+	}
 }
 
 void SpineAnimationListener::callback(spine::AnimationState* state, spine::EventType type, spine::TrackEntry* entry, spine::Event* event)

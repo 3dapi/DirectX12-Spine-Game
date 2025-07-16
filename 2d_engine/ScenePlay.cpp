@@ -68,7 +68,7 @@ int ScenePlay::Init(const std::any& initial_value)
 	hr = CreateMainPlayerModel();
 	if (FAILED(hr))
 		return hr;
-	hr = StageSetup();
+	hr = StageInit();
 	if (FAILED(hr))
 		return hr;
 
@@ -85,9 +85,10 @@ int ScenePlay::Destroy()
 
 int ScenePlay::Update(const std::any& t)
 {
-	auto pGameInfo   = GameInfo::instance();
-	auto playerState = m_mainPlayer->State();
-	auto playerPos   = m_mainPlayer->Position();
+	auto pGameInfo    = GameInfo::instance();
+	auto playerState  = m_mainPlayer->State();
+	auto playerPos    = m_mainPlayer->Position();
+	auto curStageIndex = pGameInfo->CurrentStateIndex();
 
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto dt = gt.DeltaTime();
@@ -95,7 +96,7 @@ int ScenePlay::Update(const std::any& t)
 	//------------------------------------------------------------------------------
 	// 스테이지 변경 체크
 	// 각각의 스테이별로 목표를 완수 했는가?
-	if(!m_stageComplete)
+	if(!m_stageComplete && !m_stageComplete)
 	{
 		if(pGameInfo->CurrentStateComplete())
 		{
@@ -184,6 +185,10 @@ int ScenePlay::Update(const std::any& t)
 		},
 	};
 
+	StageUpdate[curStageIndex]();
+
+
+	// 전투
 	for (size_t i = 0; i < m_vecMob.size(); ++i)
 	{
 		auto* mob = m_vecMob[i];
@@ -212,16 +217,19 @@ int ScenePlay::Update(const std::any& t)
 
 			if (isTarget)
 			{
-				pGameInfo->IncreaseScore(100);
-
-				auto newHp = mob->HP() - m_mainPlayer->Damage();
-				if (0 >= newHp)
+				if(m_mainPlayer->AnimationComplete("attack"))
 				{
-					newHp = 0;
-					// mob kill 수를 올린다.
-					pGameInfo->CurrentStateAdvancing(1);
+					pGameInfo->IncreaseScore(100);
+
+					auto newHp = mob->HP() - m_mainPlayer->Damage();
+					if (0 >= newHp)
+					{
+						newHp = 0;
+						// mob kill 수를 올린다.
+						pGameInfo->CurrentStateAdvancing(1);
+					}
+					mob->HP(newHp);
 				}
-				mob->HP(newHp);
 			}
 		}
 
@@ -268,6 +276,15 @@ int ScenePlay::Update(const std::any& t)
 			m_mainPlayer->MoveDown(dt);
 		}
 
+		if(	m_keyEvent[VK_LEFT] == EAPP_INPUT_UP ||
+			m_keyEvent[VK_RIGHT] == EAPP_INPUT_UP ||
+			m_keyEvent[VK_UP] == EAPP_INPUT_UP ||
+			m_keyEvent[VK_DOWN] == EAPP_INPUT_UP)
+		{
+			isKeyEvent = true;
+			m_mainPlayer->State(EAPP_CHAR_STATE::ESTATE_CHAR_IDLE);
+		}
+
 		// attack.
 		// 이동이 아닐때만 공격 가능
 		if (!isKeyEvent && m_keyEvent['A'] == EAPP_INPUT_PRESS)
@@ -276,11 +293,6 @@ int ScenePlay::Update(const std::any& t)
 			m_mainPlayer->State(EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK);
 		}
 
-		//printf("Key event : %s \n", isKeyEvent ? "true" : "false");
-
-		auto curSt = m_mainPlayer->State();
-		EAPP_CHAR_STATE st = isKeyEvent ? curSt : EAPP_CHAR_STATE::ESTATE_CHAR_IDLE;
-		m_mainPlayer->State(st);
 	}
 
 	m_mainPlayer->Update(gt);
@@ -397,16 +409,18 @@ int ScenePlay::CreateMainPlayerModel()
 	return S_OK;
 }
 
-int ScenePlay::StageSetup()
+int ScenePlay::StageInit()
 {
 	auto pGameInfo = GameInfo::instance();
 	auto* pCurStage = pGameInfo->CurrentState();
+	auto  curStageIndex = pGameInfo->CurrentStateIndex();
 
 	vector< function<void(void)> > StageSetup
 	{
 		// stage 1
 		[&]()
 		{
+			m_mainPlayer->Position({-600, 0});
 			if(m_vecMob.empty())
 			{
 				m_vecMob.resize(pCurStage->mobMax,{});
@@ -462,7 +476,7 @@ int ScenePlay::StageSetup()
 		},
 	};
 
-	StageSetup[pGameInfo->CurrentStateIndex()]();
+	StageSetup[curStageIndex]();
 
 	int hr = S_OK;
 	return S_OK;
@@ -498,21 +512,11 @@ int ScenePlay::SetupMobMovemoent(GameMob* mob)
 	// mob 들이 서있기만 함.
 	if(0 == pGameInfo->CurrentStateIndex())
 	{
-		float posx_plus   = G2::randomRange( 300.0F,  700.0F);
-		float posx_minus  = G2::randomRange(-700.0F, -300.0F);
-		int   posx_choise = G2::randomRange(0, 1);
-		float posx = posx_choise ? posx_plus : posx_minus;
-
-		float posy_plus   = G2::randomRange( 40.0F,  80.0F);
-		float posy_minus  = G2::randomRange(-80.0F, -40.0F);
-		int   posy_choise = G2::randomRange(0, 1);
-		float posy = posy_choise ? posy_plus : posy_minus;
-
-		float dir = posx  < mainPlayerPos.x ?  1.0F : -1.0F;
-
-		float scale = G2::randomRange(0.4F, 0.8F);
-
-		mob->Init();	// 모델 교체는 없이, 초기화만 다시 진행.
+		float posx = G2::randomRange( 200.0F,  700.0F);
+		float posy = G2::randomRange( -250.0F,  350.0F);
+		float dir  = -1.0F;
+		float scale = G2::randomRange(0.5F, 0.6F);
+		mob->Init();
 		mob->Position({ posx, posy });
 		mob->Scale(scale);
 		mob->State(EAPP_CHAR_STATE::ESTATE_CHAR_IDLE);

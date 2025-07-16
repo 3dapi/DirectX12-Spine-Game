@@ -76,7 +76,7 @@ int GameInfo::StageInit()
 	std::fill(m_killedMob.begin(), m_killedMob.end(), 0);
 	std::fill(m_stage.begin(), m_stage.end(), GAME_STAGE{});
 
-	m_stage[0] =	{  3, {EAPP_MODEL::EMODEL_STMAN }, };
+	m_stage[0] =	{  5, {EAPP_MODEL::EMODEL_STMAN }, };
 	m_stage[1] =	{  5, {EAPP_MODEL::EMODEL_RAPTOR}, };
 	m_stage[2] =	{ 10, {EAPP_MODEL::EMODEL_RAPTOR, EAPP_MODEL::EMODEL_GOBLIN}, };
 	m_stage[3] =	{ 13, {EAPP_MODEL::EMODEL_RAPTOR, EAPP_MODEL::EMODEL_GOBLIN, EAPP_MODEL::EMODEL_ALIEN}, };

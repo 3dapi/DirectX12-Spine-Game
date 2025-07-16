@@ -72,6 +72,15 @@ struct IG2Object
 };
 typedef IG2Object*	PG2OBJECT;
 
+
+struct IG2Listener
+{
+	virtual ~IG2Listener() = default;
+	virtual int		Notify(const std::string&, const std::any&)= 0;
+};
+typedef IG2Listener*	PG2LISTENER;
+
+
 } // namespace G2 {
 
 #endif // _G2Constants_H_

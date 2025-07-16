@@ -205,8 +205,8 @@ GamePlayer::GamePlayer()
 int GamePlayer::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE state)
 {
 	m_hp    = 100;
-	m_damage = 5.0F;
-	m_speed = 400.0F;
+	m_damage = 34.0F;
+	m_speed = 250.0F;
 	m_pos   = XMFLOAT2{ 0.0F, 0.0F };
 	m_dir   = 1.0F;
 	m_dif   = XMFLOAT4{ 1.0F, 1.0F, 1.0F, 1.0F };
@@ -222,6 +222,7 @@ int GamePlayer::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE s
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
 	{
+		spineObj->SetListener("player", this);
 		if (m_state == EAPP_CHAR_STATE::ESTATE_CHAR_IDLE)
 		{
 			auto cur_ani = spineObj->Animation();
@@ -235,6 +236,8 @@ int GamePlayer::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE s
 }
 int GamePlayer::Update(const GameTimer& gt)
 {
+	m_aniComplete.clear();
+
 	if (m_modelObj)
 		return m_modelObj->Update(gt);
 	
@@ -245,6 +248,49 @@ int GamePlayer::Render()
 	if (m_modelObj)
 		return m_modelObj->Render();
 	return S_OK;
+}
+
+int GamePlayer::Notify(const std::string& aniname, const std::any& val)
+{
+	string eventType;
+	if(val.has_value())
+	{
+		try
+		{
+			eventType = any_cast<const string&>(val);
+		}
+		catch(const bad_any_cast&)
+		{
+			return E_FAIL;
+		}
+	}
+	// attack complete 3번오면 idle 로 변경
+	if(aniname == "attack" && eventType == "complete")
+	{
+		--m_attackRepeat;
+		if( 0 == m_attackRepeat)
+		{
+			this->State(EAPP_CHAR_STATE::ESTATE_CHAR_IDLE);
+		}
+		m_aniComplete["attack"] = true;
+	}
+
+	return S_OK;
+}
+
+void GamePlayer::State(EAPP_CHAR_STATE v)
+{
+	if(m_state != v && v == EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK)
+	{
+		// 3회 애니메이션
+		m_attackRepeat = 3;
+	}
+	GameCharacter::State(v);
+}
+
+EAPP_CHAR_STATE GamePlayer::State() const
+{
+	return GameCharacter::State();
 }
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -277,6 +323,7 @@ int GameMob::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE stat
 	auto spineObj = dynamic_cast<SpineRender*>(m_modelObj);
 	if (spineObj)
 	{
+		spineObj->SetListener("mob", this);
 		spineObj->Color(m_dif);
 		if (m_state == EAPP_CHAR_STATE::ESTATE_CHAR_MOVE)
 		{
@@ -344,5 +391,22 @@ int GameMob::Render()
 {
 	if (m_modelObj)
 		return m_modelObj->Render();
+	return S_OK;
+}
+
+int GameMob::Notify(const std::string& aniName, const std::any& val)
+{
+	string eventType;
+	if(val.has_value())
+	{
+		try
+		{
+			eventType = any_cast<const string&>(val);
+		}
+		catch(const bad_any_cast&)
+		{
+			return E_FAIL;
+		}
+	}
 	return S_OK;
 }

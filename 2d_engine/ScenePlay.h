@@ -36,7 +36,7 @@ public:
 	int		Notify(const std::string& name, const std::any& t)	override;
 
 	int		CreateMainPlayerModel();
-	int		StageSetup();
+	int		StageInit();
 	int		StageChange(const GameTimer& gt);
 	int		StageChangingUpdate(const GameTimer& gt);
 	int		StageComplete();

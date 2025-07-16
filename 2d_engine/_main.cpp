@@ -17,6 +17,7 @@
 #include <crtdbg.h>
 #endif
 
+#include <iostream>
 #include "MainApp.h"
 
 
@@ -46,5 +47,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, int)
 	}
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
 	_CrtDumpMemoryLeaks();
+
+	//char buf[1024]{};
+	//while(1)
+	//{
+	//	std::cin >> buf;
+	//}
 }
 

@@ -70,6 +70,7 @@ protected:
 	D3D12_GPU_DESCRIPTOR_HANDLE		m_textureHandle		{};		// spine texture handle
 	ID3D12Resource*					m_cnstMVP			{};
 	uint8_t*						m_ptrMVP			{};
+	map<string, PG2LISTENER>		m_listener			;
 
 protected:
 	XMFLOAT2	m_pos		{ 0.0F, 0.0F};
@@ -88,6 +89,7 @@ public:
 	int		Destroy()					override;
 	int		Update(const std::any& t)	override;
 	int		Render()					override;
+	int		SetListener(const string& name, PG2LISTENER cb);
 
 	void		Position		(const XMFLOAT2&);
 	XMFLOAT2	Position		() const ;

@@ -40,7 +40,7 @@ int SceneFont::Init(const std::any&)
 	auto cmdAlloc   = std::any_cast<ID3D12CommandAllocator*   >(d3d->getCommandAllocator());
 
 	std::string text = "Touch the Screen";
-	auto [fontTex, srcSize, texSize] = FactoryFontResource::CreateStringTexture("고도 B", 72, text);
+	auto [fontTex, sizeTex, sizeSrc] = StringTexture::CreateStringTexture("고도 B", 72, text);
 
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
@@ -56,8 +56,7 @@ int SceneFont::Init(const std::any&)
 		r->name;
 		m_uiTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r, r->size, {} }));
 	}
-
-	m_uiTex.insert(std::make_pair("ui_temp: font message", UI_TEXTURE{ fontTex, srcSize, {}, texSize}));
+	m_uiTex.insert(std::make_pair("ui_temp: font message", UI_TEXTURE{ fontTex, sizeTex, {}, sizeSrc}));
 
 	m_srvHeapUI = G2::CreateDescHeap((UINT)m_uiTex.size() + 1);
 	auto hCpu = m_srvHeapUI->GetCPUDescriptorHandleForHeapStart();
@@ -83,11 +82,11 @@ int SceneFont::Update(const std::any& t)
 
 	auto& tex = m_uiTex["ui_temp: font message"];
 	std::string text = "SceneFont::Update: " + std::to_string(gt.DeltaTime());
-	auto [fontTex, srcSize, texSize] = FactoryFontResource::UpdateStringTexture(tex.res, "고도 B", 48, text);
+	auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 48, text);
 	if(fontTex)
 	{
-		tex.size     = srcSize;
-		tex.texSize  = texSize;
+		tex.size     = sizeTex;
+		tex.sizeSrc  = sizeSrc;
 	}
 	return S_OK;
 }

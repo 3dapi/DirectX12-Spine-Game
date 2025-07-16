@@ -14,9 +14,9 @@ using namespace DirectX;
 struct UI_TEXTURE
 {
 	ID3D12Resource*					res	{};
-	XMUINT2							size{};
+	XMUINT2							size{};		// draw size
 	D3D12_GPU_DESCRIPTOR_HANDLE		hGpu{};
-	XMUINT2							texSize{};	// texture, size
+	XMUINT2							sizeSrc{};	// source size
 };
 typedef map<string, UI_TEXTURE>		UI_MAP;
 

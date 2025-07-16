@@ -58,13 +58,13 @@ int UiPlay::Init()
 
 	{
 		std::string text = "Score: ";
-		auto [fontTex, srcSize, texSize] = FactoryFontResource::CreateStringTexture("고도 B", 24, text);
-		m_uiTex.insert(std::make_pair("ui_font score", UI_TEXTURE{fontTex, srcSize, {}, texSize}));
+		auto [fontTex, sizeTex, sizeSrc] = StringTexture::CreateStringTexture("고도 B", 24, text);
+		m_uiTex.insert(std::make_pair("ui_font score", UI_TEXTURE{fontTex, sizeTex, {}, sizeSrc}));
 	}
 	{
 		std::string text = "HP: ";
-		auto [fontTex, srcSize, texSize] = FactoryFontResource::CreateStringTexture("고도 B", 24, text);
-		m_uiTex.insert(std::make_pair("ui_font hp", UI_TEXTURE{fontTex, srcSize, {}, texSize}));	
+		auto [fontTex, sizeTex, sizeSrc] = StringTexture::CreateStringTexture("고도 B", 24, text);
+		m_uiTex.insert(std::make_pair("ui_font hp", UI_TEXTURE{fontTex, sizeTex, {}, sizeSrc}));	
 	}
 
 	m_srvHeapUI = G2::CreateDescHeap((UINT)m_uiTex.size() + 1);
@@ -111,21 +111,21 @@ int UiPlay::Update(float dt)
 	{
 		auto& tex = m_uiTex["ui_font score"];
 		std::string text = "Score: " + std::to_string(pGameInfo->m_gameScore);
-		auto [fontTex, srcSize, texSize] = FactoryFontResource::UpdateStringTexture(tex.res, "고도 B", 24, text);
+		auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 24, text);
 		if(fontTex)
 		{
-			tex.size = srcSize;
-			tex.texSize = texSize;
+			tex.size    = sizeTex;
+			tex.sizeSrc = sizeSrc;
 		}
 	}
 	{
 		auto& tex = m_uiTex["ui_font hp"];
 		std::string text = "HP: " + std::to_string((int)pGameInfo->MainPlayer()->HP());
-		auto [fontTex, srcSize, texSize] = FactoryFontResource::UpdateStringTexture(tex.res, "고도 B", 24, text);
+		auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 24, text);
 		if(fontTex)
 		{
-			tex.size = srcSize;
-			tex.texSize = texSize;
+			tex.size    = sizeTex;
+			tex.sizeSrc = sizeSrc;
 		}
 	}
 

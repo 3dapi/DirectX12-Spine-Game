@@ -32,12 +32,46 @@ public:
 	TD3D_FontResource* ResourceFind(const std::string& name) const override;
 	int ResourceUnLoad(const std::string& name) override;
 	std::string FindRes(const std::string& name) const;
+};
 
-	static std::tuple<ID3D12Resource*, XMUINT2, XMUINT2>
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+class StringTexture
+{
+public:
+	inline static const UINT TEX_W = 2048;
+	inline static const UINT TEX_H = 128;
+	inline static const UINT FONT_H = 12;
+
+public:
+	static StringTexture* Create(const std::string& fontName, int fontHeight, const std::string& text);
+
+	static std::tuple<ID3D12Resource*, XMUINT2, XMUINT2>	// texture resource, size texture, size source
 		CreateStringTexture(const std::string& fontName, int fontHeight, const std::string& text);
 
-	static std::tuple<ID3D12Resource*, XMUINT2, XMUINT2>
+	static std::tuple<ID3D12Resource*, XMUINT2, XMUINT2>	// texture resource, size texture, size source
 		UpdateStringTexture(ID3D12Resource* tex, const std::string& fontName, int fontHeight, const std::string& text);
+
+public:
+	StringTexture();
+	~StringTexture();
+	int		Init(const std::string& fontName, int fontHeight=FONT_H, const std::string& text={});
+	int		Destroy();
+	int		Update(const std::string& text, int fontHeight=0, const std::string& fontName="");
+
+	ID3D12Resource*	TextureResource () const { return m_texRsc; }
+	XMUINT2			SizeTex			() const { return m_sizeTex;}
+	XMUINT2			SizeSrc			() const { return m_sizeSrc;}
+
+protected:
+	std::string		m_text			;
+	std::string		m_fontName		;
+	int				m_fontHeight	{};
+	ID3D12Resource* m_texRsc		{};
+	XMUINT2			m_sizeTex		{TEX_W, TEX_H};		// d3d texture size 2048, 128 for draw
+	XMUINT2			m_sizeSrc		{};					// source size
+public:
 };
 
 } // namespace G2

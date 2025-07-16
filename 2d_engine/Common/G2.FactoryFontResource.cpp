@@ -62,6 +62,31 @@ std::string FactoryFontResource::FindRes(const std::string& name) const
 	return {};
 }
 
+TD3D_FontResource::~TD3D_FontResource()
+{
+	if(!file.empty())
+	{
+		RemoveFontResourceExA(file.c_str(), FR_PRIVATE, nullptr);
+		file.clear();
+		name.clear();
+	}
+}
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+StringTexture* StringTexture::Create(const std::string& fontName, int fontHeight, const std::string& text)
+{
+	auto* ret = new StringTexture;
+	if(!ret->Init(fontName, fontHeight, text))
+	{
+		delete ret;
+		return {};
+	}
+	return ret;
+}
+
 static std::tuple<std::vector<uint32_t>, size_t, size_t>
 CreateGdiStringBuffer(const std::string& fontName, int fontHeight, const std::string& text)
 {
@@ -145,7 +170,7 @@ CreateGdiStringBuffer(const std::string& fontName, int fontHeight, const std::st
 }
 
 std::tuple<ID3D12Resource*, XMUINT2, XMUINT2>
-FactoryFontResource::CreateStringTexture(const std::string& fontName, int fontHeight, const std::string& text)
+StringTexture::CreateStringTexture(const std::string& fontName, int fontHeight, const std::string& text)
 {
 	ID3D12Resource* texFont{};
 	HRESULT hr = S_OK;
@@ -153,14 +178,11 @@ FactoryFontResource::CreateStringTexture(const std::string& fontName, int fontHe
 	auto device     = std::any_cast<ID3D12Device*             >(d3d->getDevice());
 	auto cmdList    = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 
-	const UINT texW = 2048;
-	const UINT texH = 128;
-
-	auto[buf, srcW, srcH] = ::G2::CreateGdiStringBuffer(fontName, fontHeight, text);
+	auto[buf, srcW, srcH] = ::G2::CreateGdiStringBuffer(fontName, fontHeight, text.empty()? std::string(" "): text);
 
 	// D3D12 리소스 생성
 	ComPtr<ID3D12Resource> rscCPU{};
-	auto bufDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_B8G8R8A8_UNORM, (UINT64)texW, (UINT)texH, 1, 1);
+	auto bufDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_B8G8R8A8_UNORM, (UINT64)TEX_W, (UINT)TEX_H, 1, 1);
 	CD3DX12_HEAP_PROPERTIES heapPropsGPU(D3D12_HEAP_TYPE_DEFAULT);
 	CD3DX12_HEAP_PROPERTIES heapPropsUpload(D3D12_HEAP_TYPE_UPLOAD);
 
@@ -175,7 +197,7 @@ FactoryFontResource::CreateStringTexture(const std::string& fontName, int fontHe
 	device->GetCopyableFootprints(&bufDesc, 0, 1, 0, &footprint, &numRows, &rowSizeInBytes, &totalBytes);
 
 	size_t rowPitch = footprint.Footprint.RowPitch;
-	size_t paddedSize = rowPitch * texH;
+	size_t paddedSize = rowPitch * TEX_H;
 
 	std::vector<uint8_t> paddedBuf(paddedSize, 0);
 
@@ -185,11 +207,11 @@ FactoryFontResource::CreateStringTexture(const std::string& fontName, int fontHe
 		avx2_memcpy(&paddedBuf[y * rowPitch], &buf[y * srcW], srcW * sizeof(uint32_t));
 	}
 
-	// subresource
+	// sub resource
 	D3D12_SUBRESOURCE_DATA sub = {};
 	sub.pData = paddedBuf.data();
 	sub.RowPitch = rowPitch;
-	sub.SlicePitch = rowPitch * texH;
+	sub.SlicePitch = rowPitch * TEX_H;
 
 	auto bufSize = CD3DX12_RESOURCE_DESC::Buffer(totalBytes);
 	device->CreateCommittedResource(&heapPropsUpload, D3D12_HEAP_FLAG_NONE, &bufSize, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&rscCPU));
@@ -206,24 +228,21 @@ FactoryFontResource::CreateStringTexture(const std::string& fontName, int fontHe
 
 	d3d->command(CMD_COMMAND_END);
 
-	return std::make_tuple(texFont, XMUINT2{(uint32_t)texW, (uint32_t)texH}, XMUINT2{(uint32_t)srcW, (uint32_t)srcH});
+	return std::make_tuple(texFont, XMUINT2{(uint32_t)TEX_W, (uint32_t)TEX_H}, XMUINT2{(uint32_t)srcW, (uint32_t)srcH});
 }
 
 std::tuple<ID3D12Resource*, XMUINT2, XMUINT2>
-FactoryFontResource::UpdateStringTexture(ID3D12Resource* texFont, const std::string& fontName, int fontHeight, const std::string& text)
+StringTexture::UpdateStringTexture(ID3D12Resource* texFont, const std::string& fontName, int fontHeight, const std::string& text)
 {
 	HRESULT hr = S_OK;
 	auto d3d = IG2GraphicsD3D::instance();
 	auto device = std::any_cast<ID3D12Device*>(d3d->getDevice());
 	auto cmdList = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
 
-	const UINT texW = 2048;
-	const UINT texH = 128;
-
 	auto [buf, srcW, srcH] = ::G2::CreateGdiStringBuffer(fontName, fontHeight, text);
 
 	// GPU 텍스처 크기에 맞춰 footprint 계산
-	auto bufDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_B8G8R8A8_UNORM, texW, texH, 1, 1);
+	auto bufDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_B8G8R8A8_UNORM, TEX_W, TEX_H, 1, 1);
 	CD3DX12_HEAP_PROPERTIES heapPropsUpload(D3D12_HEAP_TYPE_UPLOAD);
 
 	D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint{};
@@ -232,7 +251,7 @@ FactoryFontResource::UpdateStringTexture(ID3D12Resource* texFont, const std::str
 	device->GetCopyableFootprints(&bufDesc, 0, 1, 0, &footprint, &numRows, &rowSizeInBytes, &totalBytes);
 
 	size_t rowPitch = footprint.Footprint.RowPitch;
-	size_t paddedSize = rowPitch * texH;
+	size_t paddedSize = rowPitch * TEX_H;
 	std::vector<uint8_t> paddedBuf(paddedSize, 0);
 
 	// 실제 텍스트 크기 만큼만 복사
@@ -244,7 +263,7 @@ FactoryFontResource::UpdateStringTexture(ID3D12Resource* texFont, const std::str
 	D3D12_SUBRESOURCE_DATA sub = {};
 	sub.pData = paddedBuf.data();
 	sub.RowPitch = rowPitch;
-	sub.SlicePitch = rowPitch * texH;
+	sub.SlicePitch = rowPitch * TEX_H;
 
 	ComPtr<ID3D12Resource> rscCPU;
 	auto uploadDesc = CD3DX12_RESOURCE_DESC::Buffer(totalBytes);
@@ -268,19 +287,56 @@ FactoryFontResource::UpdateStringTexture(ID3D12Resource* texFont, const std::str
 
 	d3d->command(CMD_COMMAND_END);
 
-	return std::make_tuple(texFont, XMUINT2{(uint32_t)texW, (uint32_t)texH}, XMUINT2{(uint32_t)srcW, (uint32_t)srcH});
+	return std::make_tuple(texFont, XMUINT2{(uint32_t)TEX_W, (uint32_t)TEX_H}, XMUINT2{(uint32_t)srcW, (uint32_t)srcH});
 }
 
-
-
-TD3D_FontResource::~TD3D_FontResource()
+StringTexture::StringTexture()
 {
-	if(!file.empty())
-	{
-		RemoveFontResourceExA(file.c_str(), FR_PRIVATE, nullptr);
-		file.clear();
-		name.clear();
-	}
+}
+
+StringTexture::~StringTexture()
+{
+	Destroy();
+}
+
+int StringTexture::Init(const std::string& fontName, int fontHeight, const std::string& text)
+{
+	std::tie(m_texRsc, m_sizeTex, m_sizeSrc) = CreateStringTexture(fontName, fontHeight, text);
+	if(!m_texRsc)
+		return E_FAIL;
+	return S_OK;
+}
+
+int StringTexture::Destroy()
+{
+	SAFE_RELEASE(	m_texRsc	);
+	if(!m_text.empty())
+		m_text.clear();
+	if(!m_fontName.empty())
+		m_fontName.clear();
+	m_fontHeight	= {};
+	m_sizeTex		= {};
+	m_sizeSrc		= {};
+	return S_OK;
+}
+
+int StringTexture::Update(const std::string& text, int fontHeight, const std::string& fontName)
+{
+	ID3D12Resource* texRsc	{};
+	XMUINT2			sizeTex	{};		// d3d texture size 2048, 128
+	XMUINT2			sizeSrc	{};		// draw size
+	bool willUpdate	{};
+	fontHeight = (0== fontHeight)? m_fontHeight: fontHeight;
+	willUpdate = (text != m_text) || (fontHeight != m_fontHeight) || (fontName != fontName);
+	if(!willUpdate)
+		return S_OK;
+	std::tie(texRsc, sizeTex, sizeSrc) = CreateStringTexture(fontName, fontHeight, text);
+	if(!texRsc)
+		return E_FAIL;
+	m_texRsc   = texRsc;
+	m_sizeTex  = sizeTex;
+	m_sizeSrc  = sizeSrc;
+	return S_OK;
 }
 
 } // namespace G2

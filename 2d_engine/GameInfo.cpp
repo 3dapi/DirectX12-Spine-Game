@@ -62,12 +62,19 @@ void GameInfo::IncreaseScore(int score)
 	m_gameScore += score;
 }
 
+bool GameInfo::M_CHEAT = true;
+
 int GameInfo::StageInit()
 {
 	// 점수 초기화.
 	this->m_gameScore = 0;
 	this->m_enablePlay = true;
-	this->m_stageCur = 0;
+
+	//AFEW::C
+	if(GameInfo::M_CHEAT)
+		this->m_stageCur = 4;
+	else
+		this->m_stageCur = 0;
 
 	// 스테이지 환수 조건
 	m_killedMob.resize(MAX_STAGE, 0)	;
@@ -77,9 +84,9 @@ int GameInfo::StageInit()
 	std::fill(m_stage.begin(), m_stage.end(), GAME_STAGE{});
 
 	m_stage[0] =	{  5, {EAPP_MODEL::EMODEL_STMAN }, };
-	m_stage[1] =	{  5, {EAPP_MODEL::EMODEL_RAPTOR}, };
+	m_stage[1] =	{  6, {EAPP_MODEL::EMODEL_RAPTOR}, };
 	m_stage[2] =	{ 10, {EAPP_MODEL::EMODEL_RAPTOR, EAPP_MODEL::EMODEL_GOBLIN}, };
-	m_stage[3] =	{ 13, {EAPP_MODEL::EMODEL_RAPTOR, EAPP_MODEL::EMODEL_GOBLIN, EAPP_MODEL::EMODEL_ALIEN}, };
+	m_stage[3] =	{ 15, {EAPP_MODEL::EMODEL_RAPTOR, EAPP_MODEL::EMODEL_GOBLIN, EAPP_MODEL::EMODEL_ALIEN}, };
 	m_stage[4] =	{ 20, {EAPP_MODEL::EMODEL_RAPTOR, EAPP_MODEL::EMODEL_BOSS}, };
 
 	return S_OK;
@@ -94,21 +101,19 @@ GAME_STAGE* GameInfo::CurrentState()
 
 bool GameInfo::CurrentStateComplete()
 {
-	if(0 == m_stageCur)
+	if(m_stage[m_stageCur].mobMax <= m_killedMob[m_stageCur])
 	{
-		if(5 <= m_killedMob[m_stageCur])
-		{
-			return true;
-		}
+		return true;
 	}
-
 	return false;
 }
 
 void GameInfo::CurrentStateAdvancing(int v)
 {
-	if(0 == m_stageCur)
-	{
-		m_killedMob[m_stageCur] += v;
-	}
+	m_killedMob[m_stageCur] += v;
+}
+
+void GameInfo::IncreaseStage()
+{
+	m_stageIncrease = true;
 }

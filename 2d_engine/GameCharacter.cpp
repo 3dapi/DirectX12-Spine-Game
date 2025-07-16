@@ -200,6 +200,11 @@ EAPP_CHAR_STATE	GameCharacter::State() const
 
 GamePlayer::GamePlayer()
 {
+	//AFEW::C
+	if(GameInfo::M_CHEAT)
+	{
+		m_boundBox = {260.0F,330.0F};
+	}
 }
 
 int GamePlayer::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE state)

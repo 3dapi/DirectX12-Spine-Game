@@ -68,6 +68,11 @@ int UiPlay::Init()
 		auto [fontTex, sizeTex, sizeSrc] = StringTexture::CreateStringTexture("고도 B", 24, text);
 		m_uiTex.insert(std::make_pair("ui_font hp", UI_TEXTURE{fontTex, sizeTex, {}, sizeSrc}));	
 	}
+	{
+		std::string text = "Stage: ";
+		auto [fontTex, sizeTex, sizeSrc] = StringTexture::CreateStringTexture("고도 B", 48, text);
+		m_uiTex.insert(std::make_pair("ui_font stage", UI_TEXTURE{fontTex, sizeTex, {}, sizeSrc}));
+	}
 
 	m_srvHeapUI = G2::CreateDescHeap((UINT)m_uiTex.size() + 1);
 	auto hCpu = m_srvHeapUI->GetCPUDescriptorHandleForHeapStart();
@@ -124,6 +129,16 @@ int UiPlay::Update(float dt)
 		auto& tex = m_uiTex["ui_font hp"];
 		std::string text = "HP: " + std::to_string((int)pGameInfo->MainPlayer()->HP());
 		auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 24, text);
+		if(fontTex)
+		{
+			tex.size    = sizeTex;
+			tex.sizeSrc = sizeSrc;
+		}
+	}
+	{
+		auto& tex = m_uiTex["ui_font stage"];
+		std::string text = std::to_string(pGameInfo->CurrentStateIndex() + 1);
+		auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 48, text);
 		if(fontTex)
 		{
 			tex.size    = sizeTex;
@@ -240,6 +255,14 @@ int UiPlay::StageChangingDraw()
 			XMFLOAT2 scale = { 1.0F, 1.0F };
 			XMVECTOR color = XMVectorSet(1.f, 1.f, 0.f, 0.8F);
 			sprite->Draw(tex.hGpu, tex.size, position, nullptr, color);
+		}
+		{
+			auto& tex = m_uiTex["ui_font stage"];
+			XMFLOAT2 position = { screenSize.cx / 2.0F-50.0F, 140.0F };
+			XMFLOAT2 origin = {0, 0};
+			XMFLOAT2 scale = {2.0F, 2.0F};
+			XMVECTOR color = XMVectorSet(1.f, 1.f, 0.f, 0.8F);
+			sprite->Draw(tex.hGpu, tex.size, position, nullptr, color, 0.0F, origin, scale);
 		}
 		{
 			auto& tex = m_uiTex["ui/ui_touch_the_screen"];

@@ -93,10 +93,16 @@ int ScenePlay::Update(const std::any& t)
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto dt = gt.DeltaTime();
 
+	if(pGameInfo->m_stageIncrease)
+	{
+		pGameInfo->m_stageCur++;
+		StageInit();
+	}
+
 	//------------------------------------------------------------------------------
 	// 스테이지 변경 체크
 	// 각각의 스테이별로 목표를 완수 했는가?
-	if(!m_stageComplete && !m_stageComplete)
+	if(!m_stageComplete && !m_stageChangeing)
 	{
 		if(pGameInfo->CurrentStateComplete())
 		{
@@ -143,9 +149,10 @@ int ScenePlay::Update(const std::any& t)
 
 	vector<function<void(void)> > StageUpdate
 	{
-		// state 0
+		// state 0~3
 		[&]()
 		{
+			// clear
 			for(auto it = m_vecMob.begin(); it != m_vecMob.end(); )
 			{
 				if(nullptr == *it || 0 == (*it)->HP())
@@ -158,18 +165,8 @@ int ScenePlay::Update(const std::any& t)
 				++it;
 			}
 		},
-		// state 1
-		[&]() {
-		},
-		// state 2
-		[&](){
-		},
-		// state 3
-		[&](){
-		},
 		// state 4
-		[&]()
-		{
+		[&]() {
 			// regen Mob
 			for(size_t i = 0; i < m_vecMob.size(); ++i)
 			{
@@ -185,7 +182,10 @@ int ScenePlay::Update(const std::any& t)
 		},
 	};
 
-	StageUpdate[curStageIndex]();
+	if(curStageIndex<4)
+		StageUpdate[0]();
+	else
+		StageUpdate[1]();
 
 
 	// 전투
@@ -360,6 +360,7 @@ int ScenePlay::Render()
 int ScenePlay::Notify(const std::string& name, const std::any& t)
 {
 	auto pGameInfo = GameInfo::instance();
+	auto curStageIndex = pGameInfo->CurrentStateIndex();
 
 	if(name == "KeyEvent")
 	{
@@ -369,6 +370,19 @@ int ScenePlay::Notify(const std::string& name, const std::any& t)
 	else if (name == "MouseUp")
 	{
 		auto mousePos = any_cast<const ::POINT&>(t);
+		if(m_stageChangeing)
+		{
+			if( (curStageIndex+1) == GameInfo::MAX_STAGE)
+			{
+				pGameInfo->m_enablePlay = false;
+				IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_END);
+			}
+			else
+			{
+				GameInfo::instance()->IncreaseStage();
+			}
+		}
+
 		if(!pGameInfo->m_enablePlay)
 			IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_END);
 	}
@@ -415,16 +429,18 @@ int ScenePlay::StageInit()
 	auto* pCurStage = pGameInfo->CurrentState();
 	auto  curStageIndex = pGameInfo->CurrentStateIndex();
 
+	m_stageComplete = false;
+	m_stageChangeing = false;
+	pGameInfo->m_stageIncrease = false;
+
 	vector< function<void(void)> > StageSetup
 	{
-		// stage 1
+		// stage 0
 		[&]()
 		{
 			m_mainPlayer->Position({-600, 0});
-			if(m_vecMob.empty())
-			{
-				m_vecMob.resize(pCurStage->mobMax,{});
-			}
+			SAFE_DELETE_VECTOR(m_vecMob);
+			m_vecMob.resize(pCurStage->mobMax,{});
 			for(size_t i = 0; i < m_vecMob.size(); ++i)
 			{
 				int modelIndex = G2::randomRange((int)0,(int)pCurStage->mobType.size()-1);
@@ -458,25 +474,51 @@ int ScenePlay::StageInit()
 				m_vecMob[i] = mob;
 			}
 		},
-		// stage 2
-		[&]()
-		{
-		},
 		// stage 3
 		[&]()
 		{
-		},
-		// stage 4
-		[&]()
-		{
-		},
-		// stage 5
-		[&]()
-		{
+			m_mainPlayer->Position({0,0});
+			SAFE_DELETE_VECTOR(m_vecMob);
+			m_vecMob.resize(pCurStage->mobMax,{});
+			for(size_t i = 0; i < m_vecMob.size(); ++i)
+			{
+				int modelIndex = G2::randomRange((int)0,(int)pCurStage->mobType.size()-1);
+				auto model = pCurStage->mobType[modelIndex];
+				SPINE_ATTRIB* att_p = FactorySpineObject::FindSpineAttribute(model);
+				if(!att_p)
+					continue;
+				auto spineModel = new(std::nothrow) SpineRender;
+				if(!spineModel)
+					continue;
+
+				SPINE_ATTRIB att = *att_p;
+				att.aniBegin = (float)G2::randomRange(0.0F,2.0F);
+				if(FAILED(spineModel->Init(att)))
+				{
+					delete spineModel;
+					continue;
+				}
+				auto mob = new GameMob;
+				if(!mob)
+				{
+					delete spineModel;
+					continue;
+				}
+				if(FAILED(mob->Init(model,spineModel)))
+				{
+					continue;
+				};
+
+				SetupMobMovemoent(mob);
+				m_vecMob[i] = mob;
+			}
 		},
 	};
 
-	StageSetup[curStageIndex]();
+	if(2>= curStageIndex)
+		StageSetup[0]();
+	else
+		StageSetup[1]();
 
 	int hr = S_OK;
 	return S_OK;
@@ -520,6 +562,28 @@ int ScenePlay::SetupMobMovemoent(GameMob* mob)
 		mob->Position({ posx, posy });
 		mob->Scale(scale);
 		mob->State(EAPP_CHAR_STATE::ESTATE_CHAR_IDLE);
+		mob->Direction(dir);
+	}
+	else if(1 == pGameInfo->CurrentStateIndex())
+	{
+		float posx = G2::randomRange(200.0F,700.0F);
+		float posy = G2::randomRange(-250.0F,300.0F);
+		float dir = -1.0F;
+		float scale = G2::randomRange(0.5F,0.6F);
+		mob->Init();
+		mob->Position({posx,posy});
+		mob->Scale(scale);
+		mob->Direction(dir);
+	}
+	else if(2 == pGameInfo->CurrentStateIndex())
+	{
+		float posx = G2::randomRange(200.0F,700.0F);
+		float posy = G2::randomRange(-250.0F,300.0F);
+		float dir = -1.0F;
+		float scale = G2::randomRange(0.5F,0.6F);
+		mob->Init();
+		mob->Position({posx,posy});
+		mob->Scale(scale);
 		mob->Direction(dir);
 	}
 	else

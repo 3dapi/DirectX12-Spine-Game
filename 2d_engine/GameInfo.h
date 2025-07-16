@@ -26,6 +26,8 @@ public:
 
 	inline static const int	MAX_STAGE	{5};		// max stage
 public:
+	static bool				M_CHEAT		;
+
 	int						m_gameScore	{};
 	// 스테이지 환수 조건
 	vector<int>				m_killedMob		;
@@ -34,6 +36,7 @@ public:
 
 	vector<GAME_STAGE>		m_stage			;
 	int						m_stageCur		{0};			// current state
+	bool					m_stageIncrease	{};
 
 protected:
 	class GamePlayer*		m_player		{};
@@ -51,6 +54,7 @@ public:
 	GAME_STAGE*	CurrentState();
 	bool		CurrentStateComplete();
 	void		CurrentStateAdvancing(int v);
+	void		IncreaseStage();
 };
 
 #endif

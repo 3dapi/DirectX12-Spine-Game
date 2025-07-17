@@ -6,6 +6,7 @@
 #include <d3d12.h>
 #include "MainApp.h"
 #include "ResourceUploadBatch.h"
+#include "Common/G2.FactoryMfAudio.h"
 #include "Common/G2.FactoryFontResource.h"
 #include "Common/G2.FactoryCamera.h"
 #include "Common/G2.FactoryTexture.h"
@@ -142,9 +143,13 @@ int MainApp::init(const std::any& initialValue /* = */)
 
 	FactoryFontResource::instance()->Load("고도 B", "asset/font/GodoB.ttf");
 
+	//m_bgMusic = MfAudioPlayer::Create("asset/sound/gametown-_-cutscene-_-narrative-373823.mp3");
+	m_bgMusic = MfAudioPlayer::Create("asset/sound/fight-for-the-future-336841.mp3");
 
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_PLAY);
+	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_BEGIN);
+
+	m_bgMusic->Play(true, 0.4F);
 
 	return S_OK;
 }
@@ -161,6 +166,10 @@ int MainApp::destroy()
 	m_xtkDescHeap	.reset();
 	m_batch			.reset();
 
+	SAFE_DELETE(m_bgMusic);
+
+	FactoryMfAudio::instance()->UnLoadAll();
+	FactoryMfAudio::instance()->UnLoadAudioLibrary();
 	FactoryFontResource::instance()->UnLoadAll();
 	FactoryCamera::instance()->UnLoadAll();
 	FactorySpine::instance()->UnLoadAll();
@@ -246,6 +255,20 @@ int MainApp::Render()
 
 	hr = d3d->command(EG2GRAPHICS_D3D::CMD_PRESENT);
 	hr = d3d->command(EG2GRAPHICS_D3D::CMD_WAIT_GPU);
+	return S_OK;
+}
+
+int MainApp::Pause()
+{
+	if(m_bgMusic)
+		m_bgMusic->Pause();
+	return S_OK;
+}
+
+int MainApp::Resume()
+{
+	if(m_bgMusic)
+		m_bgMusic->Resume();
 	return S_OK;
 }
 

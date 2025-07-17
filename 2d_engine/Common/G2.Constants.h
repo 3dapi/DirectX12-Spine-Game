@@ -72,7 +72,6 @@ struct IG2Object
 };
 typedef IG2Object*	PG2OBJECT;
 
-
 struct IG2Listener
 {
 	virtual ~IG2Listener() = default;
@@ -80,6 +79,17 @@ struct IG2Listener
 };
 typedef IG2Listener*	PG2LISTENER;
 
+struct IG2AudioPlayer
+{
+	virtual int Init(const std::string& file)				= 0;
+	virtual int Destroy()									= 0;
+	virtual void Play(bool bLoop=true, float fVolume=1.0F)	= 0;
+	virtual void Stop()										= 0;
+	virtual bool IsPlaying()								= 0;
+	virtual void Pause()									= 0;
+	virtual void Resume()									= 0;
+};
+typedef IG2AudioPlayer*	PG2AUDIOPLAYER;
 
 } // namespace G2 {
 

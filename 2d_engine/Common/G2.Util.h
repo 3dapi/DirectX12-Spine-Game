@@ -23,7 +23,6 @@ using namespace Microsoft::WRL;
 
 namespace G2 {
 
-
 template<typename T>
 inline void SAFE_DELETE(T*& p)
 {
@@ -43,6 +42,13 @@ inline void SAFE_DELETE_ARR(T*& p)
 	}
 }
 
+template<typename T>
+inline void CLEAR_VECTOR(T& t)
+{
+	//decltype(t)().swap(t);
+	std::remove_reference_t<T>{}.swap(t);
+}
+
 // NOTE: for std::vector 
 template<typename T>
 inline void SAFE_DELETE_VECTOR(std::vector<T*>& vec) {
@@ -51,7 +57,7 @@ inline void SAFE_DELETE_VECTOR(std::vector<T*>& vec) {
 			delete p;
 		}
 	}
-	vec.clear();
+	CLEAR_VECTOR(vec);
 }
 
 template<typename T>

@@ -12,6 +12,11 @@
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
 
+#pragma comment(lib, "xaudio2.lib")
+#pragma comment(lib, "mfplat.lib")
+#pragma comment(lib, "mfreadwrite.lib")
+#pragma comment(lib, "mf.lib")
+
 #if defined(CONSOLE_DEBUG) && (CONSOLE_DEBUG==1)
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>

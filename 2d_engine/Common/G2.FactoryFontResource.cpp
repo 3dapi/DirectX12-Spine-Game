@@ -67,8 +67,8 @@ TD3D_FontResource::~TD3D_FontResource()
 	if(!file.empty())
 	{
 		RemoveFontResourceExA(file.c_str(), FR_PRIVATE, nullptr);
-		file.clear();
-		name.clear();
+		CLEAR_VECTOR(file);
+		CLEAR_VECTOR(name);
 	}
 }
 
@@ -310,10 +310,8 @@ int StringTexture::Init(const std::string& fontName, int fontHeight, const std::
 int StringTexture::Destroy()
 {
 	SAFE_RELEASE(	m_texRsc	);
-	if(!m_text.empty())
-		m_text.clear();
-	if(!m_fontName.empty())
-		m_fontName.clear();
+	CLEAR_VECTOR(	m_text		);
+	CLEAR_VECTOR(	m_fontName	);
 	m_fontHeight	= {};
 	m_sizeTex		= {};
 	m_sizeSrc		= {};

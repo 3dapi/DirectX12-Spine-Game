@@ -135,7 +135,7 @@
     <ClCompile Include="Common\G2.FactoryFontResource.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="Common\G2.AudioPlay.cpp">
+    <ClCompile Include="Common\G2.FactoryMfAudio.cpp">
       <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -249,6 +249,9 @@
       <Filter>src\testScene</Filter>
     </ClInclude>
     <ClInclude Include="Common\G2.FactoryFontResource.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.FactoryMfAudio.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>

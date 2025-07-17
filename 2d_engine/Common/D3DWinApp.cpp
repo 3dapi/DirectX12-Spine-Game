@@ -117,15 +117,21 @@ LRESULT D3DWinApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		// when it becomes active.  
 		case WM_ACTIVATE:
 		{
-			if (LOWORD(wParam) == WA_INACTIVE)
+			return 0;
+		}
+		case WM_ACTIVATEAPP:
+		{
+			if(LOWORD(wParam) == WA_INACTIVE)
 			{
 				mAppPaused = true;
 				mTimer.Stop();
+				Pause();
 			}
 			else
 			{
 				mAppPaused = false;
 				mTimer.Start();
+				Resume();
 			}
 			return 0;
 		}

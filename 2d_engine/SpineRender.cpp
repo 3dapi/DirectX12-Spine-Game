@@ -55,8 +55,7 @@ int SpineRender::Destroy()
 	SAFE_DELETE(	m_spineAniStateData	);
 	SAFE_DELETE(	m_spineAniState		);
 	SAFE_DELETE(	m_spineListener		);
-	if(!m_spineAnimation.empty())
-		m_spineAnimation.clear();
+	CLEAR_VECTOR(	m_spineAnimation	);
 
 	SAFE_RELEASE(	m_cbvHeap	);
 	m_descGpuHandle = {};

@@ -32,6 +32,8 @@ public:
 	int		Resize(bool update)								override;
 	int		Update(const std::any& t)						override;
 	int		Render()										override;
+	int		Pause()											override;
+	int		Resume()										override;
 
 	void	OnMouseDown(WPARAM btnState, const ::POINT& )	override;
 	void	OnMouseUp(WPARAM btnState, const ::POINT& )		override;
@@ -54,6 +56,10 @@ protected:
 	EAPP_SCENE							m_sceneIdxNew	{ EAPP_SCENE::EAPP_SCENE_BEGIN };
 	vector<unique_ptr<IG2Scene> >		m_scene			{ (size_t)EAPP_SCENE::EAPP_SCENE_COUNT};
 	bool								m_bChangeScene	{false};
+
+protected:
+	PG2AUDIOPLAYER						m_bgMusic		{};
+
 public:
 	void	ChangeScene(EAPP_SCENE target);
 

@@ -62,7 +62,7 @@ void GameInfo::IncreaseScore(int score)
 	m_gameScore += score;
 }
 
-bool GameInfo::M_CHEAT = true;
+bool GameInfo::M_CHEAT = false;
 
 int GameInfo::StageInit()
 {

@@ -155,7 +155,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Common\G2.AudioPlay.cpp" />
+    <ClCompile Include="Common\G2.FactoryMfAudio.cpp" />
     <ClCompile Include="Common\G2.FactoryCamera.cpp" />
     <ClCompile Include="Common\G2.FactoryFontResource.cpp" />
     <ClCompile Include="GameCharacter.cpp" />
@@ -197,6 +197,7 @@
     <ClInclude Include="Common\G2.Camera.h" />
     <ClInclude Include="Common\D3DWinApp.h" />
     <ClInclude Include="Common\G2.Factory.h" />
+    <ClInclude Include="Common\G2.FactoryMfAudio.h" />
     <ClInclude Include="Common\G2.FactoryCamera.h" />
     <ClInclude Include="Common\G2.FactoryFontResource.h" />
     <ClInclude Include="Common\G2.FactoryPipelineState.h" />

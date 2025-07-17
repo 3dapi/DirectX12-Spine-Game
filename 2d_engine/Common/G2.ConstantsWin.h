@@ -47,6 +47,8 @@ struct IG2AppFrameWin : public IG2AppFrame
 	virtual int		Resize(bool update=true)								= 0;
 	virtual int		Update(const std::any& t)								= 0;
 	virtual int		Render()												= 0;
+	virtual int		Pause()													= 0;
+	virtual int		Resume()												= 0;
 	virtual void	OnMouseDown(WPARAM btnState, const ::POINT& p)			= 0;
 	virtual void	OnMouseUp(WPARAM btnState, const ::POINT&)				= 0;
 	virtual void	OnMouseMove(WPARAM btnState, const ::POINT&)			= 0;

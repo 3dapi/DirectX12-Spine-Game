@@ -239,10 +239,13 @@ int ScenePlay::Update(const std::any& t)
 			pGameInfo->IsCollisionPlayer(mob)
 			)
 		{
-			auto newHp = m_mainPlayer->HP() - mob->Damage();
-			if (0 > newHp)
-				newHp = 0;
-			m_mainPlayer->HP(newHp);
+			if(!GameInfo::M_CHEAT)
+			{
+				auto newHp = m_mainPlayer->HP() - mob->Damage();
+				if (0 > newHp)
+					newHp = 10;
+				m_mainPlayer->HP(newHp);
+			}
 		}
 
 		mob->Update(gt);

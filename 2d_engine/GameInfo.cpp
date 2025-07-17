@@ -44,16 +44,24 @@ bool GameInfo::IsCollisionPlayer(class GameCharacter* p)
 	float p1_w = p->m_boundBox.x;
 	float p1_h = p->m_boundBox.y;
 
+	//float p0_x = m_player->m_pos.x - p0_w * 0.5F;
+	//float p0_y = m_player->m_pos.y - p0_h * 0.5F;
+	//float p1_x = p->m_pos.x - p0_w * 0.5F;
+	//float p1_y = p->m_pos.y - p0_h * 0.5F;
 	float p0_x = m_player->m_pos.x - p0_w * 0.5F;
-	float p0_y = m_player->m_pos.y - p0_h * 0.5F;
+	float p0_y = m_player->m_pos.y;
 	float p1_x = p->m_pos.x - p0_w * 0.5F;
-	float p1_y = p->m_pos.y - p0_h * 0.5F;
+	float p1_y = p->m_pos.y;
 
 	auto ret =	p0_x        <= p1_x + p1_w &&	// left   <= v_right
 				p0_x + p0_w >= p1_x        &&	// right  >= v_left
 				p0_y        <= p1_y + p1_h &&	// top    <= v_bottom
 				p0_y + p0_h >= p1_y;			// bottom >= v_top
-		
+	if(ret)
+	{
+		int c;
+		c = 0;
+	}
 	return ret;
 }
 
@@ -72,7 +80,7 @@ int GameInfo::StageInit()
 
 	//AFEW::C
 	if(GameInfo::M_CHEAT)
-		this->m_stageCur = 4;
+		this->m_stageCur = 1;
 	else
 		this->m_stageCur = 0;
 

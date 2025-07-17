@@ -28,7 +28,7 @@ protected:
 	float			m_speed		{ 400.0F };	// move speed
 	XMFLOAT4		m_dif		{1.0F, 1.0F, 1.0F, 1.0F};	// model color
 
-	XMFLOAT2		m_boundBox	{ 160.0F, 230.0F };
+	XMFLOAT2		m_boundBox	{ 200.0F, 45.0F };
 
 	EAPP_MODEL		m_modelType	{ EAPP_MODEL::EMODEL_NONE };
 	PG2OBJECT		m_modelObj	{};

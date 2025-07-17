@@ -47,7 +47,7 @@ public:
 public:
 	int		Init(const std::string& file)				override;
 	int		Destroy()									override;
-	void	Play(bool bLoop=true, float fVolume=1.0F)	override;
+	void	Play(bool bLoop=true, float fVolume=1.0F, float fSpeed=1.0F)	override;
 	void	Stop()										override;
 	bool	IsPlaying()									override;
 	void	Pause()										override;

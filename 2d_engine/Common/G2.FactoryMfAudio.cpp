@@ -143,11 +143,15 @@ static MF_PLAYER* MF_Create(MF_BUFFER* mfSrc)
 	return new MF_PLAYER{mfSrc, sourceVoice};
 }
 
-static void MF_Play(MF_PLAYER* player, bool bLoop=true, float fVolume=1.0F)
+static void MF_Play(MF_PLAYER* player, bool bLoop=true, float fVolume=1.0F, float fSpeed=1.0F)
 {
 	if(!player || !player->sourceVoice)
 		return;
-	player->sourceVoice->SetVolume(fVolume);  // 0.0f ~ 1.0f
+	auto* sourceV = player->sourceVoice;
+	sourceV->SetVolume(fVolume);  // 0.0f ~ 1.0f
+
+	float playbackRate = fSpeed; // 1.0 = normal, >1 = faster
+	sourceV->SetFrequencyRatio(playbackRate);
 
 	// 버퍼 설정
 	XAUDIO2_BUFFER buffer = {};
@@ -163,9 +167,9 @@ static void MF_Play(MF_PLAYER* player, bool bLoop=true, float fVolume=1.0F)
 	// 무한 반복?
 	buffer.LoopCount = bLoop? XAUDIO2_LOOP_INFINITE : XAUDIO2_NO_LOOP_REGION;
 
-	player->sourceVoice->SubmitSourceBuffer(&buffer);
-	player->sourceVoice->SetVolume(fVolume);
-	player->sourceVoice->Start();
+	sourceV->SubmitSourceBuffer(&buffer);
+	sourceV->SetVolume(fVolume);
+	sourceV->Start();
 }
 
 static void MF_Stop(MF_PLAYER* player)
@@ -315,10 +319,10 @@ int MfAudioPlayer::Destroy()
 	return S_OK;
 }
 
-void MfAudioPlayer::Play(bool bLoop, float fVolume)
+void MfAudioPlayer::Play(bool bLoop, float fVolume, float fSpeed)
 {
 	if(m_player)
-		MF_Play(m_player, bLoop, fVolume);
+		MF_Play(m_player, bLoop, fVolume, fSpeed);
 }
 
 void MfAudioPlayer::Stop()

@@ -203,7 +203,7 @@ GamePlayer::GamePlayer()
 	//AFEW::C
 	if(GameInfo::M_CHEAT)
 	{
-		m_boundBox = {260.0F,330.0F};
+		m_boundBox = {160.0F,80.0F};
 	}
 }
 

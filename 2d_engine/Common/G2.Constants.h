@@ -83,7 +83,7 @@ struct IG2AudioPlayer
 {
 	virtual int Init(const std::string& file)				= 0;
 	virtual int Destroy()									= 0;
-	virtual void Play(bool bLoop=true, float fVolume=1.0F)	= 0;
+	virtual void Play(bool bLoop=true, float fVolume=1.0F, float fSpeed=1.0F)	= 0;
 	virtual void Stop()										= 0;
 	virtual bool IsPlaying()								= 0;
 	virtual void Pause()									= 0;

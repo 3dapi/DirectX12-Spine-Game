@@ -6,6 +6,7 @@
 #include <d3d12.h>
 #include "MainApp.h"
 #include "Common/G2.Util.h"
+#include "Common/G2.FactoryMfAudio.h"
 #include "SpineFactory.h"
 #include "GameInfo.h"
 #include "GameCharacter.h"
@@ -237,6 +238,8 @@ int GamePlayer::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE s
 			}
 		}
 	}
+
+	m_audio = MfAudioPlayer::Create("asset/sound/slash-sword-joshua-chivers-2-2-00-00.mp3");
 	return S_OK;
 }
 int GamePlayer::Update(const GameTimer& gt)
@@ -269,6 +272,12 @@ int GamePlayer::Notify(const std::string& aniname, const std::any& val)
 			return E_FAIL;
 		}
 	}
+	if(aniname == "attack" && eventType == "start")
+	{
+		printf("GamePlayer::Notify:: %s %s\n", aniname.c_str(), eventType.c_str());
+		m_audio->Play(false);
+	}
+
 	// attack complete 3번오면 idle 로 변경
 	if(aniname == "attack" && eventType == "complete")
 	{
@@ -278,6 +287,9 @@ int GamePlayer::Notify(const std::string& aniname, const std::any& val)
 			this->State(EAPP_CHAR_STATE::ESTATE_CHAR_IDLE);
 		}
 		m_aniComplete["attack"] = true;
+
+		if(1<m_attackRepeat)
+			m_audio->Play(false);
 	}
 
 	return S_OK;

@@ -70,6 +70,8 @@ class GamePlayer : public GameCharacter, public IG2Listener
 protected:
 	int		m_attackRepeat = 3;
 	map<string, bool>	m_aniComplete;
+
+	PG2AUDIOPLAYER		m_audio	{};
 public:
 	GamePlayer();
 	int		Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE state= EAPP_CHAR_STATE::ESTATE_CHAR_IDLE);

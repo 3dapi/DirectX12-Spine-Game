@@ -288,7 +288,7 @@ int GamePlayer::Notify(const std::string& aniname, const std::any& val)
 		}
 		m_aniComplete["attack"] = true;
 
-		if(1<m_attackRepeat)
+		if(2<m_attackRepeat)
 			m_audio->Play(false);
 	}
 

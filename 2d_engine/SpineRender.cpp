@@ -56,14 +56,18 @@ int SpineRender::Destroy()
 	SAFE_DELETE(	m_spineAniState		);
 	SAFE_DELETE(	m_spineListener		);
 	CLEAR_VECTOR(	m_spineAnimation	);
+	CLEAR_VECTOR(	m_attrib.detachSlot	);
 
 	SAFE_RELEASE(	m_cbvHeap	);
 	m_descGpuHandle = {};
 	m_descCpuHandle	= {};
 
-	for(auto& [index, buf] : m_drawBuf)
-	{
-		SAFE_DELETE( buf );
+	if(!m_drawBuf.empty()) {
+		for(auto& [index, buf] : m_drawBuf)
+		{
+			SAFE_DELETE( buf );
+		}
+		m_drawBuf.clear();
 	}
 
 	m_textureHandle	= {};
@@ -73,6 +77,9 @@ int SpineRender::Destroy()
 		SAFE_RELEASE(	m_cnstMVP	);
 		m_ptrMVP		= {};
 	}
+
+	if(!m_listener.empty())
+		m_listener.clear();
 
 	return S_OK;
 }

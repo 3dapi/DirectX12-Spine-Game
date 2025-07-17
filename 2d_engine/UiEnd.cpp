@@ -26,9 +26,9 @@ UiEnd::~UiEnd()
 
 int UiEnd::Destroy()
 {
-	m_font.reset();
 	m_srvHeapUI.Reset();
 	m_uiTex.clear();
+	m_font.reset();
 
 	return S_OK;
 }

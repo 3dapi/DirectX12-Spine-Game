@@ -30,7 +30,7 @@
 int main(int, char**)
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-	//_CrtSetBreakAlloc(544);
+	//_CrtSetBreakAlloc(168350);
 	HINSTANCE hInstance = (HINSTANCE)GetModuleHandle(nullptr); 
 #else
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, int)

@@ -143,11 +143,10 @@ int MainApp::init(const std::any& initialValue /* = */)
 
 	FactoryFontResource::instance()->Load("고도 B", "asset/font/GodoB.ttf");
 
-	//m_bgMusic = MfAudioPlayer::Create("asset/sound/gametown-_-cutscene-_-narrative-373823.mp3");
 	m_bgMusic = MfAudioPlayer::Create("asset/sound/fight-for-the-future-336841.mp3");
 
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_PLAY);
+	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_BEGIN);
 
 	m_bgMusic->Play(true, 0.4F, 0.5F);
 

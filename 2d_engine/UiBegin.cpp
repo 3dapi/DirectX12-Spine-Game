@@ -25,9 +25,9 @@ UiBegin::~UiBegin()
 
 int UiBegin::Destroy()
 {
-	m_font.reset();
 	m_srvHeapUI.Reset();
 	m_uiTex.clear();
+	m_font.reset();
 
 	return S_OK;
 }

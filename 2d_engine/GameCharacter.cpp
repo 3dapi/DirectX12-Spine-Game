@@ -274,7 +274,7 @@ int GamePlayer::Notify(const std::string& aniname, const std::any& val)
 	}
 	if(aniname == "attack" && eventType == "start")
 	{
-		printf("GamePlayer::Notify:: %s %s\n", aniname.c_str(), eventType.c_str());
+		//printf("GamePlayer::Notify:: %s %s\n", aniname.c_str(), eventType.c_str());
 		m_audio->Play(false);
 	}
 

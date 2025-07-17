@@ -32,7 +32,6 @@ using namespace G2;
 
 
 ScenePlay::ScenePlay()
-	: m_keyEvent(EAPP_MAX_KEY, 0)
 {
 }
 
@@ -44,6 +43,8 @@ ScenePlay::~ScenePlay()
 int ScenePlay::Init(const std::any& initial_value)
 {
 	int hr = S_OK;
+
+	m_keyEvent.resize(EAPP_MAX_KEY, 0);
 
 	auto cameraSpine = FactoryCamera::instance()->FindRes(IG2Camera::SPINE_2D);
 	if(cameraSpine)
@@ -78,6 +79,7 @@ int ScenePlay::Init(const std::any& initial_value)
 int ScenePlay::Destroy()
 {
 	SAFE_DELETE_VECTOR(m_vecMob);
+	CLEAR_VECTOR(m_keyEvent);
 	SAFE_DELETE(m_pUi);
 
 	return S_OK;
@@ -235,7 +237,7 @@ int ScenePlay::Update(const std::any& t)
 			{
 				auto newHp = m_mainPlayer->HP() - mob->Damage();
 				if (0 > newHp)
-					newHp = 10;
+					newHp = 0;
 				m_mainPlayer->HP(newHp);
 			}
 		}

@@ -167,8 +167,8 @@ int ScenePlay::Update(const std::any& t)
 		},
 		// state 4
 		[&]() {
-			// regen Mob
-			for(size_t i = 0; i < m_vecMob.size(); ++i)
+			// 죽은 몹 재생
+			for(size_t i=0; i<m_vecMob.size(); ++i)
 			{
 				auto* mob = m_vecMob[i];
 				if(!mob)
@@ -189,50 +189,42 @@ int ScenePlay::Update(const std::any& t)
 
 
 	// 전투
-	for (size_t i = 0; i < m_vecMob.size(); ++i)
+	for (size_t i=0; i<m_vecMob.size(); ++i)
 	{
 		auto* mob = m_vecMob[i];
 		if(!mob)
 			continue;
 
 		auto mobPosition = mob->Position();
+		bool isHitTarget = false;
+
+		// 플레이어 앞쪽만 타겟팅.
 		if (EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK == playerState && pGameInfo->IsCollisionPlayer(mob))
 		{
-			bool isTarget = false;
-			// 플레이어 앞쪽만 타겟팅.
-			if(0< m_mainPlayer->Direction())
-			{
-				if(mob->Position().x >= m_mainPlayer->Position().x)
-				{
-					isTarget = true;
-				}
-			}
-			else
-			{
-				if (mob->Position().x <= m_mainPlayer->Position().x)
-				{
-					isTarget = true;
-				}
-			}
+			if( ( 0<= m_mainPlayer->Direction() && mob->Position().x >= m_mainPlayer->Position().x) ||
+				( 0>= m_mainPlayer->Direction() && mob->Position().x <= m_mainPlayer->Position().x) )
+				isHitTarget = true;
+		}
 
-			if (isTarget)
+		if(isHitTarget)
+		{
+			if(m_mainPlayer->AnimationComplete("attack"))
 			{
-				if(m_mainPlayer->AnimationComplete("attack"))
+				// 기본 점수 올린다.
+				pGameInfo->IncreaseScore(100);
+				// 
+				auto newHp = mob->HP() - m_mainPlayer->Damage();
+				if(0 >= newHp)
 				{
-					pGameInfo->IncreaseScore(100);
-
-					auto newHp = mob->HP() - m_mainPlayer->Damage();
-					if (0 >= newHp)
-					{
-						newHp = 0;
-						// mob kill 수를 올린다.
-						pGameInfo->CurrentStateAdvancing(1);
-					}
-					mob->HP(newHp);
+					newHp = 0;
+					// mob kill 수를 올린다.
+					pGameInfo->CurrentStateAdvancing(1);
 				}
+				mob->HP(newHp);
 			}
 		}
 
+		// 플레이어가 공격동작이 아닐 때 Mob 이동 충돌 만으로 플레이어에게 데미지.
 		if (EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK != playerState &&
 			EAPP_CHAR_STATE::ESTATE_CHAR_IDLE != mob->State() &&
 			0< mob->HP() &&

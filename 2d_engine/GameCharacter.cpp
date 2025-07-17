@@ -309,7 +309,7 @@ GameMob::GameMob()
 int GameMob::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE state)
 {
 	m_hp     = 100;
-	m_damage = 0.7F;
+	m_damage = 0.5F;
 	m_speed  = 70.0F * G2::randomRange(1.5F, 2.5F);
 	m_pos    = XMFLOAT2{ 0.0F, 0.0F };
 	m_dir    = 1.0F;

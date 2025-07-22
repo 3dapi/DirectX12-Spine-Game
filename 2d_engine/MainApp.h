@@ -11,6 +11,7 @@
 #include <SpriteBatch.h>
 #include "Common/D3DWinApp.h"
 #include "Common/G2.Camera.h"
+#include "Common/G2.InputManager.h"
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
 
@@ -45,11 +46,6 @@ protected:
 	unique_ptr<GraphicsMemory>			m_xtkGraphicMem	{};		// 꼭 필요함.
 	unique_ptr<DescriptorHeap>			m_xtkDescHeap	{};
 	unique_ptr<XTK_BATCH>				m_batch			;
-
-	// control
-	uint8_t								m_keyOld		[EAPP_MAX_KEY]{};
-	uint8_t								m_keyNew		[EAPP_MAX_KEY]{};
-	uint8_t								m_keyCur		[EAPP_MAX_KEY]{};
 
 protected:
 	EAPP_SCENE							m_sceneIdxCur	{ EAPP_SCENE::EAPP_SCENE_BEGIN};

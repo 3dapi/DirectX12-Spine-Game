@@ -158,6 +158,7 @@
     <ClCompile Include="Common\G2.FactoryMfAudio.cpp" />
     <ClCompile Include="Common\G2.FactoryCamera.cpp" />
     <ClCompile Include="Common\G2.FactoryFontResource.cpp" />
+    <ClCompile Include="Common\G2.InputManager.cpp" />
     <ClCompile Include="GameCharacter.cpp" />
     <ClCompile Include="SpineFactory.cpp" />
     <ClCompile Include="Common\G2.Camera.cpp" />
@@ -209,6 +210,8 @@
     <ClInclude Include="Common\G2.ConstantsWin.h" />
     <ClInclude Include="Common\G2.FrameConsts.h" />
     <ClInclude Include="Common\G2.Geometry.h" />
+    <ClInclude Include="Common\G2.InputManager.h" />
+    <ClInclude Include="Common\G2.SingletonBase.h" />
     <ClInclude Include="Common\G2.Util.h" />
     <ClInclude Include="Common\GameTimer.h" />
     <ClInclude Include="Common\G2.EngineD3D.h" />

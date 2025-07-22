@@ -117,9 +117,6 @@
     <ClCompile Include="_main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="MainApp.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="GameInfo.cpp">
       <Filter>src\SceneGamePlay</Filter>
     </ClCompile>
@@ -136,6 +133,12 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="Common\G2.FactoryMfAudio.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="MainApp.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.InputManager.cpp">
       <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -252,6 +255,12 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="Common\G2.FactoryMfAudio.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.SingletonBase.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.InputManager.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>

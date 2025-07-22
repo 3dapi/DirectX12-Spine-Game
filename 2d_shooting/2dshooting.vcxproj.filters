@@ -1,0 +1,241 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>{84db87f2-0eb0-4839-9194-8cd81bf1a9b1}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{580BAF08-FF86-44CC-97F4-055A94BDD581}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="res">
+      <UniqueIdentifier>{6DB3BBE0-0E5C-4951-9308-68F4F93541F4}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="asset">
+      <UniqueIdentifier>{7c3405bb-5876-4a15-9d39-5194a7d4995a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\AppGlobal">
+      <UniqueIdentifier>{c3db904c-021f-4a50-ae81-4bf1e5acc55e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\AppScene">
+      <UniqueIdentifier>{c4ebaea8-f7b9-456a-9681-bb42063fc42f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="asset\shader">
+      <UniqueIdentifier>{b614dd72-7e18-4d48-9df7-86ac17b967b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\SceneGamePlay">
+      <UniqueIdentifier>{8bdc81fa-f63c-4eb6-a56a-a0ceda8de2be}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Common\D3DWinApp.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\GameTimer.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.EngineD3D.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.ConstantsWin.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.FactoryTexture.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.FactoryShader.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.Util.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.FactoryPipelineState.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.FactorySignature.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.Geometry.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.FrameConsts.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.Camera.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneNone.cpp">
+      <Filter>src\AppScene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameCharacter.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneBegin.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneEnd.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneLobby.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="ScenePlay.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="UiBegin.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="UiEnd.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="UiLobby.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="UiPlay.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="_main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="GameInfo.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="UiBase.cpp">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.FactoryCamera.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.FactoryFontResource.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.FactoryMfAudio.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="MainApp.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\G2.InputManager.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Common\D3DWinApp.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.Constants.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\GameTimer.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.EngineD3D.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.ConstantsWin.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.FactoryTexture.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.FactoryShader.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.Factory.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.Util.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.FactoryPipelineState.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.FactorySIgnature.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.Geometry.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.FrameConsts.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.Camera.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="AppConst.h">
+      <Filter>src\AppGlobal</Filter>
+    </ClInclude>
+    <ClInclude Include="AppCommon.h">
+      <Filter>src\AppGlobal</Filter>
+    </ClInclude>
+    <ClInclude Include="AppCommonXTK.h">
+      <Filter>src\AppGlobal</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneNone.h">
+      <Filter>src\AppScene</Filter>
+    </ClInclude>
+    <ClInclude Include="UiPlay.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="GameCharacter.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneBegin.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneEnd.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneLobby.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="ScenePlay.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="UiBase.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="UiBegin.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="UiEnd.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="UiLobby.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="MainApp.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="GameInfo.h">
+      <Filter>src\SceneGamePlay</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.FactoryCamera.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.FactoryFontResource.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.FactoryMfAudio.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.SingletonBase.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\G2.InputManager.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="asset\shader\2dsprite.hlsl">
+      <Filter>asset\shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config">
+      <Filter>src\AppGlobal</Filter>
+    </None>
+  </ItemGroup>
+</Project>

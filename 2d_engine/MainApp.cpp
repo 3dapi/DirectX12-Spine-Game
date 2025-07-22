@@ -39,6 +39,7 @@ MainApp::MainApp()
 {
 	// GameInfo 객체 생성 확인.
 	auto pGameInfo = GameInfo::instance();
+	InputManager::setInstance(new InputManager);
 }
 
 MainApp::~MainApp()
@@ -158,6 +159,7 @@ int MainApp::destroy()
 	if(!m_scene.empty())
 		m_scene.clear();
 
+	InputManager::releaseInstance();
 	GameInfo::deleteInstance();
 
 	m_xtkSprite		.reset();
@@ -298,45 +300,14 @@ void MainApp::OnMouseMove(WPARAM btnState, const ::POINT& p)
 
 void MainApp::OnKeyboardInput()
 {
-	// Keyboard debugging
-	//for (int i = 0; i < EAPP_MAX_KEY; ++i)
-	//{
-	//	if (GetAsyncKeyState(i) & 0x8000)
-	//	{
-	//		printf("VK %d (0x%02X) is down\n", i, i);
-	//	}
-	//}
+	InputManager::instance()->Update();
+	auto hasEvent  = InputManager::instance()->hasEvent();
 
-	bool isEvent = false;
-	memcpy(m_keyOld, m_keyNew, EAPP_MAX_KEY);
-	for (int i = 0; i < EAPP_MAX_KEY; ++i)
+	const uint8_t* keyCur = InputManager::instance()->Key();
+
+	if (hasEvent && m_scene[m_sceneIdxCur])
 	{
-		if (i == 21) continue;
-		m_keyNew[i] = (GetAsyncKeyState(i) & 0x8000) ? 1 : 0;
-		if      (0 == m_keyOld[i] && 0 == m_keyNew[i])		// no event
-		{
-			m_keyCur[i] = (int)EAPP_INPUT_NONE;
-		}
-		else if (0 == m_keyOld[i] && 1 == m_keyNew[i])		// down
-		{
-			m_keyCur[i] = (int)EAPP_INPUT_DOWN;
-		}
-		else if (1 == m_keyOld[i] && 1 == m_keyNew[i])		// pressed
-		{
-			m_keyCur[i] = (int)EAPP_INPUT_PRESS;
-		}
-		else if (1 == m_keyOld[i] && 0 == m_keyNew[i])		// up
-		{
-			m_keyCur[i] = (int)EAPP_INPUT_UP;
-		}
-
-		if (!isEvent && m_keyCur[i] != (int)EAPP_INPUT_NONE)
-			isEvent = true;
-	}
-
-	if (isEvent && m_scene[m_sceneIdxCur])
-	{
-		m_scene[m_sceneIdxCur]->Notify("KeyEvent", static_cast<const uint8_t*>(m_keyCur));
+		m_scene[m_sceneIdxCur]->Notify("KeyEvent", static_cast<const uint8_t*>(keyCur));
 	}
 }
 

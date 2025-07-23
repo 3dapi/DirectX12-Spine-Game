@@ -27,7 +27,6 @@ int UiLobby::Destroy()
 {
 	m_srvHeapUI.Reset();
 	m_uiTex.clear();
-	m_font.reset();
 
 	return S_OK;
 }
@@ -42,7 +41,7 @@ int UiLobby::Init()
 
 	vector<tuple<string, string>>  uiTextureList
 	{
-		{"ui/ui_select_char"	, "asset/ui/ui_select_char.png"	},
+		{"ui/ui_choose_ship"	, "asset/ui/ui_choose_ship.png"	},
 		{"ui/ui_box"			, "asset/ui/ui_box.png"			},
 		{"ui/ui_doc_key"		, "asset/ui/ui_doc_key.png"		},
 		{"ui/ui_game_start"		, "asset/ui/ui_game_start.png"	},
@@ -67,14 +66,6 @@ int UiLobby::Init()
 		// 다음 리소스 대응.
 		hCpu.ptr += descriptorSize;
 		hGpu.ptr += descriptorSize;
-	}
-	ResourceUploadBatch resourceUpload(device);
-	{
-		resourceUpload.Begin();
-		{
-			m_font = std::make_unique<SpriteFont>(device, resourceUpload, L"asset/font/SegoeUI_18.spritefont", hCpu, hGpu);
-		}
-		resourceUpload.End(cmdQue).wait();
 	}
 
 	return S_OK;
@@ -111,8 +102,8 @@ int UiLobby::Draw()
 	{
 		float alpha = 1.0F;
 		{
-			auto& tex = m_uiTex["ui/ui_select_char"];
-			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 20.0F), DirectX::XMVectorSet(1.0F, 1.0F, 0.6F, 1.0F));
+			auto& tex = m_uiTex["ui/ui_choose_ship"];
+			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 120.0F), DirectX::XMVectorSet(1.0F, 1.0F, 0.6F, 1.0F));
 		}
 		{
 			auto& tex = m_uiTex["ui/ui_box"];

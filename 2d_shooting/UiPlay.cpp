@@ -28,7 +28,6 @@ int UiPlay::Destroy()
 {
 	m_srvHeapUI.Reset();
 	m_uiTex.clear();
-	m_font.reset();
 
 	return S_OK;
 }
@@ -86,14 +85,6 @@ int UiPlay::Init()
 		// 다음 리소스 대응.
 		hCpu.ptr += descriptorSize;
 		hGpu.ptr += descriptorSize;
-	}
-	ResourceUploadBatch resourceUpload(device);
-	{
-		resourceUpload.Begin();
-		{
-			m_font = std::make_unique<SpriteFont>(device, resourceUpload, L"asset/font/SegoeUI_18.spritefont", hCpu, hGpu);
-		}
-		resourceUpload.End(cmdQue).wait();
 	}
 
 	return S_OK;

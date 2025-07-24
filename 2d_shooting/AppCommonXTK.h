@@ -2,16 +2,6 @@
 #ifndef __APPCOMMONXTK_H__
 #define __APPCOMMONXTK_H__
 
-#include <array>
-#include <memory>
-#include <vector>
-#include <Windows.h>
-#include <wrl.h>
-#include <d3d12.h>
-#include <DirectXMath.h>
-#include <d3dx12/d3dx12.h>
-#include "AppConst.h"
-
 #include "ResourceUploadBatch.h"
 #include "VertexTypes.h"
 #include "PrimitiveBatch.h"

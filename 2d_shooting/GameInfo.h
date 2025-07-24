@@ -1,21 +1,14 @@
-﻿
-#pragma once
+﻿#pragma once
 #ifndef _GameInfo_H_
 #define _GameInfo_H_
 
-#include <string>
-#include <DirectXMath.h>
-#include <DirectXColors.h>
-
-#include "Common/G2.Constants.h"
-#include "common/G2.ConstantsWin.h"
 #include "AppCommon.h"
 #include "GameObject.h"
 
 struct GAME_STAGE
 {
 	int						mobMax	{};
-	vector<EAPP_MODEL>		mobType	{};
+	vector<string>			mobType	{};
 };
 
 class GameInfo

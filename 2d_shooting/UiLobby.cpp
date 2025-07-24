@@ -1,7 +1,4 @@
-﻿#include <any>
-#include <utility>
-#include <d3d12.h>
-#include "Common/G2.FactoryTexture.h"
+﻿#include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactorySIgnature.h"
 #include "Common/G2.Util.h"
 #include "AppCommon.h"
@@ -44,8 +41,9 @@ int UiLobby::Init()
 		{"ui/ui_choose_ship"		, "asset/ui/ui_choose_ship.png"	},
 		{"ui/ui_box"				, "asset/ui/ui_box.png"			},
 		{"ui/ui_game_start"			, "asset/ui/ui_game_start.png"	},
-		{"sprite/Ship_2_C_Medium"	, "asset/sprite/space_shooter/Ship_2_C_Medium.png"	},
-		{"sprite/Ship_2_D_Medium"	, "asset/sprite/space_shooter/Ship_2_D_Medium.png"	},
+
+		{EMODEL_SHIP[2], "asset/sprite/" + EMODEL_SHIP[2] + ".png"  },
+		{EMODEL_SHIP[3], "asset/sprite/" + EMODEL_SHIP[3] + ".png"  },
 	};
 	auto texManager = FactoryTexture::instance();
 	for(const auto& [name, file]: uiTextureList)
@@ -107,18 +105,18 @@ int UiLobby::Draw()
 			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 120.0F), DirectX::XMVectorSet(1.0F, 1.0F, 0.6F, 1.0F));
 		}
 		{
-			auto& tex = m_uiTex["sprite/Ship_2_C_Medium"];
+			auto& tex = m_uiTex[EMODEL_SHIP[2]];
 			XMFLOAT2 origin = {0, 0};
 			XMFLOAT2 scale = {0.6F, 0.6F};
-			XMFLOAT2 position0 = XMFLOAT2(75, 320);
+			XMFLOAT2 position0 = XMFLOAT2(75, 350);
 
 			sprite->Draw(tex.hGpu, tex.size, position0, nullptr, XMVECTORF32{{{1.0F, 1.0F, 1.0F, m_blend}}}, 0.0F, origin, scale);
 		}
 		{
-			auto& tex = m_uiTex["sprite/Ship_2_D_Medium"];
+			auto& tex = m_uiTex[EMODEL_SHIP[3]];
 			XMFLOAT2 origin = {0, 0};
 			XMFLOAT2 scale = {0.6F, 0.6F};
-			XMFLOAT2 position0 = XMFLOAT2(360, 320);
+			XMFLOAT2 position0 = XMFLOAT2(360, 350);
 
 			sprite->Draw(tex.hGpu, tex.size, position0, nullptr, XMVECTORF32{{{1.0F, 1.0F, 1.0F, 0.4F}}}, 0.0F, origin, scale);
 		}

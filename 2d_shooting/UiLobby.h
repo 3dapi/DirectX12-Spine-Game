@@ -2,12 +2,12 @@
 #ifndef _UiLobby_H_
 #define _UiLobby_H_
 
-#include "UiBase.h"
+#include "UiDrawable.h"
 #include <wrl/client.h>
 
 using Microsoft::WRL::ComPtr;
 
-class UiLobby : public UiBase
+class UiLobby : public UiDrawable
 {
 protected:
 	ComPtr<ID3D12DescriptorHeap>	m_srvHeapUI{};

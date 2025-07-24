@@ -1,9 +1,6 @@
 ﻿//--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // MainApp
 
-#include <string>
-#include <tuple>
-#include <d3d12.h>
 #include "MainApp.h"
 #include "ResourceUploadBatch.h"
 #include "Common/G2.FactoryMfAudio.h"
@@ -111,6 +108,7 @@ int MainApp::init(const std::any& initialValue /* = */)
 		alphaBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 		SpriteBatchPipelineStateDescription pd(rtState, &alphaBlendDesc); // 🔥 blend desc 전달
+		pd.rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 
 		resourceUpload.Begin();
 		m_xtkSprite = std::make_unique<SpriteBatch>(device, resourceUpload, pd); // 🔥 알파 블렌딩 적용된 PSO
@@ -140,7 +138,7 @@ int MainApp::init(const std::any& initialValue /* = */)
 	m_bgMusic = MfAudioPlayer::Create("asset/sound/fight-for-the-future-336841.mp3");
 
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_BEGIN);
+	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_PLAY);
 
 	m_bgMusic->Play(true, 0.4F, 0.5F);
 

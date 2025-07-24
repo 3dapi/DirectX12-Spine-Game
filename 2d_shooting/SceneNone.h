@@ -1,18 +1,7 @@
-﻿
-#pragma once
+﻿#pragma once
 #ifndef _SceneNone_H_
 #define _SceneNone_H_
 
-#include <map>
-#include <vector>
-#include <any>
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <DirectXMath.h>
-#include <DirectXColors.h>
-#include <wrl/client.h>
-#include "Common/G2.Constants.h"
-#include "common/G2.ConstantsWin.h"
 #include "common/G2.Util.h"
 #include "AppCommon.h"
 #include "AppCommonXTK.h"

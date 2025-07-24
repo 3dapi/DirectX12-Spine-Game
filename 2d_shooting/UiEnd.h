@@ -2,15 +2,13 @@
 #ifndef _UiEnd_H_
 #define _UiEnd_H_
 
-#include <memory>
-#include "UiBase.h"
-#include <wrl/client.h>
+#include "UiDrawable.h"
 #include "AppCommonXTK.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
-class UiEnd : public UiBase
+class UiEnd : public UiDrawable
 {
 protected:
 	ComPtr<ID3D12DescriptorHeap>	m_srvHeapUI{};

@@ -1,6 +1,6 @@
 ﻿#pragma once
-#ifndef _UiBase_H_
-#define _UiBase_H_
+#ifndef _UiDrawable_H_
+#define _UiDrawable_H_
 
 #include <map>
 #include <string>
@@ -20,11 +20,11 @@ struct UI_TEXTURE
 };
 typedef map<string, UI_TEXTURE>		UI_MAP;
 
-class UiBase
+class UiDrawable
 {
 protected:
 public:
-	virtual ~UiBase() = default;
+	virtual ~UiDrawable() = default;
 	virtual int		Init()                  = 0;
 	virtual int		Update(float deltaTime) = 0;
 	virtual int		Destroy()               = 0;

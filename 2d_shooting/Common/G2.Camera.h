@@ -2,6 +2,7 @@
 #ifndef _G2_CAMERA_H_
 #define _G2_CAMERA_H_
 
+#include <any>
 #include <string>
 #include <DirectXMath.h>
 

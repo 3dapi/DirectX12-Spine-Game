@@ -1,8 +1,4 @@
 ﻿
-#include <any>
-#include <filesystem>
-#include <tuple>
-#include <d3d12.h>
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
 #include "Common/G2.FactorySIgnature.h"
@@ -10,7 +6,6 @@
 #include "Common/G2.Geometry.h"
 #include "Common/G2.Util.h"
 #include "Common/GameTimer.h"
-#include <pix.h>
 #include "CommonStates.h"
 #include "SceneEnd.h"
 #include "DirectXHelpers.h"

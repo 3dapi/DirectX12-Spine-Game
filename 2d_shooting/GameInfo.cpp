@@ -1,9 +1,6 @@
 ﻿//--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // MainApp
 
-#include <string>
-#include <tuple>
-#include <d3d12.h>
 #include "MainApp.h"
 #include "Common/G2.Util.h"
 #include "GameInfo.h"
@@ -39,19 +36,19 @@ GamePlayer* GameInfo::MainPlayer()
 
 bool GameInfo::IsCollisionPlayer(class GameObject* p)
 {
-	float p0_w = m_player->m_boundBox.x;
-	float p0_h = m_player->m_boundBox.y;
-	float p1_w = p->m_boundBox.x;
-	float p1_h = p->m_boundBox.y;
+	float p0_w = m_player->m_kt.box.x;
+	float p0_h = m_player->m_kt.box.y;
+	float p1_w = p->m_kt.box.x * p->m_kt.scale;
+	float p1_h = p->m_kt.box.y * p->m_kt.scale;
 
 	//float p0_x = m_player->m_pos.x - p0_w * 0.5F;
 	//float p0_y = m_player->m_pos.y - p0_h * 0.5F;
 	//float p1_x = p->m_pos.x - p0_w * 0.5F;
 	//float p1_y = p->m_pos.y - p0_h * 0.5F;
-	float p0_x = m_player->m_pos.x - p0_w * 0.5F;
-	float p0_y = m_player->m_pos.y;
-	float p1_x = p->m_pos.x - p0_w * 0.5F;
-	float p1_y = p->m_pos.y;
+	float p0_x = m_player->m_kt.pos.x - p0_w * 0.5F;
+	float p0_y = m_player->m_kt.pos.y - p0_h * 0.5F;
+	float p1_x = p->m_kt.pos.x + p0_w * 0.5F;
+	float p1_y = p->m_kt.pos.y + p0_h * 0.5F;
 
 	auto ret =	p0_x        <= p1_x + p1_w &&	// left   <= v_right
 				p0_x + p0_w >= p1_x        &&	// right  >= v_left
@@ -91,8 +88,8 @@ int GameInfo::StageInit()
 	std::fill(m_killedMob.begin(), m_killedMob.end(), 0);
 	std::fill(m_stage.begin(), m_stage.end(), GAME_STAGE{});
 
-	m_stage[0] =	{100, {EAPP_MODEL::EMODEL_DRONE }, };
-	m_stage[4] =	{124, {EAPP_MODEL::EMODEL_DRONE, EAPP_MODEL::EMODEL_BOSS}, };
+	m_stage[0] =	{100, {EMODEL_DRONE.begin(), EMODEL_DRONE.end()}, };
+	//m_stage[1] =	{124, {EAPP_MODEL::EMODEL_DRONE, EAPP_MODEL::EMODEL_BOSS}, };
 
 	return S_OK;
 }

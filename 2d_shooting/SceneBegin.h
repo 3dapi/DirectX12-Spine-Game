@@ -2,13 +2,7 @@
 #ifndef _SceneBegin_H_
 #define _SceneBegin_H_
 
-#include <map>
-#include <vector>
-#include <any>
-
-#include "Common/G2.Constants.h"
 #include "Common/G2.Geometry.h"
-#include "common/G2.ConstantsWin.h"
 #include "common/G2.Util.h"
 #include "AppCommon.h"
 #include "AppCommonXTK.h"
@@ -19,7 +13,7 @@ using namespace G2;
 class SceneBegin: public G2::IG2Scene
 {
 protected:
-	class UiBase*						m_pUi	{};
+	class UiDrawable*						m_pUi	{};
 
 public:
 	SceneBegin();

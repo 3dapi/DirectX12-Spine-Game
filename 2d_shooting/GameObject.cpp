@@ -1,9 +1,6 @@
 ﻿//--------------------------------------------------------------------------------------------------------------------------------------------------------------
 // MainApp
 
-#include <string>
-#include <tuple>
-#include <d3d12.h>
 #include "MainApp.h"
 #include "Common/G2.Util.h"
 #include "Common/G2.FactoryMfAudio.h"
@@ -13,6 +10,8 @@
 void GameObject::HP(float v)
 {
 	m_hp = v;
+	if(0>= m_hp)
+		this->State(EAPP_CHAR_STATE::ESTATE_CHAR_DYING);
 }
 
 float GameObject::HP() const
@@ -32,71 +31,121 @@ float GameObject::Damage() const
 
 void GameObject::Position(XMFLOAT2 v)
 {
-	m_pos = v;
+	m_kt.pos = v;
 }
 
 XMFLOAT2 GameObject::Position() const
 {
-	return m_pos;
+	return m_kt.pos;
 }
-void GameObject::Direction(float v)
+void GameObject::Velocity(const XMFLOAT2& v)
 {
-	m_dir = v;
+	m_kt.vlc = v;
 }
-float GameObject::Direction() const
+XMFLOAT2 GameObject::Velocity() const
 {
-	return m_dir;
+	return m_kt.vlc;
 }
-void GameObject::Scale(float v)
+void GameObject::Acceleration(const XMFLOAT2& v)
 {
-	m_scale = v;
+	m_kt.acc = v;
 }
-float GameObject::Scale() const
+XMFLOAT2 GameObject::Acceleration() const
 {
-	return m_scale;
+	return m_kt.acc;
 }
-void GameObject::Speed(float v)
+XMFLOAT2 GameObject::Direction() const
 {
-	m_speed = v;
+	auto len = this->Speed();
+	if(0.0F == len)
+		return {0.0F, 0.0F};
+	return {m_kt.vlc.x/len, m_kt.vlc.y/len};
 }
 float GameObject::Speed() const
 {
-	return m_speed;
+	return sqrtf(m_kt.vlc.x * m_kt.vlc.x + m_kt.vlc.y * m_kt.vlc.y);
+}
+void GameObject::Scale(float v)
+{
+	m_kt.scale = v;
+}
+float GameObject::Scale() const
+{
+	return m_kt.scale;
+}
+void GameObject::Rot(float v)
+{
+	m_kt.rot = v;
+}
+float GameObject::Rot() const
+{
+	return m_kt.rot;
+}
+void GameObject::Diffuse(const XMVECTORF32& v)
+{
+	m_kt.dif = v;
+}
+XMVECTORF32 GameObject::Diffuse() const
+{
+	return m_kt.dif;
+}
+void GameObject::Box(const XMFLOAT2& v)
+{
+	m_kt.box = v;
+}
+XMFLOAT2 GameObject::Box() const
+{
+	return m_kt.box;
+}
+void GameObject::Alive(bool v)
+{
+	m_kt.alive;
+}
+bool GameObject::Alive() const
+{
+	return m_kt.alive;
+}
+
+void GameObject::MoveForceSpeed(float v)
+{
+	m_spdForce = v;
+}
+
+float GameObject::MoveForceSpeed() const
+{
+	return m_spdForce;
 }
 
 void GameObject::Move(float dt)
 {
-	m_pos.x += m_speed * dt;
-	m_pos.y += m_speed * dt;
+	m_kt.vlc.x += m_kt.acc.x * dt;
+	m_kt.vlc.y += m_kt.acc.y * dt;
+
+	m_kt.pos.x += m_kt.vlc.x * dt;
+	m_kt.pos.y += m_kt.vlc.y * dt;
 }
 
 void GameObject::MoveLeft(float dt)
 {
-	this->Direction(-1.0F);
-	m_pos.x += m_speed * dt * m_dir;
-
+	m_kt.pos.x += (-1.0F) * m_spdForce* dt;
 	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
 }
 
 void GameObject::MoveRight(float dt)
 {
-	this->Direction(+1.0F);
-	m_pos.x += m_speed * dt * m_dir;
-
+	m_kt.pos.x += (+1.0F) * m_spdForce* dt;
 	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
 }
 
 void GameObject::MoveUp(float dt)
 {
-	m_pos.y += m_speed * dt * (+1.0F);
-
+	m_kt.pos.y += (+1.0F) * m_spdForce* dt;
 	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
 }
 
 void GameObject::MoveDown(float dt)
 {
-	m_pos.y += m_speed * dt * (-1.0F);
-
+	m_kt.pos.y += (-1.0F) * m_spdForce* dt;
 	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
 }
 
@@ -124,78 +173,36 @@ GamePlayer::GamePlayer()
 	//AFEW::C
 	if(GameInfo::M_CHEAT)
 	{
-		m_boundBox = {160.0F,80.0F};
+		m_kt.box = {128.0F,94.0F};
 	}
 }
 
-int GamePlayer::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE state)
+int GamePlayer::Init(const string& model)
 {
 	m_hp    = 100;
 	m_damage = 34.0F;
-	m_speed = 250.0F;
-	m_pos   = XMFLOAT2{ 0.0F, 0.0F };
-	m_dir   = 1.0F;
-	m_dif   = XMFLOAT4{ 1.0F, 1.0F, 1.0F, 1.0F };
-	m_modelType = modelType;
+	m_spdForce = 250.0F;
+	m_kt.pos   = XMFLOAT2{ 0.0F, 0.0F };
+	m_kt.dif   = XMVECTORF32{{{ 1.0F, 1.0F, 1.0F, 1.0F }}};
 
-	this->State(state);
+	if(!model.empty())
+		m_model    = model;
+
+	if(m_model.empty())
+	{
+		m_model = EMODEL_SHIP[0];
+	}
+
+	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
 	return S_OK;
 }
 int GamePlayer::Update(const GameTimer& gt)
 {
-	m_aniComplete.clear();
-
-	return S_OK;
-}
-int GamePlayer::Render()
-{
-	return S_OK;
-}
-
-int GamePlayer::Notify(const std::string& aniname, const std::any& val)
-{
-	string eventType;
-	if(val.has_value())
-	{
-		try
-		{
-			eventType = any_cast<const string&>(val);
-		}
-		catch(const bad_any_cast&)
-		{
-			return E_FAIL;
-		}
-	}
-	if(aniname == "attack" && eventType == "start")
-	{
-		//printf("GamePlayer::Notify:: %s %s\n", aniname.c_str(), eventType.c_str());
-		m_audio->Play(false);
-	}
-
-	// attack complete 3번오면 idle 로 변경
-	if(aniname == "attack" && eventType == "complete")
-	{
-		--m_attackRepeat;
-		if( 0 == m_attackRepeat)
-		{
-			this->State(EAPP_CHAR_STATE::ESTATE_CHAR_IDLE);
-		}
-		m_aniComplete["attack"] = true;
-
-		if(2<m_attackRepeat)
-			m_audio->Play(false);
-	}
-
 	return S_OK;
 }
 
 void GamePlayer::State(EAPP_CHAR_STATE v)
 {
-	if(m_state != v && v == EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK)
-	{
-		// 3회 애니메이션
-		m_attackRepeat = 3;
-	}
 	GameObject::State(v);
 }
 
@@ -207,76 +214,83 @@ EAPP_CHAR_STATE GamePlayer::State() const
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-GameMob::GameMob()
+EnemyDrone::EnemyDrone()
 {
-	m_speed = 3.0F;
 }
 
-int GameMob::Init(EAPP_MODEL modelType, PG2OBJECT modelObj, EAPP_CHAR_STATE state)
+int EnemyDrone::Init(int stage)
 {
 	m_hp     = 100;
 	m_damage = 0.5F;
-	m_speed  = 70.0F * G2::randomRange(1.5F, 2.5F);
-	m_pos    = XMFLOAT2{ 0.0F, 0.0F };
-	m_dir    = 1.0F;
-	m_dif    = XMFLOAT4{ 1.0F, 1.0F, 1.0F, 1.0F };
+	m_kt.pos    = XMFLOAT2{ 0.0F, 0.0F };
+	m_kt.dif    = XMVECTORF32{{{ 1.0F, 1.0F, 1.0F, 1.0F }}};
 
-	this->State(state);
+	m_movePattern = 0;
+	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
 
 	return S_OK;
 }
 
-int GameMob::Update(const GameTimer& t)
+int EnemyDrone::Update(const GameTimer& t)
 {
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto dt = gt.DeltaTime();
 	auto pGameInfo = GameInfo::instance();
 
 	// 살아 있을 때만....
-	if(0< this->m_hp)
+	if(this->m_kt.alive)
 	{
 		if (!pGameInfo->IsCollisionPlayer(this) || !pGameInfo->m_enablePlay)
 		{
-			if (-pGameInfo->m_maxMobPos > this->m_pos.x)
+			this->m_kt.alive = false;
+			auto hp = pGameInfo->MainPlayer()->HP();
+			hp -= this->Damage();
+			if(0>hp)
 			{
-				m_dir = +1.0;
+				hp = 0;
 			}
-			else if (pGameInfo->m_maxMobPos < this->m_pos.x)
-			{
-				m_dir = -1.0;
-			}
-
-			if(EAPP_CHAR_STATE::ESTATE_CHAR_IDLE != this->m_state)
-			{
-				if (0 > m_dir)
-					MoveLeft(dt);
-				else
-					MoveRight(dt);
-			}
+			pGameInfo->MainPlayer()->HP(hp);
 		}
 	}
 
 	return S_OK;
 }
 
-int GameMob::Render()
+int EnemyDrone::Render()
 {
 	return S_OK;
 }
 
-int GameMob::Notify(const std::string& aniName, const std::any& val)
+EnemyBoss::EnemyBoss()
 {
-	string eventType;
-	if(val.has_value())
-	{
-		try
-		{
-			eventType = any_cast<const string&>(val);
-		}
-		catch(const bad_any_cast&)
-		{
-			return E_FAIL;
-		}
-	}
-	return S_OK;
+}
+
+int EnemyBoss::Init(int stage)
+{
+	return 0;
+}
+
+int EnemyBoss::Update(const GameTimer& gt)
+{
+	return 0;
+}
+
+int EnemyBoss::Render()
+{
+	return 0;
+}
+
+int GameBullet::Init(int stage)
+{
+	return 0;
+}
+
+int GameBullet::Update(const GameTimer& gt)
+{
+	return 0;
+}
+
+int GameBullet::Render()
+{
+	return 0;
 }

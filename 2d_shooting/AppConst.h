@@ -2,19 +2,10 @@
 #ifndef __APPCONST_H__
 #define __APPCONST_H__
 
-#include <any>
-#include <array>
-#include <memory>
 #include <vector>
-#include <Windows.h>
-#include <wrl.h>
-#include <d3d12.h>
-#include <DirectXMath.h>
-#include <d3dx12/d3dx12.h>
-
-using Microsoft::WRL::ComPtr;
-using namespace DirectX;
-using namespace G2;
+#include <string>
+using std::vector;
+using std::string;
 
 enum EAPP_CONST
 {
@@ -53,21 +44,51 @@ enum EAPP_SCENE
 enum class EAPP_CHAR_STATE : int
 {
 	ESTATE_CHAR_NONE		= 0,
-	ESTATE_CHAR_IDLE		= 1,
 	ESTATE_CHAR_MOVE		,
-	ESTATE_CHAR_ATTACK		,
 	ESTATE_CHAR_DYING		,
 	ESTATE_CHAR_DEATH		,
 };
 
-enum class EAPP_MODEL : int
+inline static const vector<string> EMODEL_SHIP
 {
-	EMODEL_NONE		= 0,		// nothing
-	EMODEL_SHIP1	= 1,		// ship1
-	EMODEL_SHIP2	,			// ship2
-	EMODEL_DRONE	,			// drone
-	EMODEL_BOSS		,			// boss
-	EMODEL_COUNT	,
+	"space_shooter/Ship_2_C_Small",		// ship1
+	"space_shooter/Ship_2_D_Small",		// ship2
+	"space_shooter/Ship_2_C_Medium",	// ship1 for ui
+	"space_shooter/Ship_2_D_Medium",	// ship2 for ui
+};
+
+inline static const vector<string> EMODEL_DRONE
+{
+	"space_shooter/Pickup_1_A_Small",
+	"space_shooter/Pickup_1_B_Small",
+	"space_shooter/Pickup_1_C_Small",
+	"space_shooter/Pickup_1_D_Small",
+	"space_shooter/Pickup_1_E_Small",
+
+	"space_shooter/Pickup_2_A_Small",
+	"space_shooter/Pickup_2_B_Small",
+	"space_shooter/Pickup_2_C_Small",
+	"space_shooter/Pickup_2_D_Small",
+	"space_shooter/Pickup_2_E_Small",
+};
+
+inline static const vector<string> EMODEL_BULLET
+{
+	"space_shooter/Missile_A_Small",
+	"space_shooter/Missile_B_Small",
+	"space_shooter/Missile_C_Small",
+	"space_shooter/Missile_D_Small",
+	"space_shooter/Missile_E_Small",
+};
+
+inline static const vector<string> EMODEL_BOSS
+{
+	"space_shooter/Boss_1_A_Medium",
+};
+
+inline static const vector<string> EMODEL_BG
+{
+	"vertical_shooting/Background Grid",
 };
 
 #endif __APPCONST_H__

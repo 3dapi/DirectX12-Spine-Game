@@ -1,10 +1,4 @@
 ﻿
-#include <any>
-#include <filesystem>
-#include <map>
-#include <tuple>
-#include <utility>
-#include <d3d12.h>
 #include "Common/G2.FactoryCamera.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
@@ -13,7 +7,6 @@
 #include "Common/G2.Geometry.h"
 #include "Common/G2.Util.h"
 #include "Common/GameTimer.h"
-#include <pix.h>
 #include "CommonStates.h"
 #include "SceneLobby.h"
 #include "DirectXHelpers.h"
@@ -111,7 +104,7 @@ void SceneLobby::CheckChooseShip(const ::POINT& mousePos)
 	// ship1 선택
 	if(chckPointInRect (mousePos.x, mousePos.y, 60, 310, 250, 500))
 	{
-		GameInfo::instance()->MainPlayer()->Model(EAPP_MODEL::EMODEL_SHIP1);
+		GameInfo::instance()->MainPlayer()->Model(EMODEL_SHIP[0]);
 		return;
 	}
 
@@ -122,7 +115,7 @@ void SceneLobby::CheckChooseShip(const ::POINT& mousePos)
 	}
 	else
 	{
-		GameInfo::instance()->MainPlayer()->Model(EAPP_MODEL::EMODEL_NONE);
+		GameInfo::instance()->MainPlayer()->Model(string(""));
 	}
 }
 

@@ -1,5 +1,4 @@
-﻿
-#pragma once
+﻿#pragma once
 #ifndef _ScenePlay_H_
 #define _ScenePlay_H_
 
@@ -16,12 +15,17 @@ using namespace G2;
 class ScenePlay: public G2::IG2Scene
 {
 protected:
+	ComPtr<ID3D12DescriptorHeap>	m_srvHeap	{};
+	map<string, struct UI_TEXTURE>	m_srvTex	;
+
 	GamePlayer*				m_mainPlayer	{};
-	vector<GameMob*>		m_vecMob		;
-	vector<uint8_t>			m_keyEvent		;
-	class UiBase*			m_pUi			{};
-	bool					m_stageComplete		{false};
-	bool					m_stageChangeing	{false};
+	vector<EnemyDrone*>		m_vecMob		;
+	EnemyDrone*				m_vecMobBoss	;
+
+	class UiDrawable*		m_pUi			{};
+	class UiDrawable*		m_pUiBg			{};
+	bool					m_stageComplete	{false};
+	bool					m_stageChanging	{false};
 
 public:
 	ScenePlay();
@@ -40,7 +44,9 @@ public:
 	int		StageChange(const GameTimer& gt);
 	int		StageChangingUpdate(const GameTimer& gt);
 	int		StageComplete();
-	int		SetupMobMovemoent(GameMob*);
+	int		SetupMobMovemoent(EnemyDrone*);
+
+	void	PositionToOtho(XMFLOAT2& pos);
 };
 
 #endif

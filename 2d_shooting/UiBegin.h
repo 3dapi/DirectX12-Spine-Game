@@ -2,14 +2,12 @@
 #ifndef _UiBegin_H_
 #define _UiBegin_H_
 
-#include <memory>
-#include "UiBase.h"
-#include <wrl/client.h>
+#include "UiDrawable.h"
 #include "AppCommonXTK.h"
 
 using Microsoft::WRL::ComPtr;
 
-class UiBegin : public UiBase
+class UiBegin : public UiDrawable
 {
 protected:
 	ComPtr<ID3D12DescriptorHeap>	m_srvHeapUI{};

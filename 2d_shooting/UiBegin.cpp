@@ -1,7 +1,4 @@
-﻿#include <any>
-#include <utility>
-#include <d3d12.h>
-#include "Common/G2.FactoryFontResource.h"
+﻿#include "Common/G2.FactoryFontResource.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactorySIgnature.h"
 #include "Common/G2.Util.h"

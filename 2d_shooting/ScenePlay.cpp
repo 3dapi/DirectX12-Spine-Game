@@ -1,15 +1,10 @@
 ﻿
-#include <algorithm>
-#include <any>
-#include <filesystem>
-#include <functional>
-#include <tuple>
-#include <d3d12.h>
 #include "Common/G2.FactoryCamera.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
 #include "Common/G2.FactorySIgnature.h"
 #include "Common/G2.FactoryPipelineState.h"
+#include "Common/G2.InputManager.h"
 #include "Common/G2.Geometry.h"
 #include "Common/G2.Util.h"
 #include "Common/GameTimer.h"
@@ -21,6 +16,7 @@
 #include "GraphicsMemory.h"
 #include "ScenePlay.h"
 #include "UiPlay.h"
+#include "UiBackground.h"
 
 using namespace std;
 using std::any_cast;
@@ -41,17 +37,56 @@ int ScenePlay::Init(const std::any& initial_value)
 {
 	int hr = S_OK;
 
-	m_keyEvent.resize(EAPP_MAX_KEY, 0);
-
-	auto cameraSpine = FactoryCamera::instance()->FindRes(IG2Camera::SPINE_2D);
-	if(cameraSpine)
+	auto d3d        = IG2GraphicsD3D::instance();
+	auto device     = std::any_cast<ID3D12Device*             >(d3d->getDevice());
+	auto cmdList    = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
+	auto cmdQue     = std::any_cast<ID3D12CommandQueue*       >(d3d->getCommandQueue());
+	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	
+	// texture setup
+	vector<tuple<string, string> >  uiTextureList
 	{
-		cameraSpine->Position({0.0f, +200.0f,-700.0f});
-		cameraSpine->LookAt  ({0.0f, +200.0f,   0.0f});
-		cameraSpine->Update  ();
+		{EMODEL_SHIP[0], "asset/sprite/" + EMODEL_SHIP[0] + ".png"  },
+		{EMODEL_SHIP[1], "asset/sprite/" + EMODEL_SHIP[1] + ".png"  },
+	};
+	for(const auto& itr :EMODEL_DRONE)
+	{
+		uiTextureList.push_back(make_tuple(itr, "asset/sprite/" + itr + ".png"));
+	}
+	for(const auto& itr :EMODEL_BULLET)
+	{
+		uiTextureList.push_back(make_tuple(itr, "asset/sprite/" + itr + ".png"));
+	}
+	for(const auto& itr :EMODEL_BOSS)
+	{
+		uiTextureList.push_back(make_tuple(itr, "asset/sprite/" + itr + ".png"));
+	}
+
+	auto texManager = FactoryTexture::instance();
+	for(const auto& [name, file]: uiTextureList)
+	{
+		auto r = texManager->Load(name, file);
+		r->name;
+		m_srvTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r, r->size, {} }));
+	}
+
+	m_srvHeap = G2::CreateDescHeap((UINT)m_srvTex.size() + 1);
+	auto hCpu = m_srvHeap->GetCPUDescriptorHandleForHeapStart();
+	auto hGpu = m_srvHeap->GetGPUDescriptorHandleForHeapStart();
+	for (auto& itr : m_srvTex)
+	{
+		decltype(itr.second.res) res = itr.second.res;
+		device->CreateShaderResourceView(res, nullptr, hCpu);
+		itr.second.hGpu = hGpu;
+
+		// 다음 리소스 대응.
+		hCpu.ptr += descriptorSize;
+		hGpu.ptr += descriptorSize;
 	}
 
 	auto pGameInfo = GameInfo::instance();
+
+	pGameInfo->MainPlayer()->Init();
 
 	pGameInfo->StageInit();
 
@@ -62,6 +97,14 @@ int ScenePlay::Init(const std::any& initial_value)
 		return E_FAIL;
 	}
 	m_pUi->Init();
+
+	SAFE_DELETE(m_pUiBg);
+	m_pUiBg = new UiBackground;
+	if(!m_pUiBg)
+	{
+		return E_FAIL;
+	}
+	m_pUiBg->Init();
 
 	hr = CreateMainPlayerModel();
 	if (FAILED(hr))
@@ -75,9 +118,12 @@ int ScenePlay::Init(const std::any& initial_value)
 
 int ScenePlay::Destroy()
 {
+	m_srvHeap.Reset();
+	m_srvTex.clear();
+
 	SAFE_DELETE_VECTOR(m_vecMob);
-	CLEAR_VECTOR(m_keyEvent);
 	SAFE_DELETE(m_pUi);
+	SAFE_DELETE(m_pUiBg);
 
 	return S_OK;
 }
@@ -101,7 +147,7 @@ int ScenePlay::Update(const std::any& t)
 	//------------------------------------------------------------------------------
 	// 스테이지 변경 체크
 	// 각각의 스테이별로 목표를 완수 했는가?
-	if(!m_stageComplete && !m_stageChangeing)
+	if(!m_stageComplete && !m_stageChanging)
 	{
 		if(pGameInfo->CurrentStateComplete())
 		{
@@ -113,7 +159,6 @@ int ScenePlay::Update(const std::any& t)
 	// 스테이지 교체 시작
 	if(m_stageComplete)
 	{
-		m_mainPlayer->State(EAPP_CHAR_STATE::ESTATE_CHAR_IDLE);
 		//장면 전환
 		StageChange(gt);
 		return S_OK;
@@ -121,7 +166,7 @@ int ScenePlay::Update(const std::any& t)
 
 	//------------------------------------------------------------------------------
 	// 스테이지 교체 업데이트
-	if(m_stageChangeing)
+	if(m_stageChanging)
 	{
 		StageChangingUpdate(gt);
 		return S_OK;
@@ -143,7 +188,7 @@ int ScenePlay::Update(const std::any& t)
 		auto newHp = m_mainPlayer->HP() + dt * 100;
 		if (100 < newHp)
 			newHp = 100;
-		m_mainPlayer->HP(newHp);
+		//m_mainPlayer->HP(newHp);
 	}
 
 	vector<function<void(void)> > StageUpdate
@@ -193,98 +238,37 @@ int ScenePlay::Update(const std::any& t)
 		auto* mob = m_vecMob[i];
 		if(!mob)
 			continue;
-
-		auto mobPosition = mob->Position();
-		bool isHitTarget = false;
-
-		// 플레이어 앞쪽만 타겟팅.
-		if (EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK == playerState && pGameInfo->IsCollisionPlayer(mob))
-		{
-			if( ( 0<= m_mainPlayer->Direction() && mob->Position().x >= m_mainPlayer->Position().x) ||
-				( 0>= m_mainPlayer->Direction() && mob->Position().x <= m_mainPlayer->Position().x) )
-				isHitTarget = true;
-		}
-
-		if(isHitTarget)
-		{
-			if(m_mainPlayer->AnimationComplete("attack"))
-			{
-				// 기본 점수 올린다.
-				pGameInfo->IncreaseScore(100);
-				// 
-				auto newHp = mob->HP() - m_mainPlayer->Damage();
-				if(0 >= newHp)
-				{
-					newHp = 0;
-					// mob kill 수를 올린다.
-					pGameInfo->CurrentStateAdvancing(1);
-				}
-				mob->HP(newHp);
-			}
-		}
-
-		// 플레이어가 공격동작이 아닐 때 Mob 이동 충돌 만으로 플레이어에게 데미지.
-		if (EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK != playerState &&
-			EAPP_CHAR_STATE::ESTATE_CHAR_IDLE != mob->State() &&
-			0< mob->HP() &&
-			pGameInfo->IsCollisionPlayer(mob)
-			)
-		{
-			if(!GameInfo::M_CHEAT)
-			{
-				auto newHp = m_mainPlayer->HP() - mob->Damage();
-				if (0 > newHp)
-					newHp = 0;
-				m_mainPlayer->HP(newHp);
-			}
-		}
-
 		mob->Update(gt);
 	}
 
 	if (pGameInfo->m_enablePlay)
 	{
-		bool isKeyEvent = false;
+		bool hasKeyEvent = InputManager::instance()->hasEvent();
+		auto const keyEvent = InputManager::instance()->Key();
 		// 이동.
-		if (m_keyEvent[VK_LEFT] == EAPP_INPUT_PRESS)
+		if (keyEvent[VK_LEFT] == EAPP_INPUT_PRESS)
 		{
-			isKeyEvent = true;
 			m_mainPlayer->MoveLeft(dt);
 		}
 
-		if (m_keyEvent[VK_RIGHT] == EAPP_INPUT_PRESS)
+		if (keyEvent[VK_RIGHT] == EAPP_INPUT_PRESS)
 		{
-			isKeyEvent = true;
 			m_mainPlayer->MoveRight(dt);
 		}
 
-		if (m_keyEvent[VK_UP] == EAPP_INPUT_PRESS)
+		if (keyEvent[VK_UP] == EAPP_INPUT_PRESS)
 		{
-			isKeyEvent = true;
 			m_mainPlayer->MoveUp(dt);
 		}
 
-		if (m_keyEvent[VK_DOWN] == EAPP_INPUT_PRESS)
+		if (keyEvent[VK_DOWN] == EAPP_INPUT_PRESS)
 		{
-			isKeyEvent = true;
 			m_mainPlayer->MoveDown(dt);
 		}
 
-		if(	m_keyEvent[VK_LEFT] == EAPP_INPUT_UP ||
-			m_keyEvent[VK_RIGHT] == EAPP_INPUT_UP ||
-			m_keyEvent[VK_UP] == EAPP_INPUT_UP ||
-			m_keyEvent[VK_DOWN] == EAPP_INPUT_UP)
+		// bullet 발사
+		if (keyEvent[VK_SPACE] == EAPP_INPUT_UP)
 		{
-			isKeyEvent = true;
-			m_mainPlayer->State(EAPP_CHAR_STATE::ESTATE_CHAR_IDLE);
-		}
-
-		// attack.
-		// 이동이 아닐때만 공격 가능
-		if (!isKeyEvent && m_keyEvent['A'] == EAPP_INPUT_PRESS)
-		{
-			isKeyEvent = true;
-			m_mainPlayer->State(EAPP_CHAR_STATE::ESTATE_CHAR_ATTACK);
 		}
 
 	}
@@ -293,21 +277,54 @@ int ScenePlay::Update(const std::any& t)
 	
 	// update ui
 	m_pUi->Update(dt);
+	m_pUiBg->Update(dt);
+
 	return S_OK;
 }
 
 int ScenePlay::Render()
 {
 	auto pGameInfo = GameInfo::instance();
+	m_pUiBg->Draw();
+
+	auto d3d          = IG2GraphicsD3D::instance();
+	auto cmdList      = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
+	auto sprite		  = std::any_cast<SpriteBatch*>(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE));
+	::SIZE screenSize = *any_cast<::SIZE*>(d3d->getAttrib(ATT_SCREEN_SIZE));
+
+	ID3D12DescriptorHeap* heaps[] = {m_srvHeap.Get()};
+	cmdList->SetDescriptorHeaps(1, heaps);
+
+	sprite->Begin(cmdList);
+	{
+		// draw enemy drone
+		{
+
+		}
+		// draw player
+		{
+			auto modelName = m_mainPlayer->Model();
+			auto& tex = m_srvTex[modelName];
+
+			auto pos = m_mainPlayer->Position();
+			XMFLOAT2 origin = {0, 0};
+			XMFLOAT2 scale = {1.0F, 1.0F};
+			XMFLOAT2 position = {pos.x - tex.size.x/2, pos.x - tex.size.y/2};
+			PositionToOtho(position);
+			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, 0.0F, origin, scale);
+		}
+		// draw bullet
+		{
+
+		}
+	}
+	sprite->End();
 
 	m_pUi->Draw();
-
-
-
 	m_pUi->DrawFront();
 
 
-	if(m_stageChangeing)
+	if(m_stageChanging)
 	{
 		if(m_stageComplete)
 			m_stageComplete = false;
@@ -323,15 +340,10 @@ int ScenePlay::Notify(const std::string& name, const std::any& t)
 	auto pGameInfo = GameInfo::instance();
 	auto curStageIndex = pGameInfo->CurrentStateIndex();
 
-	if(name == "KeyEvent")
-	{
-		auto keyState = any_cast<const uint8_t*>(t);
-		std::copy(keyState, keyState + EAPP_MAX_KEY, m_keyEvent.begin());
-	}
-	else if (name == "MouseUp")
+	if (name == "MouseUp")
 	{
 		auto mousePos = any_cast<const ::POINT&>(t);
-		if(m_stageChangeing)
+		if(m_stageChanging)
 		{
 			if( (curStageIndex+1) == GameInfo::MAX_STAGE)
 			{
@@ -359,14 +371,6 @@ int ScenePlay::CreateMainPlayerModel()
 	if (!m_mainPlayer)
 		return E_FAIL;
 
-	//           model type  position scale  direction
-	tuple<EAPP_MODEL, float, float> charModel
-	{
-		EAPP_MODEL::EMODEL_SHIP1, 0.5F,  1.0F,
-	};
-	const auto& [model, scale, direction] = charModel;
-	
-
 	return S_OK;
 }
 
@@ -377,7 +381,7 @@ int ScenePlay::StageInit()
 	auto  curStageIndex = pGameInfo->CurrentStateIndex();
 
 	m_stageComplete = false;
-	m_stageChangeing = false;
+	m_stageChanging = false;
 	pGameInfo->m_stageIncrease = false;
 
 	vector< function<void(void)> > StageSetup
@@ -403,7 +407,7 @@ int ScenePlay::StageInit()
 
 int ScenePlay::StageChange(const GameTimer& gt)
 {
-	m_stageChangeing = true;
+	m_stageChanging = true;
 	auto dt = gt.DeltaTime();
 
 	m_mainPlayer->Update(gt);
@@ -423,67 +427,21 @@ int ScenePlay::StageComplete()
 	return 0;
 }
 
-int ScenePlay::SetupMobMovemoent(GameMob* mob)
+int ScenePlay::SetupMobMovemoent(EnemyDrone* mob)
 {
 	auto pGameInfo = GameInfo::instance();
 	auto mainPlayerPos = m_mainPlayer->Position();
 
 	// mob 들이 서있기만 함.
-	if(0 == pGameInfo->CurrentStateIndex())
-	{
-		float posx = G2::randomRange( 200.0F,  700.0F);
-		float posy = G2::randomRange( -250.0F,  350.0F);
-		float dir  = -1.0F;
-		float scale = G2::randomRange(0.5F, 0.6F);
-		mob->Init();
-		mob->Position({ posx, posy });
-		mob->Scale(scale);
-		mob->State(EAPP_CHAR_STATE::ESTATE_CHAR_IDLE);
-		mob->Direction(dir);
-	}
-	else if(1 == pGameInfo->CurrentStateIndex())
-	{
-		float posx = G2::randomRange(200.0F,700.0F);
-		float posy = G2::randomRange(-250.0F,300.0F);
-		float dir = -1.0F;
-		float scale = G2::randomRange(0.5F,0.6F);
-		mob->Init();
-		mob->Position({posx,posy});
-		mob->Scale(scale);
-		mob->Direction(dir);
-	}
-	else if(2 == pGameInfo->CurrentStateIndex())
-	{
-		float posx = G2::randomRange(200.0F,700.0F);
-		float posy = G2::randomRange(-250.0F,300.0F);
-		float dir = -1.0F;
-		float scale = G2::randomRange(0.5F,0.6F);
-		mob->Init();
-		mob->Position({posx,posy});
-		mob->Scale(scale);
-		mob->Direction(dir);
-	}
-	else
-	{
-		float posx_plus   = G2::randomRange( 600.0F,  900.0F);
-		float posx_minus  = G2::randomRange(-900.0F, -600.0F);
-		int   posx_choise = G2::randomRange(0, 1);
-		float posx = posx_choise ? posx_plus : posx_minus;
-
-		float posy_plus   = G2::randomRange( 40.0F,  80.0F);
-		float posy_minus  = G2::randomRange(-80.0F, -40.0F);
-		int   posy_choise = G2::randomRange(0, 1);
-		float posy = posy_choise ? posy_plus : posy_minus;
-
-		float dir = posx  < mainPlayerPos.x ?  1.0F : -1.0F;
-
-		float scale = G2::randomRange(0.4F, 0.8F);
-
-		mob->Init();	// 모델 교체는 없이, 초기화만 다시 진행.
-		mob->Position({ posx, posy });
-		mob->Scale(scale);
-		mob->Direction(dir);
-	}
+	mob->Init(pGameInfo->CurrentStateIndex());
 
 	return S_OK;
+}
+
+void ScenePlay::PositionToOtho(XMFLOAT2& pos)
+{
+	auto d3d = IG2GraphicsD3D::instance();
+	::SIZE screenSize = *any_cast<::SIZE*>(d3d->getAttrib(ATT_SCREEN_SIZE));
+	pos.x += screenSize.cx * 0.5f;
+	pos.y  = -pos.y + screenSize.cy * 0.5f;
 }

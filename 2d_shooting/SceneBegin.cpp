@@ -1,9 +1,4 @@
 ﻿
-#include <any>
-#include <filesystem>
-#include <tuple>
-#include <utility>
-#include <d3d12.h>
 #include "Common/G2.FactoryCamera.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
@@ -12,15 +7,14 @@
 #include "Common/G2.Geometry.h"
 #include "Common/G2.Util.h"
 #include "Common/GameTimer.h"
-#include <pix.h>
 #include "CommonStates.h"
-#include "SceneBegin.h"
+
 #include "DirectXHelpers.h"
-#include "ResourceUploadBatch.h"
-#include "GraphicsMemory.h"
-#include "SceneBegin.h"
+#include "AppCommonXTK.h"
+
 #include "GameInfo.h"
 #include "UiBegin.h"
+#include "SceneBegin.h"
 
 using namespace std;
 using std::any_cast;

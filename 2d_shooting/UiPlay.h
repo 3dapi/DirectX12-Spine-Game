@@ -3,14 +3,14 @@
 #define _UiPlay_H_
 
 #include <memory>
-#include "UiBase.h"
+#include "UiDrawable.h"
 #include <wrl/client.h>
 #include "AppCommonXTK.h"
 
 using namespace DirectX;
 using Microsoft::WRL::ComPtr;
 
-class UiPlay : public UiBase
+class UiPlay : public UiDrawable
 {
 protected:
 	ComPtr<ID3D12DescriptorHeap>	m_srvHeapUI{};

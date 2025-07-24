@@ -179,7 +179,8 @@
     <ClCompile Include="ScenePlay.cpp" />
     <ClCompile Include="SceneBegin.cpp" />
     <ClCompile Include="MainApp.cpp" />
-    <ClCompile Include="UiBase.cpp" />
+    <ClCompile Include="UiBackground.cpp" />
+    <ClCompile Include="UiDrawable.cpp" />
     <ClCompile Include="UiBegin.cpp" />
     <ClCompile Include="UiEnd.cpp" />
     <ClCompile Include="UiLobby.cpp" />
@@ -217,7 +218,8 @@
     <ClInclude Include="ScenePlay.h" />
     <ClInclude Include="SceneBegin.h" />
     <ClInclude Include="MainApp.h" />
-    <ClInclude Include="UiBase.h" />
+    <ClInclude Include="UiBackground.h" />
+    <ClInclude Include="UiDrawable.h" />
     <ClInclude Include="UiBegin.h" />
     <ClInclude Include="UiEnd.h" />
     <ClInclude Include="UiLobby.h" />

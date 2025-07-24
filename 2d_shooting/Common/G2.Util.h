@@ -226,6 +226,14 @@ public:
 }
 #endif
 
+#ifndef ThrowIfFailed2
+#define ThrowIfFailed2(x, message) {                              \
+    if(FAILED(x)) {                                     \
+		throw DXException(x, __func__ , message + std::string(" ") + __FILE__, __LINE__);  \
+	}                                                   \
+}
+#endif
+
 
 } // namespace G2
 

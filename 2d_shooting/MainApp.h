@@ -1,14 +1,5 @@
-﻿
-#pragma once
+﻿#pragma once
 
-#include <array>
-#include <memory>
-#include <vector>
-
-#include <Windows.h>
-#include <wrl.h>
-#include <d3d12.h>
-#include <SpriteBatch.h>
 #include "Common/D3DWinApp.h"
 #include "Common/G2.Camera.h"
 #include "Common/G2.InputManager.h"

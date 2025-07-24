@@ -1,7 +1,4 @@
-﻿#include <any>
-#include <utility>
-#include <d3d12.h>
-#include "Common/G2.FactoryFontResource.h"
+﻿#include "Common/G2.FactoryFontResource.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactorySIgnature.h"
 #include "Common/G2.Util.h"
@@ -42,7 +39,6 @@ int UiPlay::Init()
 
 	vector<tuple<string, string>>  uiTextureList
 	{
-		{"ui/ui_play_background"	, "asset/ui/ui_play_background.png"	},
 		{"ui/ui_rect"				, "asset/ui/ui_rect.png"	},
 		{"ui/ui_gameover"			, "asset/ui/ui_gameover.png"},
 		{"ui/ui_touch_the_screen"	, "asset/ui/ui_touch_the_screen.png"},
@@ -109,7 +105,7 @@ int UiPlay::Update(float dt)
 	{
 		auto& tex = m_uiTex["ui_font score"];
 		std::string text = "Score: " + std::to_string(pGameInfo->m_gameScore);
-		auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 24, text);
+		auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 20, text);
 		if(fontTex)
 		{
 			tex.size    = sizeTex;
@@ -119,7 +115,7 @@ int UiPlay::Update(float dt)
 	{
 		auto& tex = m_uiTex["ui_font hp"];
 		std::string text = "HP: " + std::to_string((int)pGameInfo->MainPlayer()->HP());
-		auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 24, text);
+		auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 20, text);
 		if(fontTex)
 		{
 			tex.size    = sizeTex;
@@ -129,7 +125,7 @@ int UiPlay::Update(float dt)
 	{
 		auto& tex = m_uiTex["ui_font stage"];
 		std::string text = std::to_string(pGameInfo->CurrentStateIndex() + 1);
-		auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 48, text);
+		auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 40, text);
 		if(fontTex)
 		{
 			tex.size    = sizeTex;
@@ -153,16 +149,10 @@ int UiPlay::Draw()
 	cmdList->SetDescriptorHeaps(1, heaps);
 	sprite->Begin(cmdList);
 	{
-		// background
-		{
-			auto& tex = m_uiTex["ui/ui_play_background"];
-			XMFLOAT2 position = { 0.0F, 0.0F };
-			sprite->Draw(tex.hGpu, tex.size, position);
-		}
 		// score
 		{
 			auto& texScore = m_uiTex["ui_font score"];
-			XMFLOAT2 position = {10.0F, 10.0F};
+			XMFLOAT2 position = {5.0F, 5.0F};
 			XMFLOAT2 origin = {0.0F, 0.0F};
 			XMFLOAT2 scale = {1.0F, 1.0f};
 			sprite->Draw(texScore.hGpu, texScore.size, position, nullptr, Colors::Yellow, 0.0F, origin, scale);
@@ -170,20 +160,17 @@ int UiPlay::Draw()
 		// HP
 		{
 			auto& texHp = m_uiTex["ui_font hp"];
-			XMFLOAT2 position = {10.0F, 70.0F};
+			XMFLOAT2 position = {5.0F, 35.0F};
 			XMFLOAT2 origin = {0.0F, 0.0F};
 			XMFLOAT2 scale = {1.0F, 1.0f};
 			sprite->Draw(texHp.hGpu, texHp.size, position, nullptr, Colors::Red, 0.0F, origin, scale);
 		}
 		{
 			auto hp = (int)pGameInfo->MainPlayer()->HP();
-			//wstring wstr = L"HP: " + std::to_wstring(hp);
-			//m_font->DrawString(sprite, wstr.c_str(), XMFLOAT2(10, 60), Colors::Red, 0, XMFLOAT2(0, 0), 1.5F);
-
 			auto& tex = m_uiTex["ui/ui_rect"];
-			XMFLOAT2 position = { 145, 75.0F };
+			XMFLOAT2 position = { 60, 38.0F };
 			XMFLOAT2 origin = { 0, 0 };
-			XMFLOAT2 scale = { (hp +0.4F)*6.0F /100.0F, 0.25F};
+			XMFLOAT2 scale = { (hp +0.4F)*1.0F /100.0F, 0.25F};
 			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{ { { 1.F, 0.F, 0.F, 1.0F } } }, 0.0F, origin, scale);
 		}
 		if (!pGameInfo->m_enablePlay)

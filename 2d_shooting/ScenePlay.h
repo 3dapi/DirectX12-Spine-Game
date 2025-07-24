@@ -24,7 +24,9 @@ public:
 		END		,
 	};
 protected:
-	inline static const int			MAX_DRONE	{1000};
+	inline static const int			MAX_DRONE			{1000};
+	inline static const int			MAX_BULLET_PLAYER	{1000};
+	inline static const int			MAX_BULLET_ENEMY	{1000};
 
 	ComPtr<ID3D12DescriptorHeap>	m_srvHeap	{};
 	map<string, struct UI_TEXTURE>	m_srvTex	;
@@ -33,12 +35,16 @@ protected:
 	vector<EnemyDrone*>		m_vecDrone		;
 	EnemyDrone*				m_vecMobBoss	;
 
+	vector<GameBullet*>		m_vecBulletEnemy	;
+	vector<GameBullet*>		m_vecBulletPlayer	;
+
 	class UiDrawable*		m_pUi			{};
 	class UiDrawable*		m_pUiBg			{};
 
 	PLAY_STATE				m_playState		{};
 	float					m_timeStored	{};
 	float					m_timeDrone		{};
+	float					m_speedBullet	{700};
 
 public:
 	ScenePlay();

@@ -72,13 +72,21 @@ inline static const vector<string> EMODEL_DRONE
 	"space_shooter/Pickup_2_E_Small",
 };
 
-inline static const vector<string> EMODEL_BULLET
+inline static const vector<string> EMODEL_MISSILE
 {
 	"space_shooter/Missile_A_Small",
 	"space_shooter/Missile_B_Small",
 	"space_shooter/Missile_C_Small",
 	"space_shooter/Missile_D_Small",
 	"space_shooter/Missile_E_Small",
+};
+
+inline static const vector<string> EMODEL_BULLET
+{
+	"bullet-red",
+	"bullet-green",
+	"bullet-yellow",
+	"bullet-cyan",
 };
 
 inline static const vector<string> EMODEL_BOSS

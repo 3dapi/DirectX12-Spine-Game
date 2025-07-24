@@ -30,7 +30,7 @@ public:
 	virtual ~GameInfo();
 
 	GamePlayer*	MainPlayer();
-	bool		IsCollisionPlayer(class GameObject* p);
+	bool		IsCollisionPlayer(struct T_KINETICS* p);
 	void		IncreaseScore(int score);
 };
 

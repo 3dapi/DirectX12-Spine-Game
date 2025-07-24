@@ -55,6 +55,10 @@ int ScenePlay::Init(const std::any&)
 	{
 		uiTextureList.push_back(make_tuple(itr, "asset/sprite/" + itr + ".png"));
 	}
+	for(const auto& itr :EMODEL_MISSILE)
+	{
+		uiTextureList.push_back(make_tuple(itr, "asset/sprite/" + itr + ".png"));
+	}
 	for(const auto& itr :EMODEL_BULLET)
 	{
 		uiTextureList.push_back(make_tuple(itr, "asset/sprite/" + itr + ".png"));
@@ -89,9 +93,22 @@ int ScenePlay::Init(const std::any&)
 	auto pGameInfo = GameInfo::instance();
 	m_mainPlayer = pGameInfo->MainPlayer();
 	m_mainPlayer->Init();
+	{
+		auto modelName = m_mainPlayer->Model();
+		auto& tex = m_srvTex[modelName];
+		XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
+		m_mainPlayer->Box(box);
+	}
+
 
 	m_vecDrone.resize(MAX_DRONE, nullptr);
 	std::generate(m_vecDrone.begin(), m_vecDrone.end(), [](){ return new EnemyDrone;});
+
+	m_vecBulletEnemy.resize(MAX_BULLET_ENEMY, nullptr);
+	std::generate(m_vecBulletEnemy.begin(), m_vecBulletEnemy.end(), [](){ return new GameBullet; });
+
+	m_vecBulletPlayer.resize(MAX_BULLET_PLAYER, nullptr);
+	std::generate(m_vecBulletPlayer.begin(), m_vecBulletPlayer.end(), [](){ return new GameBullet; });
 
 	m_pUi = new UiPlay;
 	if (!m_pUi)
@@ -116,6 +133,8 @@ int ScenePlay::Destroy()
 	m_srvTex.clear();
 
 	SAFE_DELETE_VECTOR(m_vecDrone);
+	SAFE_DELETE_VECTOR(m_vecBulletEnemy);
+	SAFE_DELETE_VECTOR(m_vecBulletPlayer);
 	SAFE_DELETE(m_pUi);
 	SAFE_DELETE(m_pUiBg);
 
@@ -258,8 +277,19 @@ int ScenePlay::Render()
 			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, 0.0F, origin, scale);
 		}
 		// draw bullet
+		for(auto& bullet : m_vecBulletEnemy)
 		{
+			if(!bullet->alive)
+				continue;
 
+			auto modelName = bullet->m_model;
+			auto& tex = m_srvTex[modelName];
+
+			auto pos = bullet->pos;
+			XMFLOAT2 origin = {tex.size.x/2.0F, tex.size.y/2.0F};
+			XMFLOAT2 scale = {1.0F, 1.0F};
+			XMFLOAT2 position = G2::ScreenToGameCoord(pos);
+			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, 0.0F, origin, scale);
 		}
 	}
 	sprite->End();
@@ -307,6 +337,13 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 					kt.vlc = XMFLOAT2{0.0F, G2::randomRange(-400.0F, -250.0F)};
 					drone->Init((int)PLAY_STATE::LOW, kt);
 					drone->Model(EMODEL_DRONE[indexModel]);
+					{
+						auto modelName = drone->Model();
+						auto& tex = m_srvTex[modelName];
+						XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
+						drone->Box(box);
+					}
+
 					break;
 				}
 			}
@@ -326,6 +363,12 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 					kt.vlc = XMFLOAT2{0.0F, G2::randomRange(-400.0F, -350.0F)};
 					drone->Init((int)PLAY_STATE::LOW, kt);
 					drone->Model(EMODEL_DRONE[indexModel]);
+					{
+						auto modelName = drone->Model();
+						auto& tex = m_srvTex[modelName];
+						XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
+						drone->Box(box);
+					}
 					break;
 				}
 			}
@@ -345,6 +388,12 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 					kt.vlc = XMFLOAT2{0.0F, G2::randomRange(-500.0F, -450.0F)};
 					drone->Init((int)PLAY_STATE::LOW, kt);
 					drone->Model(EMODEL_DRONE[indexModel]);
+					{
+						auto modelName = drone->Model();
+						auto& tex = m_srvTex[modelName];
+						XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
+						drone->Box(box);
+					}
 					break;
 				}
 			}
@@ -385,9 +434,62 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 		if(!drone || !drone->Alive())
 			continue;
 		drone->Update(gt);
-		if(-550 > drone->Position().y)
+
+		// drone 에서 탄환 발사.
+		bool filedBullet = drone->m_firedBullet;
+		if(filedBullet)
+		{
+			drone->m_firedBullet = false;
+
+			for(auto& bullet : m_vecBulletEnemy)
+			{
+				if(bullet && !bullet->alive)
+				{
+					int indexModel = 2;
+					T_KINETICS kt{};
+					kt.dif = XMVECTORF32{{{1.0F, 1.0F, 1.0F, 1.0F}}};
+					kt.alive = true;
+					kt.pos = drone->Position();
+
+					float speed = m_speedBullet;
+					auto vlc_x = m_mainPlayer->Position().x - drone->Position().x;
+					auto vlc_y = m_mainPlayer->Position().y - drone->Position().y;
+					float len = kt.vlc.x = sqrtf(vlc_x * vlc_x + vlc_y * vlc_y);
+
+					// 너무 가까와서 충돌로 플레이어 죽음
+					if(0.0001F>len)
+						continue;
+
+					kt.vlc.x = vlc_x * speed/len;
+					kt.vlc.y = vlc_y * speed/len;
+
+					bullet->Init((int)PLAY_STATE::LOW, kt, true);
+					bullet->m_model = EMODEL_BULLET[indexModel];
+					{
+						auto modelName = bullet->m_model;
+						auto& tex = m_srvTex[modelName];
+						XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
+						bullet->box = box;
+					}
+					break;
+				}
+			}
+		}
+
+		if(550 < fabsf(drone->Position().y))
 		{
 			drone->Alive(false);
+		}
+	}
+
+	for(auto& bullet : m_vecBulletEnemy)
+	{
+		if(!bullet || !bullet->alive)
+			continue;
+		bullet->Update(gt);
+		if(550 < fabsf(bullet->pos.y))
+		{
+			bullet->alive = false;
 		}
 	}
 

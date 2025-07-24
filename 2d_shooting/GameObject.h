@@ -86,25 +86,28 @@ public:
 
 class GameBullet : public T_KINETICS
 {
-protected:
-	string	m_model;
-
 public:
-	int		Init(int pattern);
+	bool	m_isEnemy		{false};
+	int		m_movePattern	{};
+	string	m_model;
+public:
+	int		Init(int movePattern, const T_KINETICS& kt, bool isEnemy);
 	int		Update(const GameTimer& gt);
-	int		Render();
 };
 
 class EnemyDrone : public GameObject
 {
-protected:
+public:
 	int		m_movePattern	{};
-	string	m_model;
+	int		m_bullet		{1};
+	bool	m_firedBullet	{};
+	float	m_timeStore		{};
+	float	m_timeFire		{};
 public:
 	EnemyDrone();
 	int		Init(int movePattern, const T_KINETICS& kt);
 	int		Update(const GameTimer& gt);
-	int		Render();
+	void	FireBullet();
 };
 
 class EnemyBoss : public GameObject
@@ -116,7 +119,6 @@ public:
 	EnemyBoss();
 	int		Init(int stage);
 	int		Update(const GameTimer& gt);
-	int		Render();
 };
 
 #endif

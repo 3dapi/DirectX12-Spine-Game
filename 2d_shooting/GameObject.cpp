@@ -225,6 +225,10 @@ int EnemyDrone::Init(int movePattern, const T_KINETICS& kt)
 	m_movePattern = movePattern;
 	memcpy(&m_kt, &kt, sizeof(T_KINETICS));
 	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
+
+	m_timeStore ={};
+	m_timeFire = G2::randomRange(0.5F, 3.5F);
+
 	return S_OK;
 }
 
@@ -238,7 +242,18 @@ int EnemyDrone::Update(const GameTimer& t)
 	if(!this->m_kt.alive)
 		return S_OK;
 
-	if (pGameInfo->IsCollisionPlayer(this) && pGameInfo->m_enablePlay)
+	if(m_bullet)
+	{
+		m_timeStore += dt;
+		if(m_timeFire<m_timeStore)
+		{
+			FireBullet();
+			--m_bullet;
+			m_timeStore -= m_timeFire;
+		}
+	}
+
+	if (pGameInfo->IsCollisionPlayer(&m_kt) && pGameInfo->m_enablePlay)
 	{
 		this->m_kt.alive = false;
 		auto hp = pGameInfo->MainPlayer()->HP();
@@ -258,9 +273,9 @@ int EnemyDrone::Update(const GameTimer& t)
 	return S_OK;
 }
 
-int EnemyDrone::Render()
+void EnemyDrone::FireBullet()
 {
-	return S_OK;
+	m_firedBullet = true;
 }
 
 EnemyBoss::EnemyBoss()
@@ -277,22 +292,35 @@ int EnemyBoss::Update(const GameTimer& gt)
 	return 0;
 }
 
-int EnemyBoss::Render()
+int GameBullet::Init(int movePattern, const T_KINETICS& kt, bool isEnemy)
 {
-	return 0;
-}
-
-int GameBullet::Init(int stage)
-{
-	return 0;
+	m_isEnemy = isEnemy;
+	m_movePattern = movePattern;
+	memcpy(&this->pos, &kt, sizeof(T_KINETICS));
+	return S_OK;
 }
 
 int GameBullet::Update(const GameTimer& gt)
 {
-	return 0;
-}
+	auto dt = gt.DeltaTime();
+	auto pGameInfo = GameInfo::instance();
 
-int GameBullet::Render()
-{
-	return 0;
+	// 살아 있을 때만....
+	if(!this->alive)
+		return S_OK;
+
+	if(m_isEnemy && pGameInfo->IsCollisionPlayer(this) && pGameInfo->m_enablePlay)
+	{
+		this->alive = false;
+		//pGameInfo->MainPlayer()->HP(0);
+	}
+	else
+	{
+		this->vlc.x += this->acc.x * dt;
+		this->vlc.y += this->acc.y * dt;
+		this->pos.x += this->vlc.x * dt;
+		this->pos.y += this->vlc.y * dt;
+	}
+
+	return S_OK;
 }

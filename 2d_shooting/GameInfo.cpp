@@ -9,6 +9,7 @@
 using namespace G2;
 
 static GameInfo* _inst = new GameInfo;
+bool GameInfo::M_CHEAT = false;
 
 GameInfo* GameInfo::instance()
 {
@@ -67,55 +68,4 @@ void GameInfo::IncreaseScore(int score)
 	m_gameScore += score;
 }
 
-bool GameInfo::M_CHEAT = false;
 
-int GameInfo::StageInit()
-{
-	// 점수 초기화.
-	this->m_gameScore = 0;
-	this->m_enablePlay = true;
-
-	//AFEW::C
-	if(GameInfo::M_CHEAT)
-		this->m_stageCur = 1;
-	else
-		this->m_stageCur = 0;
-
-	// 스테이지 환수 조건
-	m_killedMob.resize(MAX_STAGE, 0)	;
-	m_stage    .resize(MAX_STAGE, {})	;
-
-	std::fill(m_killedMob.begin(), m_killedMob.end(), 0);
-	std::fill(m_stage.begin(), m_stage.end(), GAME_STAGE{});
-
-	m_stage[0] =	{100, {EMODEL_DRONE.begin(), EMODEL_DRONE.end()}, };
-	//m_stage[1] =	{124, {EAPP_MODEL::EMODEL_DRONE, EAPP_MODEL::EMODEL_BOSS}, };
-
-	return S_OK;
-}
-
-GAME_STAGE* GameInfo::CurrentState()
-{
-	if(0> m_stageCur || m_stageCur>= m_stage.size())
-		return nullptr;
-	return &m_stage[m_stageCur];
-}
-
-bool GameInfo::CurrentStateComplete()
-{
-	if(m_stage[m_stageCur].mobMax <= m_killedMob[m_stageCur])
-	{
-		return true;
-	}
-	return false;
-}
-
-void GameInfo::CurrentStateAdvancing(int v)
-{
-	m_killedMob[m_stageCur] += v;
-}
-
-void GameInfo::IncreaseStage()
-{
-	m_stageIncrease = true;
-}

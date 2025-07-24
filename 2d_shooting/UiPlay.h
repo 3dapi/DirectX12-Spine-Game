@@ -27,7 +27,6 @@ public:
 	int		Destroy()		override;
 	int		Draw()			override;
 	int		DrawFront()		override;
-	int		StageChangingDraw();
 };
 
 #endif

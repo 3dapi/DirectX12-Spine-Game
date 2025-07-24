@@ -14,9 +14,9 @@ struct T_KINETICS
 	XMFLOAT2		acc		{0.0F, 0.0F};					// acceleration
 	float			scale	{1.0F};							// scale
 	float			rot		{0.0F};							// 회전
-	XMVECTORF32		dif		{{{1.0F, 1.0F, 1.0F, 1.0F}}};	// model color
+	XMVECTORF32		dif		{{{1.0F, 0.0F, 1.0F, 1.0F}}};	// model color
 	XMFLOAT2		box		{0.0F, 0.0F };
-	bool			alive	{true};
+	bool			alive	{false};
 };
 
 class GameInfo;
@@ -102,7 +102,7 @@ protected:
 	string	m_model;
 public:
 	EnemyDrone();
-	int		Init(int stage);
+	int		Init(int movePattern, const T_KINETICS& kt);
 	int		Update(const GameTimer& gt);
 	int		Render();
 };

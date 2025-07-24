@@ -122,17 +122,7 @@ int UiPlay::Update(float dt)
 			tex.sizeSrc = sizeSrc;
 		}
 	}
-	{
-		auto& tex = m_uiTex["ui_font stage"];
-		std::string text = std::to_string(pGameInfo->CurrentStateIndex() + 1);
-		auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 40, text);
-		if(fontTex)
-		{
-			tex.size    = sizeTex;
-			tex.sizeSrc = sizeSrc;
-		}
-	}
-
+	
 	return S_OK;
 }
 
@@ -212,45 +202,4 @@ int UiPlay::DrawFront()
 	sprite->End();
 
 	return S_OK;
-}
-
-int UiPlay::StageChangingDraw()
-{
-	auto d3d          =  IG2GraphicsD3D::instance();
-	auto cmdList      = std::any_cast<ID3D12GraphicsCommandList*>(d3d->getCommandList());
-	auto sprite       = std::any_cast<SpriteBatch*              >(IG2AppFrame::instance()->getAttrib(EAPP_ATTRIB::EAPP_ATT_XTK_SPRITE));
-	::SIZE screenSize = *any_cast<::SIZE*                       >(d3d->getAttrib(ATT_SCREEN_SIZE));
-
-
-	ID3D12DescriptorHeap* heaps[] = { m_srvHeapUI.Get() };
-	cmdList->SetDescriptorHeaps(1, heaps);
-	sprite->Begin(cmdList);
-	{
-		{
-			auto& tex = m_uiTex["ui/ui_stage_cleared"];
-			XMFLOAT2 position = { 0.0F, 0.0F};
-			XMFLOAT2 origin = { 0, 0 };
-			XMFLOAT2 scale = { 1.0F, 1.0F };
-			XMVECTOR color = XMVectorSet(1.f, 1.f, 0.f, 0.8F);
-			sprite->Draw(tex.hGpu, tex.size, position, nullptr, color);
-		}
-		{
-			auto& tex = m_uiTex["ui_font stage"];
-			XMFLOAT2 position = { screenSize.cx / 2.0F-50.0F, 140.0F };
-			XMFLOAT2 origin = {0, 0};
-			XMFLOAT2 scale = {2.0F, 2.0F};
-			XMVECTOR color = XMVectorSet(1.f, 1.f, 0.f, 0.8F);
-			sprite->Draw(tex.hGpu, tex.size, position, nullptr, color, 0.0F, origin, scale);
-		}
-		{
-			auto& tex = m_uiTex["ui/ui_touch_the_screen"];
-			XMFLOAT2 position = { screenSize.cx / 2.0F - tex.size.x / 2.0F + 100.0F, 520.0F };
-			XMFLOAT2 origin = { 0, 0 };
-			XMFLOAT2 scale = { 0.6F, 0.6F };
-			XMVECTOR color = XMVectorSet(1.f, 1.f, 1.f, m_blend);
-			sprite->Draw(tex.hGpu, tex.size, position, nullptr, color, 0.0F, origin, scale);
-		}
-	}
-	sprite->End();
-	return 0;
 }

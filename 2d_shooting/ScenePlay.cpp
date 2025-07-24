@@ -33,9 +33,11 @@ ScenePlay::~ScenePlay()
 	Destroy();
 }
 
-int ScenePlay::Init(const std::any& initial_value)
+int ScenePlay::Init(const std::any&)
 {
 	int hr = S_OK;
+
+	Destroy();
 
 	auto d3d        = IG2GraphicsD3D::instance();
 	auto device     = std::any_cast<ID3D12Device*             >(d3d->getDevice());
@@ -85,12 +87,12 @@ int ScenePlay::Init(const std::any& initial_value)
 	}
 
 	auto pGameInfo = GameInfo::instance();
+	m_mainPlayer = pGameInfo->MainPlayer();
+	m_mainPlayer->Init();
 
-	pGameInfo->MainPlayer()->Init();
+	m_vecDrone.resize(MAX_DRONE, nullptr);
+	std::generate(m_vecDrone.begin(), m_vecDrone.end(), [](){ return new EnemyDrone;});
 
-	pGameInfo->StageInit();
-
-	SAFE_DELETE(m_pUi);
 	m_pUi = new UiPlay;
 	if (!m_pUi)
 	{
@@ -98,20 +100,12 @@ int ScenePlay::Init(const std::any& initial_value)
 	}
 	m_pUi->Init();
 
-	SAFE_DELETE(m_pUiBg);
 	m_pUiBg = new UiBackground;
 	if(!m_pUiBg)
 	{
 		return E_FAIL;
 	}
 	m_pUiBg->Init();
-
-	hr = CreateMainPlayerModel();
-	if (FAILED(hr))
-		return hr;
-	hr = StageInit();
-	if (FAILED(hr))
-		return hr;
 
 	return S_OK;
 }
@@ -121,7 +115,7 @@ int ScenePlay::Destroy()
 	m_srvHeap.Reset();
 	m_srvTex.clear();
 
-	SAFE_DELETE_VECTOR(m_vecMob);
+	SAFE_DELETE_VECTOR(m_vecDrone);
 	SAFE_DELETE(m_pUi);
 	SAFE_DELETE(m_pUiBg);
 
@@ -133,45 +127,13 @@ int ScenePlay::Update(const std::any& t)
 	auto pGameInfo    = GameInfo::instance();
 	auto playerState  = m_mainPlayer->State();
 	auto playerPos    = m_mainPlayer->Position();
-	auto curStageIndex = pGameInfo->CurrentStateIndex();
 
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto dt = gt.DeltaTime();
 
-	if(pGameInfo->m_stageIncrease)
-	{
-		pGameInfo->m_stageCur++;
-		StageInit();
-	}
-
-	//------------------------------------------------------------------------------
-	// 스테이지 변경 체크
-	// 각각의 스테이별로 목표를 완수 했는가?
-	if(!m_stageComplete && !m_stageChanging)
-	{
-		if(pGameInfo->CurrentStateComplete())
-		{
-			m_stageComplete= true;
-		}
-	}
-
-	//------------------------------------------------------------------------------
-	// 스테이지 교체 시작
-	if(m_stageComplete)
-	{
-		//장면 전환
-		StageChange(gt);
-		return S_OK;
-	}
-
-	//------------------------------------------------------------------------------
-	// 스테이지 교체 업데이트
-	if(m_stageChanging)
-	{
-		StageChangingUpdate(gt);
-		return S_OK;
-	}
-	
+	// 타임 누적
+	m_timeStored += dt;
+	m_timeDrone	 += dt;
 
 	//------------------------------------------------------------------------------
 	// 게임 종료 체크. 유저 HP == 0
@@ -191,56 +153,28 @@ int ScenePlay::Update(const std::any& t)
 		//m_mainPlayer->HP(newHp);
 	}
 
-	vector<function<void(void)> > StageUpdate
+	// setup play state
+	if(2<m_timeStored && PLAY_STATE::BEGIN == m_playState)
 	{
-		// state 0~3
-		[&]()
-		{
-			// clear
-			for(auto it = m_vecMob.begin(); it != m_vecMob.end(); )
-			{
-				if(nullptr == *it || 0 == (*it)->HP())
-				{
-					if(*it)
-						delete (*it);
-					it = m_vecMob.erase(it);
-					continue;
-				}
-				++it;
-			}
-		},
-		// state 4
-		[&]() {
-			// 죽은 몹 재생
-			for(size_t i=0; i<m_vecMob.size(); ++i)
-			{
-				auto* mob = m_vecMob[i];
-				if(!mob)
-					continue;
-				auto mob_hp = mob->HP();
-				if(0< mob_hp)
-					continue;
-
-				SetupMobMovemoent(mob);
-			}
-		},
-	};
-
-	if(curStageIndex<4)
-		StageUpdate[0]();
-	else
-		StageUpdate[1]();
-
-
-	// 전투
-	for (size_t i=0; i<m_vecMob.size(); ++i)
+		m_playState = PLAY_STATE::LOW;
+	}
+	else if(30<m_timeStored && PLAY_STATE::LOW == m_playState)
 	{
-		auto* mob = m_vecMob[i];
-		if(!mob)
-			continue;
-		mob->Update(gt);
+		m_playState = PLAY_STATE::MIDDLE;
+	}
+	else if(120<m_timeStored && PLAY_STATE::MIDDLE == m_playState)
+	{
+		m_playState = PLAY_STATE::HI;
+	}
+	else if(240<m_timeStored && PLAY_STATE::HI == m_playState)
+	{
+		m_playState = PLAY_STATE::BOSS;
 	}
 
+	// update enemy
+	UpdateEnemy(t);
+
+	// check input event
 	if (pGameInfo->m_enablePlay)
 	{
 		bool hasKeyEvent = InputManager::instance()->hasEvent();
@@ -270,9 +204,9 @@ int ScenePlay::Update(const std::any& t)
 		if (keyEvent[VK_SPACE] == EAPP_INPUT_UP)
 		{
 		}
-
 	}
 
+	// update player
 	m_mainPlayer->Update(gt);
 	
 	// update ui
@@ -298,8 +232,19 @@ int ScenePlay::Render()
 	sprite->Begin(cmdList);
 	{
 		// draw enemy drone
+		for(auto& drone : m_vecDrone)
 		{
+			if(!drone->Alive())
+				continue;
 
+			auto modelName = drone->Model();
+			auto& tex = m_srvTex[modelName];
+
+			auto pos = drone->Position();
+			XMFLOAT2 origin = {tex.size.x/2.0F, tex.size.y/2.0F};
+			XMFLOAT2 scale = {1.0F, 1.0F};
+			XMFLOAT2 position = G2::ScreenToGameCoord(pos);
+			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, 0.0F, origin, scale);
 		}
 		// draw player
 		{
@@ -307,10 +252,9 @@ int ScenePlay::Render()
 			auto& tex = m_srvTex[modelName];
 
 			auto pos = m_mainPlayer->Position();
-			XMFLOAT2 origin = {0, 0};
+			XMFLOAT2 origin = {tex.size.x/2.0F, tex.size.y/2.0F};
 			XMFLOAT2 scale = {1.0F, 1.0F};
-			XMFLOAT2 position = {pos.x - tex.size.x/2, pos.x - tex.size.y/2};
-			PositionToOtho(position);
+			XMFLOAT2 position = G2::ScreenToGameCoord(pos);
 			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, 0.0F, origin, scale);
 		}
 		// draw bullet
@@ -323,125 +267,129 @@ int ScenePlay::Render()
 	m_pUi->Draw();
 	m_pUi->DrawFront();
 
-
-	if(m_stageChanging)
-	{
-		if(m_stageComplete)
-			m_stageComplete = false;
-
-		((UiPlay*)m_pUi)->StageChangingDraw();
-	}
-
 	return S_OK;
 }
 
 int ScenePlay::Notify(const std::string& name, const std::any& t)
 {
 	auto pGameInfo = GameInfo::instance();
-	auto curStageIndex = pGameInfo->CurrentStateIndex();
 
 	if (name == "MouseUp")
 	{
 		auto mousePos = any_cast<const ::POINT&>(t);
-		if(m_stageChanging)
+		if(m_playState == PLAY_STATE::END)
 		{
-			if( (curStageIndex+1) == GameInfo::MAX_STAGE)
-			{
-				pGameInfo->m_enablePlay = false;
-				IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_END);
-			}
-			else
-			{
-				GameInfo::instance()->IncreaseStage();
-			}
-		}
-
-		if(!pGameInfo->m_enablePlay)
 			IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_END);
+		}
 	}
-
 	return S_OK;
 }
 
-int ScenePlay::CreateMainPlayerModel()
+int ScenePlay::UpdateEnemy(const std::any& t)
 {
-	auto pGameInfo = GameInfo::instance();
+	GameTimer gt = std::any_cast<GameTimer>(t);
 
-	m_mainPlayer = pGameInfo->MainPlayer();
-	if (!m_mainPlayer)
-		return E_FAIL;
-
-	return S_OK;
-}
-
-int ScenePlay::StageInit()
-{
-	auto pGameInfo = GameInfo::instance();
-	auto* pCurStage = pGameInfo->CurrentState();
-	auto  curStageIndex = pGameInfo->CurrentStateIndex();
-
-	m_stageComplete = false;
-	m_stageChanging = false;
-	pGameInfo->m_stageIncrease = false;
-
-	vector< function<void(void)> > StageSetup
+	vector<function<void(void)> > enemyGen
 	{
-		// stage 0
+		[&](){},
 		[&]()
 		{
+			// PLAY_STATE::LOW
+			for(auto& drone : m_vecDrone)
+			{
+				if(drone && !drone->Alive())
+				{
+					int indexModel = G2::randomRange(0, 1);
+					T_KINETICS kt{};
+					kt.dif = XMVECTORF32{{{1.0F, 1.0F, 1.0F, 1.0F}}};
+					kt.alive = true;
+					kt.pos = XMFLOAT2{G2::randomRange(-260.0F, +260.0F), G2::randomRange(550.0F, +750.0F)};
+					kt.vlc = XMFLOAT2{0.0F, G2::randomRange(-400.0F, -250.0F)};
+					drone->Init((int)PLAY_STATE::LOW, kt);
+					drone->Model(EMODEL_DRONE[indexModel]);
+					break;
+				}
+			}
 		},
-		// stage 3
 		[&]()
 		{
+			// PLAY_STATE::MIDDLE
+			for(auto& drone : m_vecDrone)
+			{
+				if(drone && !drone->Alive())
+				{
+					int indexModel = G2::randomRange(2, 3);
+					T_KINETICS kt{};
+					kt.dif = XMVECTORF32{{{1.0F, 1.0F, 1.0F, 1.0F}}};
+					kt.alive = true;
+					kt.pos = XMFLOAT2{G2::randomRange(-260.0F, +260.0F), G2::randomRange(550.0F, +750.0F)};
+					kt.vlc = XMFLOAT2{0.0F, G2::randomRange(-400.0F, -350.0F)};
+					drone->Init((int)PLAY_STATE::LOW, kt);
+					drone->Model(EMODEL_DRONE[indexModel]);
+					break;
+				}
+			}
+		},
+		[&]()
+		{
+			// PLAY_STATE::HI
+			for(auto& drone : m_vecDrone)
+			{
+				if(drone && !drone->Alive())
+				{
+					int indexModel = G2::randomRange(2, 3);
+					T_KINETICS kt{};
+					kt.dif = XMVECTORF32{{{1.0F, 1.0F, 1.0F, 1.0F}}};
+					kt.alive = true;
+					kt.pos = XMFLOAT2{G2::randomRange(-260.0F, +260.0F), G2::randomRange(550.0F, +750.0F)};
+					kt.vlc = XMFLOAT2{0.0F, G2::randomRange(-500.0F, -450.0F)};
+					drone->Init((int)PLAY_STATE::LOW, kt);
+					drone->Model(EMODEL_DRONE[indexModel]);
+					break;
+				}
+			}
 		},
 	};
 
-	if(2>= curStageIndex)
-		StageSetup[0]();
-	else
-		StageSetup[1]();
+	// 0.1초마다 적들을 생산함
+	if(PLAY_STATE::LOW == m_playState)
+	{
+		if(0.6F < m_timeDrone)
+		{
+			m_timeDrone -= 0.6F;
+			enemyGen[(int)m_playState]();
+		}
+	}
 
-	int hr = S_OK;
+	if(PLAY_STATE::MIDDLE == m_playState)
+	{
+		if(0.35F < m_timeDrone)
+		{
+			m_timeDrone -= 0.35F;
+			enemyGen[(int)m_playState]();
+		}
+	}
+
+	if(PLAY_STATE::HI == m_playState)
+	{
+		if(0.15F < m_timeDrone)
+		{
+			m_timeDrone -= 0.15F;
+			enemyGen[(int)m_playState]();
+		}
+	}
+
+	// 전투
+	for(auto& drone : m_vecDrone)
+	{
+		if(!drone || !drone->Alive())
+			continue;
+		drone->Update(gt);
+		if(-550 > drone->Position().y)
+		{
+			drone->Alive(false);
+		}
+	}
+
 	return S_OK;
-}
-
-int ScenePlay::StageChange(const GameTimer& gt)
-{
-	m_stageChanging = true;
-	auto dt = gt.DeltaTime();
-
-	m_mainPlayer->Update(gt);
-	// update ui
-	m_pUi->Update(dt);
-	return 0;
-}
-
-int ScenePlay::StageChangingUpdate(const GameTimer& gt)
-{
-	m_mainPlayer->Update(gt);
-	return 0;
-}
-
-int ScenePlay::StageComplete()
-{
-	return 0;
-}
-
-int ScenePlay::SetupMobMovemoent(EnemyDrone* mob)
-{
-	auto pGameInfo = GameInfo::instance();
-	auto mainPlayerPos = m_mainPlayer->Position();
-
-	// mob 들이 서있기만 함.
-	mob->Init(pGameInfo->CurrentStateIndex());
-
-	return S_OK;
-}
-
-void ScenePlay::PositionToOtho(XMFLOAT2& pos)
-{
-	auto d3d = IG2GraphicsD3D::instance();
-	::SIZE screenSize = *any_cast<::SIZE*>(d3d->getAttrib(ATT_SCREEN_SIZE));
-	pos.x += screenSize.cx * 0.5f;
-	pos.y  = -pos.y + screenSize.cy * 0.5f;
 }

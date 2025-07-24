@@ -182,7 +182,7 @@ int GamePlayer::Init(const string& model)
 	m_hp    = 100;
 	m_damage = 34.0F;
 	m_spdForce = 250.0F;
-	m_kt.pos   = XMFLOAT2{ 0.0F, 0.0F };
+	m_kt.pos   = XMFLOAT2{ 0.0F, -300.0F };
 	m_kt.dif   = XMVECTORF32{{{ 1.0F, 1.0F, 1.0F, 1.0F }}};
 
 	if(!model.empty())
@@ -218,16 +218,13 @@ EnemyDrone::EnemyDrone()
 {
 }
 
-int EnemyDrone::Init(int stage)
+int EnemyDrone::Init(int movePattern, const T_KINETICS& kt)
 {
 	m_hp     = 100;
 	m_damage = 0.5F;
-	m_kt.pos    = XMFLOAT2{ 0.0F, 0.0F };
-	m_kt.dif    = XMVECTORF32{{{ 1.0F, 1.0F, 1.0F, 1.0F }}};
-
-	m_movePattern = 0;
+	m_movePattern = movePattern;
+	memcpy(&m_kt, &kt, sizeof(T_KINETICS));
 	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
-
 	return S_OK;
 }
 
@@ -238,19 +235,24 @@ int EnemyDrone::Update(const GameTimer& t)
 	auto pGameInfo = GameInfo::instance();
 
 	// 살아 있을 때만....
-	if(this->m_kt.alive)
+	if(!this->m_kt.alive)
+		return S_OK;
+
+	if (pGameInfo->IsCollisionPlayer(this) && pGameInfo->m_enablePlay)
 	{
-		if (!pGameInfo->IsCollisionPlayer(this) || !pGameInfo->m_enablePlay)
-		{
-			this->m_kt.alive = false;
-			auto hp = pGameInfo->MainPlayer()->HP();
-			hp -= this->Damage();
-			if(0>hp)
-			{
-				hp = 0;
-			}
-			pGameInfo->MainPlayer()->HP(hp);
-		}
+		this->m_kt.alive = false;
+		auto hp = pGameInfo->MainPlayer()->HP();
+
+		//hp -= this->Damage();
+		//if(0>hp)
+		//{
+		//	hp = 0;
+		//}
+		//pGameInfo->MainPlayer()->HP(hp);
+	}
+	else
+	{
+		this->Move(dt);
 	}
 
 	return S_OK;

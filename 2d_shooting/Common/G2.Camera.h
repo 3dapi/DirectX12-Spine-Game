@@ -126,4 +126,11 @@ public:
 	int			Update	(const std::any& t = {}) override;
 };
 
+namespace G2
+{
+
+XMFLOAT2 ScreenToGameCoord(const XMFLOAT2& pos);
+
+} // namespace G2
+
 #endif // _G2_CAMERA_H_

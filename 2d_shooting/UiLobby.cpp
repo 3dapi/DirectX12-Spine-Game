@@ -41,10 +41,11 @@ int UiLobby::Init()
 
 	vector<tuple<string, string>>  uiTextureList
 	{
-		{"ui/ui_choose_ship"	, "asset/ui/ui_choose_ship.png"	},
-		{"ui/ui_box"			, "asset/ui/ui_box.png"			},
-		{"ui/ui_doc_key"		, "asset/ui/ui_doc_key.png"		},
-		{"ui/ui_game_start"		, "asset/ui/ui_game_start.png"	},
+		{"ui/ui_choose_ship"		, "asset/ui/ui_choose_ship.png"	},
+		{"ui/ui_box"				, "asset/ui/ui_box.png"			},
+		{"ui/ui_game_start"			, "asset/ui/ui_game_start.png"	},
+		{"sprite/Ship_2_C_Medium"	, "asset/sprite/space_shooter/Ship_2_C_Medium.png"	},
+		{"sprite/Ship_2_D_Medium"	, "asset/sprite/space_shooter/Ship_2_D_Medium.png"	},
 	};
 	auto texManager = FactoryTexture::instance();
 	for(const auto& [name, file]: uiTextureList)
@@ -106,13 +107,30 @@ int UiLobby::Draw()
 			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 120.0F), DirectX::XMVectorSet(1.0F, 1.0F, 0.6F, 1.0F));
 		}
 		{
-			auto& tex = m_uiTex["ui/ui_box"];
-			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(190, 150), DirectX::XMVectorSet(1.0F, 0.0F, 1.0F, alpha));
-			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(580, 150), DirectX::XMVectorSet(0.0F, 0.0F, 1.0F, 0.4F));
+			auto& tex = m_uiTex["sprite/Ship_2_C_Medium"];
+			XMFLOAT2 origin = {0, 0};
+			XMFLOAT2 scale = {0.6F, 0.6F};
+			XMFLOAT2 position0 = XMFLOAT2(75, 320);
+
+			sprite->Draw(tex.hGpu, tex.size, position0, nullptr, XMVECTORF32{{{1.0F, 1.0F, 1.0F, m_blend}}}, 0.0F, origin, scale);
 		}
 		{
-			auto& tex = m_uiTex["ui/ui_doc_key"];
-			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(950, 300), DirectX::XMVectorSet(0.8F, 0.8F, 0.8F, 1.0F));
+			auto& tex = m_uiTex["sprite/Ship_2_D_Medium"];
+			XMFLOAT2 origin = {0, 0};
+			XMFLOAT2 scale = {0.6F, 0.6F};
+			XMFLOAT2 position0 = XMFLOAT2(360, 320);
+
+			sprite->Draw(tex.hGpu, tex.size, position0, nullptr, XMVECTORF32{{{1.0F, 1.0F, 1.0F, 0.4F}}}, 0.0F, origin, scale);
+		}
+		{
+			auto& tex = m_uiTex["ui/ui_box"];
+			XMFLOAT2 origin = {0, 0};
+			XMFLOAT2 scale = {0.7F, 0.7F};
+			XMFLOAT2 position0 = XMFLOAT2(50, 300);
+			XMFLOAT2 position1 = XMFLOAT2(330, 300);
+
+			sprite->Draw(tex.hGpu, tex.size, position0, nullptr, XMVECTORF32{{{1.0F, 0.0F, 1.0F, m_blend}}}, 0.0F, origin, scale);
+			sprite->Draw(tex.hGpu, tex.size, position1, nullptr, XMVECTORF32{{{0.0F, 0.3F, 1.0F, 0.4F}}}, 0.0F, origin, scale);
 		}
 
 		sprite->End();
@@ -136,7 +154,7 @@ int UiLobby::DrawFront()
 		if (true)
 		{
 			auto& tex = m_uiTex["ui/ui_game_start"];
-			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 500), DirectX::XMVectorSet(1.0F, 1.0F, 1.0F, m_blend));
+			sprite->Draw(tex.hGpu, tex.size, XMFLOAT2(screenSize.cx / 2.0F - tex.size.x / 2.0F, 600), DirectX::XMVectorSet(1.0F, 1.0F, 1.0F, m_blend));
 		}
 	}
 	sprite->End();

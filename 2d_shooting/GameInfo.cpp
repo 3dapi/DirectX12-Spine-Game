@@ -7,7 +7,7 @@
 #include "MainApp.h"
 #include "Common/G2.Util.h"
 #include "GameInfo.h"
-#include "GameCharacter.h"
+#include "GameObject.h"
 
 using namespace G2;
 
@@ -37,7 +37,7 @@ GamePlayer* GameInfo::MainPlayer()
 	return m_player;
 }
 
-bool GameInfo::IsCollisionPlayer(class GameCharacter* p)
+bool GameInfo::IsCollisionPlayer(class GameObject* p)
 {
 	float p0_w = m_player->m_boundBox.x;
 	float p0_h = m_player->m_boundBox.y;
@@ -91,11 +91,8 @@ int GameInfo::StageInit()
 	std::fill(m_killedMob.begin(), m_killedMob.end(), 0);
 	std::fill(m_stage.begin(), m_stage.end(), GAME_STAGE{});
 
-	m_stage[0] =	{  5, {EAPP_MODEL::EMODEL_STMAN }, };
-	m_stage[1] =	{  6, {EAPP_MODEL::EMODEL_RAPTOR}, };
-	m_stage[2] =	{ 10, {EAPP_MODEL::EMODEL_RAPTOR, EAPP_MODEL::EMODEL_GOBLIN}, };
-	m_stage[3] =	{ 15, {EAPP_MODEL::EMODEL_RAPTOR, EAPP_MODEL::EMODEL_GOBLIN, EAPP_MODEL::EMODEL_ALIEN}, };
-	m_stage[4] =	{ 20, {EAPP_MODEL::EMODEL_RAPTOR, EAPP_MODEL::EMODEL_BOSS}, };
+	m_stage[0] =	{100, {EAPP_MODEL::EMODEL_DRONE }, };
+	m_stage[4] =	{124, {EAPP_MODEL::EMODEL_DRONE, EAPP_MODEL::EMODEL_BOSS}, };
 
 	return S_OK;
 }

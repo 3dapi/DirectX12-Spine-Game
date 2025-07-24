@@ -8,69 +8,69 @@
 #include "Common/G2.Util.h"
 #include "Common/G2.FactoryMfAudio.h"
 #include "GameInfo.h"
-#include "GameCharacter.h"
+#include "GameObject.h"
 
-void GameCharacter::HP(float v)
+void GameObject::HP(float v)
 {
 	m_hp = v;
 }
 
-float GameCharacter::HP() const
+float GameObject::HP() const
 {
 	return m_hp;
 }
 
-void GameCharacter::Damage(float v)
+void GameObject::Damage(float v)
 {
 	m_damage = v;
 }
 
-float GameCharacter::Damage() const
+float GameObject::Damage() const
 {
 	return m_damage;
 }
 
-void GameCharacter::Position(XMFLOAT2 v)
+void GameObject::Position(XMFLOAT2 v)
 {
 	m_pos = v;
 }
 
-XMFLOAT2 GameCharacter::Position() const
+XMFLOAT2 GameObject::Position() const
 {
 	return m_pos;
 }
-void GameCharacter::Direction(float v)
+void GameObject::Direction(float v)
 {
 	m_dir = v;
 }
-float GameCharacter::Direction() const
+float GameObject::Direction() const
 {
 	return m_dir;
 }
-void GameCharacter::Scale(float v)
+void GameObject::Scale(float v)
 {
 	m_scale = v;
 }
-float GameCharacter::Scale() const
+float GameObject::Scale() const
 {
 	return m_scale;
 }
-void GameCharacter::Speed(float v)
+void GameObject::Speed(float v)
 {
 	m_speed = v;
 }
-float GameCharacter::Speed() const
+float GameObject::Speed() const
 {
 	return m_speed;
 }
 
-void GameCharacter::Move(float dt)
+void GameObject::Move(float dt)
 {
 	m_pos.x += m_speed * dt;
 	m_pos.y += m_speed * dt;
 }
 
-void GameCharacter::MoveLeft(float dt)
+void GameObject::MoveLeft(float dt)
 {
 	this->Direction(-1.0F);
 	m_pos.x += m_speed * dt * m_dir;
@@ -78,7 +78,7 @@ void GameCharacter::MoveLeft(float dt)
 	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
 }
 
-void GameCharacter::MoveRight(float dt)
+void GameObject::MoveRight(float dt)
 {
 	this->Direction(+1.0F);
 	m_pos.x += m_speed * dt * m_dir;
@@ -86,25 +86,25 @@ void GameCharacter::MoveRight(float dt)
 	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
 }
 
-void GameCharacter::MoveUp(float dt)
+void GameObject::MoveUp(float dt)
 {
 	m_pos.y += m_speed * dt * (+1.0F);
 
 	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
 }
 
-void GameCharacter::MoveDown(float dt)
+void GameObject::MoveDown(float dt)
 {
 	m_pos.y += m_speed * dt * (-1.0F);
 
 	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
 }
 
-GameCharacter::~GameCharacter()
+GameObject::~GameObject()
 {
 }
 
-void GameCharacter::State(EAPP_CHAR_STATE v)
+void GameObject::State(EAPP_CHAR_STATE v)
 {
 	// state 가 같으면 변경을 안하다.
 	if (m_state == v)
@@ -114,7 +114,7 @@ void GameCharacter::State(EAPP_CHAR_STATE v)
 	m_state = v;
 }
 
-EAPP_CHAR_STATE	GameCharacter::State() const 
+EAPP_CHAR_STATE	GameObject::State() const 
 {
 	return m_state;
 }
@@ -196,12 +196,12 @@ void GamePlayer::State(EAPP_CHAR_STATE v)
 		// 3회 애니메이션
 		m_attackRepeat = 3;
 	}
-	GameCharacter::State(v);
+	GameObject::State(v);
 }
 
 EAPP_CHAR_STATE GamePlayer::State() const
 {
-	return GameCharacter::State();
+	return GameObject::State();
 }
 
 // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

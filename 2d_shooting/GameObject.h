@@ -1,7 +1,7 @@
 ﻿
 #pragma once
-#ifndef _GameCharacter_H_
-#define _GameCharacter_H_
+#ifndef _GameObject_H_
+#define _GameObject_H_
 
 #include <map>
 #include <string>
@@ -15,7 +15,7 @@ using namespace std;
 using namespace G2;
 
 class GameInfo;
-class GameCharacter
+class GameObject
 {
 	friend GameInfo;
 protected:
@@ -32,7 +32,7 @@ protected:
 	EAPP_MODEL		m_modelType	{ EAPP_MODEL::EMODEL_NONE };
 
 public:
-	virtual ~GameCharacter();
+	virtual ~GameObject();
 
 	virtual	void			State(EAPP_CHAR_STATE v);
 	virtual	EAPP_CHAR_STATE	State() const;
@@ -51,6 +51,9 @@ public:
 	virtual	void		Speed(float v);
 	virtual	float		Speed() const;
 
+	virtual	void		Model(EAPP_MODEL v) { m_modelType =v;}
+	virtual	EAPP_MODEL	Model() const { return m_modelType;}
+
 	virtual	void		Move(float dt);
 	virtual	void		MoveLeft(float dt);
 	virtual	void		MoveRight(float dt);
@@ -58,7 +61,7 @@ public:
 	virtual	void		MoveDown(float dt);
 };
 
-class GamePlayer : public GameCharacter, public IG2Listener
+class GamePlayer : public GameObject, public IG2Listener
 {
 protected:
 	int		m_attackRepeat = 3;
@@ -83,7 +86,7 @@ public:
 	}
 };
 
-class GameMob : public GameCharacter, public IG2Listener
+class GameMob : public GameObject, public IG2Listener
 {
 protected:
 public:

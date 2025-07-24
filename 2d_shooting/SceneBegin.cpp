@@ -53,18 +53,6 @@ int SceneBegin::Init(const std::any& initial_value)
 		cameraSpine->Update  ();
 	}
 
-	//           model type  position scale  direction
-	vector<tuple<EAPP_MODEL, XMFLOAT2, float, float> >	charModel
-	{
-		{ EAPP_MODEL::EMODEL_RAPTOR	, {-840.0F, 0.0F}, 1.0F,  1.0F, },
-		{ EAPP_MODEL::EMODEL_GOBLIN	, {-400.0F, 0.0F}, 1.0F,  1.0F, },
-		{ EAPP_MODEL::EMODEL_KNIGHT	, {-120.0F, 0.0F}, 0.7F,  1.0F, },
-		{ EAPP_MODEL::EMODEL_BOY	, { 260.0F, 0.0F}, 0.7F, -1.0F, },
-		{ EAPP_MODEL::EMODEL_STMAN	, { 550.0F, 0.0F}, 1.0F, -1.0F, },
-		{ EAPP_MODEL::EMODEL_ALIEN	, { 800.0F, 0.0F}, 1.0F, -1.0F, },
-	};	
-
-
 	SAFE_DELETE(m_pUi);
 	m_pUi = new UiBegin;
 	if (m_pUi)
@@ -112,12 +100,9 @@ int SceneBegin::Render()
 
 int SceneBegin::Notify(const std::string& name, const std::any& t)
 {
-	//printf("SceneBegin: Notify: %s\n", name.c_str());
-
 	if (name == "MouseUp")
 	{
 		auto mousePos = any_cast<const ::POINT&>(t);
-
 		if (chckPointInRect(mousePos.x, mousePos.y, 120, 440, 480, 650))
 		{
 			IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_LOBBY);

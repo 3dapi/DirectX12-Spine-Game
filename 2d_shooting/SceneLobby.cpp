@@ -1,6 +1,7 @@
 ﻿
 #include <any>
 #include <filesystem>
+#include <map>
 #include <tuple>
 #include <utility>
 #include <d3d12.h>
@@ -53,14 +54,6 @@ int SceneLobby::Init(const std::any& initial_value)
 		cameraSpine->Update  ();
 	}
 
-	//           model type  position scale  direction
-	vector<tuple<EAPP_MODEL, XMFLOAT2, float, float> >	charModel
-	{
-		{ EAPP_MODEL::EMODEL_KNIGHT	, {-480.0F, 0.0F}, 1.0F,  1.0F, },
-		{ EAPP_MODEL::EMODEL_BOY	, { 120.0F, 0.0F}, 1.0F, -1.0F, },
-	};
-
-
 	SAFE_DELETE(m_pUi);
 	m_pUi = new UiLobby;
 	if (m_pUi)
@@ -105,22 +98,47 @@ int SceneLobby::Notify(const std::string& name, const std::any& t)
 	if(name == "MouseUp")
 	{
 		auto mousePos = any_cast<const ::POINT&>(t);
-		CheckSelectCharacter(mousePos);
+		CheckChooseShip(mousePos);
 	}
 
 	return S_OK;
 }
 
-void SceneLobby::CheckSelectCharacter(const ::POINT& mousePos)
+void SceneLobby::CheckChooseShip(const ::POINT& mousePos)
 {
 	auto pGameInfo = GameInfo::instance();
 
-	// character knight 선택
-	if(chckPointInRect (mousePos.x, mousePos.y, 210, 170, 470, 430))
+	// ship1 선택
+	if(chckPointInRect (mousePos.x, mousePos.y, 60, 310, 250, 500))
 	{
+		GameInfo::instance()->MainPlayer()->Model(EAPP_MODEL::EMODEL_SHIP1);
 		return;
+	}
+
+	// start game
+	if(chckPointInRect (mousePos.x, mousePos.y, 100, 590, 500, 670))
+	{
+		IG2AppFrame::instance()->command(EAPP_CMD_CHANGE_SCENE, EAPP_SCENE::EAPP_SCENE_PLAY);
 	}
 	else
 	{
+		GameInfo::instance()->MainPlayer()->Model(EAPP_MODEL::EMODEL_NONE);
+	}
+}
+
+
+static void clearMap(map<int, string>& mp)
+{
+	auto itr = mp.begin();
+	for(; itr != mp.end(); )
+	{
+		if(itr->second == "hello world")
+		{
+			mp.erase(itr);
+		}
+		else
+		{
+			++itr;
+		}
 	}
 }

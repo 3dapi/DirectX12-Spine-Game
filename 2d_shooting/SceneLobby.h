@@ -41,7 +41,7 @@ public:
 	int		Notify(const std::string& name, const std::any& t)	override;
 
 protected:
-	void	CheckSelectCharacter(const ::POINT& mousePos);
+	void	CheckChooseShip(const ::POINT& mousePos);
 
 };
 

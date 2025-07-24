@@ -362,7 +362,7 @@ int ScenePlay::CreateMainPlayerModel()
 	//           model type  position scale  direction
 	tuple<EAPP_MODEL, float, float> charModel
 	{
-		EAPP_MODEL::EMODEL_KNIGHT, 0.5F,  1.0F,
+		EAPP_MODEL::EMODEL_SHIP1, 0.5F,  1.0F,
 	};
 	const auto& [model, scale, direction] = charModel;
 	

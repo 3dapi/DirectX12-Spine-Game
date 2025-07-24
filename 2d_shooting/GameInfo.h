@@ -10,7 +10,7 @@
 #include "Common/G2.Constants.h"
 #include "common/G2.ConstantsWin.h"
 #include "AppCommon.h"
-#include "GameCharacter.h"
+#include "GameObject.h"
 
 struct GAME_STAGE
 {
@@ -46,7 +46,7 @@ public:
 	virtual ~GameInfo();
 
 	GamePlayer*	MainPlayer();
-	bool		IsCollisionPlayer(class GameCharacter* p);
+	bool		IsCollisionPlayer(class GameObject* p);
 	void		IncreaseScore(int score);
 
 	int			StageInit();

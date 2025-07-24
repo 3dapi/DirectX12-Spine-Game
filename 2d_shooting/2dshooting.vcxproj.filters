@@ -69,7 +69,7 @@
     <ClCompile Include="SceneNone.cpp">
       <Filter>src\AppScene</Filter>
     </ClCompile>
-    <ClCompile Include="GameCharacter.cpp">
+    <ClCompile Include="GameObject.cpp">
       <Filter>src\SceneGamePlay</Filter>
     </ClCompile>
     <ClCompile Include="SceneBegin.cpp">
@@ -179,7 +179,7 @@
     <ClInclude Include="UiPlay.h">
       <Filter>src\SceneGamePlay</Filter>
     </ClInclude>
-    <ClInclude Include="GameCharacter.h">
+    <ClInclude Include="GameObject.h">
       <Filter>src\SceneGamePlay</Filter>
     </ClInclude>
     <ClInclude Include="SceneBegin.h">

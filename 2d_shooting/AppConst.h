@@ -63,13 +63,10 @@ enum class EAPP_CHAR_STATE : int
 enum class EAPP_MODEL : int
 {
 	EMODEL_NONE		= 0,		// nothing
-	EMODEL_KNIGHT	= 1,		// hero
-	EMODEL_BOY		,			// spine boy
-	EMODEL_RAPTOR	,			// raptor
-	EMODEL_GOBLIN	,			// goblin
-	EMODEL_ALIEN	,			// alien
-	EMODEL_STMAN	,			// stretchyman
-	EMODEL_BOSS		,			// raptor boss
+	EMODEL_SHIP1	= 1,		// ship1
+	EMODEL_SHIP2	,			// ship2
+	EMODEL_DRONE	,			// drone
+	EMODEL_BOSS		,			// boss
 	EMODEL_COUNT	,
 };
 

@@ -180,8 +180,10 @@ int GamePlayer::Init(const string& model)
 	m_hp    = 500;
 	m_damage = 34.0F;
 	m_spdForce = 250.0F;
+	m_kt       = {};
 	m_kt.pos   = XMFLOAT2{ 0.0F, -300.0F };
 	m_kt.dif   = XMVECTORF32{{{ 1.0F, 1.0F, 1.0F, 1.0F }}};
+	m_kt.alive = true;
 
 	if(!model.empty())
 		m_model    = model;

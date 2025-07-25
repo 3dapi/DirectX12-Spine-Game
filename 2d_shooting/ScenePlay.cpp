@@ -96,17 +96,6 @@ int ScenePlay::Init(const std::any&)
 		hGpu.ptr += descriptorSize;
 	}
 
-	auto pGameInfo = GameInfo::instance();
-	m_mainPlayer = pGameInfo->MainPlayer();
-	m_mainPlayer->Init();
-	{
-		auto modelName = m_mainPlayer->Model();
-		auto& tex = m_srvTex[modelName];
-		XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
-		m_mainPlayer->Box(box);
-	}
-
-
 	m_vecDrone.resize(MAX_DRONE, nullptr);
 	std::generate(m_vecDrone.begin(), m_vecDrone.end(), [](){ return new EnemyDrone;});
 
@@ -121,6 +110,8 @@ int ScenePlay::Init(const std::any&)
 
 	m_sndBoom .resize(MAX_SND_EFFECT, nullptr);
 	std::generate(m_sndBoom.begin(), m_sndBoom.end(), []() { return MfAudioPlayer ::Create("asset/sound/bakuhatu29.wav");});
+
+	SetStateStart();
 
 	m_pUi = new UiPlay;
 	if (!m_pUi)
@@ -152,6 +143,11 @@ int ScenePlay::Destroy()
 	SAFE_DELETE_VECTOR(m_sndBoom);
 	SAFE_DELETE(m_pUi);
 	SAFE_DELETE(m_pUiBg);
+
+	m_playState		= {};
+	m_timeStored	= {};
+	m_timeDrone		= {};
+	m_speedBullet	= {700};
 
 	return S_OK;
 }
@@ -215,37 +211,36 @@ int ScenePlay::Update(const std::any& t)
 	BulletUpdate(t);
 
 	// check input event
-	if (pGameInfo->m_enablePlay)
+	bool hasKeyEvent = InputManager::instance()->hasEvent();
+	auto const keyEvent = InputManager::instance()->Key();
+	// 이동.
+	if (keyEvent[VK_LEFT] == EAPP_INPUT_PRESS)
 	{
-		bool hasKeyEvent = InputManager::instance()->hasEvent();
-		auto const keyEvent = InputManager::instance()->Key();
-		// 이동.
-		if (keyEvent[VK_LEFT] == EAPP_INPUT_PRESS)
-		{
-			m_mainPlayer->MoveLeft(dt);
-		}
+		m_mainPlayer->MoveLeft(dt);
+	}
 
-		if (keyEvent[VK_RIGHT] == EAPP_INPUT_PRESS)
-		{
-			m_mainPlayer->MoveRight(dt);
-		}
+	if (keyEvent[VK_RIGHT] == EAPP_INPUT_PRESS)
+	{
+		m_mainPlayer->MoveRight(dt);
+	}
 
-		if (keyEvent[VK_UP] == EAPP_INPUT_PRESS)
-		{
-			m_mainPlayer->MoveUp(dt);
-		}
+	if (keyEvent[VK_UP] == EAPP_INPUT_PRESS)
+	{
+		m_mainPlayer->MoveUp(dt);
+	}
 
-		if (keyEvent[VK_DOWN] == EAPP_INPUT_PRESS)
-		{
-			m_mainPlayer->MoveDown(dt);
-		}
+	if (keyEvent[VK_DOWN] == EAPP_INPUT_PRESS)
+	{
+		m_mainPlayer->MoveDown(dt);
+	}
 
+	if(pGameInfo->m_enablePlay)
+	{
 		// bullet 발사
 		if (keyEvent[VK_SPACE] == EAPP_INPUT_UP)
 		{
 			BulletFire(m_mainPlayer, true);
 		}
-
 		if(GameInfo::M_CHEAT)
 		{
 			if(keyEvent[VK_F2] == EAPP_INPUT_UP)
@@ -393,6 +388,26 @@ int ScenePlay::Notify(const std::string& name, const std::any& t)
 	return S_OK;
 }
 
+void ScenePlay::SetStateStart()
+{
+	GameInfo::instance()->m_enablePlay = true;
+	auto pGameInfo = GameInfo::instance();
+	m_mainPlayer = pGameInfo->MainPlayer();
+	m_mainPlayer->Init();
+	{
+		auto modelName = m_mainPlayer->Model();
+		auto& tex = m_srvTex[modelName];
+		XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
+		m_mainPlayer->Box(box);
+	}
+	m_playState = PLAY_STATE::BEGIN;
+
+	m_playState		= {};
+	m_timeStored	= {};
+	m_timeDrone		= {};
+	m_speedBullet	= {700};
+}
+
 void ScenePlay::SetStateEnd()
 {
 	GameInfo::instance()->m_enablePlay = false;
@@ -505,9 +520,9 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 	}
 	else if(PLAY_STATE::HI == m_playState)
 	{
-		if(0.15F < m_timeDrone)
+		if(0.1F < m_timeDrone)
 		{
-			m_timeDrone -= 0.15F;
+ 			m_timeDrone -= 0.1F;
 			enemyGen[(int)m_playState]();
 		}
 	}

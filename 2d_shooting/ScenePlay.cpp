@@ -45,6 +45,12 @@ int ScenePlay::Init(const std::any&)
 	auto cmdQue     = std::any_cast<ID3D12CommandQueue*       >(d3d->getCommandQueue());
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	
+	// for debugging
+	auto texManager = FactoryTexture::instance();
+	auto r = texManager->Find(FactoryTexture::RES_DEBUUGING);
+	r->name;
+	m_srvTex.insert(std::make_pair(r->name, UI_TEXTURE{r->r, r->size, {}}));
+
 	// texture setup
 	vector<tuple<string, string> >  uiTextureList
 	{
@@ -68,7 +74,6 @@ int ScenePlay::Init(const std::any&)
 		uiTextureList.push_back(make_tuple(itr, "asset/sprite/" + itr + ".png"));
 	}
 
-	auto texManager = FactoryTexture::instance();
 	for(const auto& [name, file]: uiTextureList)
 	{
 		auto r = texManager->Load(name, file);
@@ -76,7 +81,7 @@ int ScenePlay::Init(const std::any&)
 		m_srvTex.insert(std::make_pair(r->name, UI_TEXTURE{ r->r, r->size, {} }));
 	}
 
-	m_srvHeap = G2::CreateDescHeap((UINT)m_srvTex.size() + 1);
+	m_srvHeap = G2::CreateDescHeap((UINT)m_srvTex.size() + 100);
 	auto hCpu = m_srvHeap->GetCPUDescriptorHandleForHeapStart();
 	auto hGpu = m_srvHeap->GetGPUDescriptorHandleForHeapStart();
 	for (auto& itr : m_srvTex)
@@ -271,10 +276,16 @@ int ScenePlay::Render()
 			auto& tex = m_srvTex[modelName];
 
 			auto pos = m_mainPlayer->Position();
+			auto box = m_mainPlayer->Box();
 			XMFLOAT2 origin = {tex.size.x/2.0F, tex.size.y/2.0F};
 			XMFLOAT2 scale = {1.0F, 1.0F};
 			XMFLOAT2 position = G2::ScreenToGameCoord(pos);
+
+			XMFLOAT2 begin = G2::ScreenToGameCoord({pos.x - box.x/2, pos.y - box.y/2});
+			XMFLOAT2 end   = G2::ScreenToGameCoord({pos.x + box.x/2, pos.y + box.y/2});
+
 			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, 0.0F, origin, scale);
+			RenderDebugging(sprite, begin, end);
 		}
 		// draw bullet
 		for(auto& bullet : m_vecBulletEnemy)
@@ -298,6 +309,16 @@ int ScenePlay::Render()
 	m_pUi->DrawFront();
 
 	return S_OK;
+}
+
+void ScenePlay::RenderDebugging(SpriteBatch* sprite, const XMFLOAT2& from, const XMFLOAT2& to)
+{
+	auto& tex = m_srvTex[FactoryTexture::RES_DEBUUGING];
+
+	LONG r = (LONG)std::fabsf(from.x - to.x);
+	LONG b = (LONG)std::fabsf(from.y - to.y);
+	::RECT rc {0, 0, r, b};
+	sprite->Draw(tex.hGpu, tex.size, from, &rc, XMVECTORF32{{{1.F, 1.F, 1.F, 0.5F}}});
 }
 
 int ScenePlay::Notify(const std::string& name, const std::any& t)
@@ -409,8 +430,7 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 			enemyGen[(int)m_playState]();
 		}
 	}
-
-	if(PLAY_STATE::MIDDLE == m_playState)
+	else if(PLAY_STATE::MIDDLE == m_playState)
 	{
 		if(0.35F < m_timeDrone)
 		{
@@ -418,8 +438,7 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 			enemyGen[(int)m_playState]();
 		}
 	}
-
-	if(PLAY_STATE::HI == m_playState)
+	else if(PLAY_STATE::HI == m_playState)
 	{
 		if(0.15F < m_timeDrone)
 		{
@@ -428,7 +447,7 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 		}
 	}
 
-	// 전투
+	// update drone
 	for(auto& drone : m_vecDrone)
 	{
 		if(!drone || !drone->Alive())
@@ -476,18 +495,20 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 			}
 		}
 
-		if(550 < fabsf(drone->Position().y))
+		if(600 < fabsf(drone->Position().y))
 		{
 			drone->Alive(false);
 		}
 	}
 
+	// update bullet
 	for(auto& bullet : m_vecBulletEnemy)
 	{
 		if(!bullet || !bullet->alive)
 			continue;
 		bullet->Update(gt);
-		if(550 < fabsf(bullet->pos.y))
+
+		if(600 < fabsf(bullet->pos.y))
 		{
 			bullet->alive = false;
 		}
@@ -495,3 +516,4 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 
 	return S_OK;
 }
+

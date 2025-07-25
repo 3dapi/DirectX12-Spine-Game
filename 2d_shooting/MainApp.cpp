@@ -84,11 +84,15 @@ int MainApp::init(const std::any& initialValue /* = */)
 	if (FAILED(hr))
 		return hr;
 
+	// for debugging
+	auto texManager = FactoryTexture::instance();
+	texManager->Load(FactoryTexture::RES_CHECKER  , "asset/texture/res_checker.png");
+	texManager->Load(FactoryTexture::RES_DEBUUGING, "asset/texture/res_debugging.png");
+
 	auto d3d    =  IG2GraphicsD3D::instance();
 	auto device = std::any_cast<ID3D12Device*       >(d3d->getDevice());
 	auto cmdQue = std::any_cast<ID3D12CommandQueue* >(d3d->getCommandQueue());
 
-	
 	// create XTK Instance
 	DirectX::ResourceUploadBatch resourceUpload(device);
 	{

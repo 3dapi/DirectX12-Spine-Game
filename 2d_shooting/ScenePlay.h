@@ -59,6 +59,8 @@ public:
 	int		Notify(const std::string& name, const std::any& t)	override;
 
 	int		UpdateEnemy(const std::any& t);
+
+	void	RenderDebugging(SpriteBatch* sprite, const XMFLOAT2& begin, const XMFLOAT2& end);
 };
 
 #endif

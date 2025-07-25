@@ -1,4 +1,5 @@
 ﻿
+#include "Common/G2.FactoryMfAudio.h"
 #include "Common/G2.FactoryCamera.h"
 #include "Common/G2.FactoryTexture.h"
 #include "Common/G2.FactoryShader.h"
@@ -115,6 +116,12 @@ int ScenePlay::Init(const std::any&)
 	m_vecBulletPlayer.resize(MAX_BULLET_PLAYER, nullptr);
 	std::generate(m_vecBulletPlayer.begin(), m_vecBulletPlayer.end(), [](){ return new GameBullet; });
 
+	m_sndLaser.resize(MAX_SND_EFFECT, nullptr);
+	std::generate(m_sndLaser.begin(), m_sndLaser.end(), []() { return MfAudioPlayer::Create("asset/sound/laser_02.wav");});
+
+	m_sndBoom .resize(MAX_SND_EFFECT, nullptr);
+	std::generate(m_sndBoom.begin(), m_sndBoom.end(), []() { return MfAudioPlayer ::Create("asset/sound/bakuhatu29.wav");});
+
 	m_pUi = new UiPlay;
 	if (!m_pUi)
 	{
@@ -138,8 +145,11 @@ int ScenePlay::Destroy()
 	m_srvTex.clear();
 
 	SAFE_DELETE_VECTOR(m_vecDrone);
+	SAFE_DELETE(m_vecMobBoss);
 	SAFE_DELETE_VECTOR(m_vecBulletEnemy);
 	SAFE_DELETE_VECTOR(m_vecBulletPlayer);
+	SAFE_DELETE_VECTOR(m_sndLaser);
+	SAFE_DELETE_VECTOR(m_sndBoom);
 	SAFE_DELETE(m_pUi);
 	SAFE_DELETE(m_pUiBg);
 
@@ -530,6 +540,7 @@ void ScenePlay::BulletFire(GameObject* obj, bool isPlayer)
 {
 	if(isPlayer)
 	{
+		BulletSoundPlay();
 		for(auto& bullet : m_vecBulletPlayer)
 		{
 			if(!bullet || bullet->alive)
@@ -616,6 +627,7 @@ void ScenePlay::BulletUpdate(const std::any& t)
 									, bt->box.x, bt->box.y, bt->scale);
 			if(isCollision)
 			{
+				BoomSoundPlay();
 				drone->Alive(false);
 				break;
 			}
@@ -637,7 +649,7 @@ void ScenePlay::BulletUpdate(const std::any& t)
 			continue;
 
 		bullet->Update(gt, funcPlayerBullet);
-		if(screenSize.cy/2 < fabsf(bullet->pos.y) || screenSize.cx/2 < fabsf(bullet->pos.x))
+		if(screenSize.cy/2.2F < fabsf(bullet->pos.y) || screenSize.cx/2 < fabsf(bullet->pos.x))
 		{
 			bullet->alive = false;
 		}
@@ -665,9 +677,33 @@ void ScenePlay::BulletUpdate(const std::any& t)
 
 		bullet->Update(gt, funcDroneBulletCollision);
 
-		if(screenSize.cy/2 < fabsf(bullet->pos.y) || screenSize.cx/2 < fabsf(bullet->pos.x))
+		if(screenSize.cy/2.0F < fabsf(bullet->pos.y) || screenSize.cx/2 < fabsf(bullet->pos.x))
 		{
 			bullet->alive = false;
+		}
+	}
+}
+
+void ScenePlay::BulletSoundPlay()
+{
+	for(auto& sound : m_sndLaser)
+	{
+		if(!sound->IsPlaying())
+		{
+  			sound->Play(false);
+			break;
+		}
+	}
+}
+
+void ScenePlay::BoomSoundPlay()
+{
+	for(auto& sound : m_sndBoom)
+	{
+		if(!sound->IsPlaying())
+		{
+			sound->Play(false);
+			break;
 		}
 	}
 }

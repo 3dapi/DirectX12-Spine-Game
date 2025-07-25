@@ -24,6 +24,7 @@ public:
 		END		,
 	};
 protected:
+	inline static const int			MAX_SND_EFFECT		{15};
 	inline static const int			MAX_DRONE			{1000};
 	inline static const int			MAX_BULLET_PLAYER	{1000};
 	inline static const int			MAX_BULLET_ENEMY	{1000};
@@ -33,10 +34,12 @@ protected:
 
 	GamePlayer*				m_mainPlayer	{};
 	vector<EnemyDrone*>		m_vecDrone		;
-	EnemyDrone*				m_vecMobBoss	;
+	EnemyDrone*				m_vecMobBoss	{};
 
 	vector<GameBullet*>		m_vecBulletEnemy	;
 	vector<GameBullet*>		m_vecBulletPlayer	;
+	vector<PG2AUDIOPLAYER>	m_sndLaser		{};
+	vector<PG2AUDIOPLAYER>	m_sndBoom		{};
 
 	class UiDrawable*		m_pUi			{};
 	class UiDrawable*		m_pUiBg			{};
@@ -62,6 +65,8 @@ public:
 	int		UpdateEnemy(const std::any& t);
 	void	BulletFire(GameObject* obj, bool isPlayer);
 	void	BulletUpdate(const std::any& t);
+	void	BulletSoundPlay();
+	void	BoomSoundPlay();
 	void	RenderDebugging(SpriteBatch* sprite, const XMFLOAT2& begin, const XMFLOAT2& end, const XMVECTORF32& color=XMVECTORF32{{{1.F, 0.F, 1.F, 0.6F}}});
 };
 

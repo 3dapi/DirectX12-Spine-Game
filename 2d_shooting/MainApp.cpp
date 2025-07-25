@@ -144,7 +144,7 @@ int MainApp::init(const std::any& initialValue /* = */)
 	//AFEW::WORK
 	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_BEGIN);
 
-	m_bgMusic->Play(true, 0.4F, 0.5F);
+	m_bgMusic->Play(true, 0.4F, 0.7F);
 
 	return S_OK;
 }

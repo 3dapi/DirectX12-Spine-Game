@@ -24,7 +24,6 @@ int UiEnd::Destroy()
 {
 	m_srvHeapUI.Reset();
 	m_uiTex.clear();
-	m_font.reset();
 
 	return S_OK;
 }
@@ -67,14 +66,6 @@ int UiEnd::Init()
 		// 다음 리소스 대응.
 		hCpu.ptr += descriptorSize;
 		hGpu.ptr += descriptorSize;
-	}
-	ResourceUploadBatch resourceUpload(device);
-	{
-		resourceUpload.Begin();
-		{
-			m_font = std::make_unique<SpriteFont>(device, resourceUpload, L"asset/font/SegoeUI_18.spritefont", hCpu, hGpu);
-		}
-		resourceUpload.End(cmdQue).wait();
 	}
 	return S_OK;
 }
@@ -121,7 +112,7 @@ int UiEnd::Draw()
 	// score
 	{
 		auto& texScore = m_uiTex["ui_font score"];
-		XMFLOAT2 position = {400.0F, 200.0F};
+		XMFLOAT2 position = {70.0F, 300.0F};
 		XMFLOAT2 origin = {0.0F, 0.0F};
 		XMFLOAT2 scale = {1.5F, 1.5f};
 		sprite->Draw(texScore.hGpu, texScore.size, position, nullptr, Colors::Yellow, 0.0F, origin, scale);

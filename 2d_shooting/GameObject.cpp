@@ -11,7 +11,10 @@ void GameObject::HP(float v)
 {
 	m_hp = v;
 	if(0>= m_hp)
+	{
+		this->Alive(false);
 		this->State(EAPP_CHAR_STATE::ESTATE_CHAR_DYING);
+	}
 }
 
 float GameObject::HP() const
@@ -170,16 +173,11 @@ EAPP_CHAR_STATE	GameObject::State() const
 
 GamePlayer::GamePlayer()
 {
-	//AFEW::C
-	if(GameInfo::M_CHEAT)
-	{
-		m_kt.box = {128.0F,94.0F};
-	}
 }
 
 int GamePlayer::Init(const string& model)
 {
-	m_hp    = 100;
+	m_hp    = 500;
 	m_damage = 34.0F;
 	m_spdForce = 250.0F;
 	m_kt.pos   = XMFLOAT2{ 0.0F, -300.0F };
@@ -220,26 +218,34 @@ EnemyDrone::EnemyDrone()
 
 int EnemyDrone::Init(int movePattern, const T_KINETICS& kt)
 {
-	m_hp     = 100;
-	m_damage = 0.5F;
 	m_movePattern = movePattern;
 	memcpy(&m_kt, &kt, sizeof(T_KINETICS));
 	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
 
-	m_timeStore ={};
+	m_hp     = 50;
+	m_damage = 70.0F;
+
+	m_bullet		= movePattern;
+	m_firedBullet	= {};
+	m_timeStore		= {};
+	m_timeFire		= {};
+	m_flipLen		= {};
+	m_flipAngle		= {};
+
 	m_timeFire = G2::randomRange(0.5F, 3.5F);
 
 	if(1>= m_movePattern)
 	{
-
 	}
 	else if(2>= m_movePattern)
 	{
+		m_timeFire = G2::randomRange(0.2F, 1.5F);
 		m_flipLen = G2::randomRange(200.0F, 500.0F);
 		m_flipAngle = G2::randomRange(0.0F, float(2.0 * M_PI));
 	}
 	else if(3>= m_movePattern)
 	{
+		m_timeFire = G2::randomRange(0.1F, 1.0F);
 		m_flipLen = G2::randomRange(100.0F, 400.0F);
 		m_flipAngle = G2::randomRange(0.0F, float(2.0 * M_PI));
 	}
@@ -268,17 +274,22 @@ int EnemyDrone::Update(const GameTimer& t)
 		}
 	}
 
-	if (IsCollision(pGameInfo->MainPlayer()->Kinetics(), &m_kt) && pGameInfo->m_enablePlay)
+	auto playerKt = pGameInfo->MainPlayer()->Kinetics();
+	bool isCollision = IsCollision(   playerKt->pos.x, playerKt->pos.y
+									, playerKt->box.x, playerKt->box.y, playerKt->scale
+									, m_kt.pos.x, m_kt.pos.y
+									, m_kt.box.x, m_kt.box.y, m_kt.scale);
+	if (isCollision && pGameInfo->m_enablePlay)
 	{
 		this->m_kt.alive = false;
 		auto hp = pGameInfo->MainPlayer()->HP();
-
-		//hp -= this->Damage();
-		//if(0>hp)
-		//{
-		//	hp = 0;
-		//}
-		//pGameInfo->MainPlayer()->HP(hp);
+		hp -= this->Damage();
+		if(0>hp)
+		{
+			hp = 0;
+		}
+		pGameInfo->MainPlayer()->HP(hp);
+		pGameInfo->IncreaseScore(1000);
 	}
 	else
 	{
@@ -332,9 +343,9 @@ int EnemyBoss::Update(const GameTimer& gt)
 
 int GameBullet::Init(int movePattern, const T_KINETICS& kt, bool isPlayer)
 {
-	m_isPlayer = isPlayer;
 	m_movePattern = movePattern;
-	memcpy(&this->pos, &kt, sizeof(T_KINETICS));
+	*((T_KINETICS*)this) = kt;
+	m_isPlayer = isPlayer;	
 	return S_OK;
 }
 
@@ -345,10 +356,21 @@ int GameBullet::Update(const GameTimer& gt, const function<bool(GameBullet*)>& f
 	if(!this->alive)
 		return S_OK;
 
-	if(funcCollision(this))
+	if(funcCollision && funcCollision(this))
 	{
 		this->alive = false;
-		//pGameInfo->MainPlayer()->HP(0);
+		// 적군의 탄환이라면
+		if(!m_isPlayer)
+		{
+			// player hp를 줄임.
+			auto hp = GameInfo::instance()->MainPlayer()->HP();
+			hp -= 50;
+			if(0>hp)
+			{
+				hp = 0;
+			}
+			GameInfo::instance()->MainPlayer()->HP(hp);
+		}
 	}
 	else
 	{

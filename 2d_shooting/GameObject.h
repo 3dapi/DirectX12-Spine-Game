@@ -19,26 +19,35 @@ struct T_KINETICS
 	bool			alive	{false};
 };
 
-inline bool IsCollision(const struct T_KINETICS* p0, const struct T_KINETICS* p1)
+inline bool IsCollision(float x0, FLOAT y0, float w0, FLOAT h0, float s0, float x1, FLOAT y1, float w1, FLOAT h1, float s1)
 {
-	float p0_w = p0->box.x * p0->scale;
-	float p0_h = p0->box.y * p0->scale;
-	float p0_x = p0->pos.x - p0_w * 0.5F;
-	float p0_y = p0->pos.y - p0_h * 0.5F;
+	float p0_w = w0 * s0;
+	float p0_h = h0 * s0;
+	float p0_x = x0 - p0_w * 0.5F;
+	float p0_y = y0 - p0_h * 0.5F;
 
-	float p1_w = p1->box.x * p1->scale;
-	float p1_h = p1->box.y * p1->scale;
-	float p1_x = p1->pos.x - p1_w * 0.5F;
-	float p1_y = p1->pos.y - p1_h * 0.5F;
+	float p1_w = w1 * s1;
+	float p1_h = h1 * s1;
+	float p1_x = x1 - p1_w * 0.5F;
+	float p1_y = y1 - p1_h * 0.5F;
 
-	auto ret =	p0_x        <= p1_x + p1_w &&	// left   <= v_right
-				p0_x + p0_w >= p1_x        &&	// right  >= v_left
-				p0_y        <= p1_y + p1_h &&	// top    <= v_bottom
-				p0_y + p0_h >= p1_y;			// bottom >= v_top
-	if(ret)
+	auto ret0 =	p0_x        <= p1_x + p1_w ;	// left   <= v_right
+	auto ret1 =	p0_x + p0_w >= p1_x        ;	// right  >= v_left
+	auto ret2 =	p0_y        <= p1_y + p1_h ;	// top    <= v_bottom
+	auto ret3 =	p0_y + p0_h >= p1_y        ;	// bottom >= v_top
+
+	auto ret = ret0 && ret1 && ret2 && ret3;
+	if(!ret)
 	{
-		int c;
-		c = 0;
+		float lx = fabsf(x0 - x1);
+		float ly = fabsf(y0 - y1);
+
+		auto dist = sqrtf(lx * lx +ly*ly);
+		if(dist < (p0_w + p0_h + p1_w + p1_h)/5)
+		{
+			int c;
+			c = 0;
+		}
 	}
 	return ret;
 }
@@ -112,9 +121,10 @@ public:
 class GameBullet : public T_KINETICS
 {
 public:
-	bool	m_isPlayer		{false};
 	int		m_movePattern	{};
-	string	m_model;
+	bool	m_isPlayer		{false};
+	string	m_model			;
+
 public:
 	int		Init(int movePattern, const T_KINETICS& kt, bool isPlayer);
 	int		Update(const GameTimer& gt, const function<bool(GameBullet* obj)>& funcCollision);

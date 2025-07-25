@@ -257,15 +257,15 @@ LRESULT D3DWinApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_KEYUP:
 		{
-			if (wParam == VK_ESCAPE)
-			{
-				PostQuitMessage(0);
-			}
-			else if ((int)wParam == VK_F2)
-			{
-				m_msaa4State = !m_msaa4State;
-				IG2Graphics::instance()->command(CMD_MSAASTATE4X, m_msaa4State);
-			}
+			//if (wParam == VK_ESCAPE)
+			//{
+			//	PostQuitMessage(0);
+			//}
+			//else if ((int)wParam == VK_F2)
+			//{
+			//	m_msaa4State = !m_msaa4State;
+			//	IG2Graphics::instance()->command(CMD_MSAASTATE4X, m_msaa4State);
+			//}
 
 			return 0;
 		}

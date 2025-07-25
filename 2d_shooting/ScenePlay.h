@@ -58,6 +58,7 @@ public:
 	int		Render()					override;
 	int		Notify(const std::string& name, const std::any& t)	override;
 
+	void	SetStateEnd();
 	int		UpdateEnemy(const std::any& t);
 	void	BulletFire(GameObject* obj, bool isPlayer);
 	void	BulletUpdate(const std::any& t);

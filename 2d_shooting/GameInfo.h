@@ -19,9 +19,8 @@ public:
 public:
 	static bool				M_CHEAT		;
 
-	int						m_gameScore	{};
+	int						m_gameScore		{};
 	bool					m_enablePlay	{ true };
-	float					m_maxMobPos		{1000.0F};		// mob boundary
 protected:
 	class GamePlayer*		m_player		{};
 

@@ -142,7 +142,7 @@ int MainApp::init(const std::any& initialValue /* = */)
 	m_bgMusic = MfAudioPlayer::Create("asset/sound/fight-for-the-future-336841.mp3");
 
 	//AFEW::WORK
-	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_PLAY);
+	this->ChangeScene(EAPP_SCENE::EAPP_SCENE_BEGIN);
 
 	m_bgMusic->Play(true, 0.4F, 0.5F);
 

@@ -166,7 +166,7 @@ int UiPlay::Draw()
 		if (!pGameInfo->m_enablePlay)
 		{
 			auto& tex = m_uiTex["ui/ui_gameover"];
-			XMFLOAT2 position = { screenSize.cx / 2.0F - tex.size.x / 2.0F, 100.0F };
+			XMFLOAT2 position = { screenSize.cx / 2.0F - tex.size.x / 2.0F, 200.0F };
 			XMFLOAT2 origin = { 0, 0 };
 			XMFLOAT2 scale = { 1.0F, 1.0F };
 			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{ { { 1.F, 0.F, 1.F, 1.0F } } }, 0.0F, origin, scale);
@@ -189,14 +189,13 @@ int UiPlay::DrawFront()
 	cmdList->SetDescriptorHeaps(1, heaps);
 	sprite->Begin(cmdList);
 	{
-		if (!pGameInfo->m_enablePlay)
+		if (!pGameInfo->m_enablePlay && pGameInfo->MainPlayer()->Alive())
 		{
 			auto& tex = m_uiTex["ui/ui_stage_cleared"];
-			XMFLOAT2 position = { screenSize.cx / 2.0F - tex.size.x / 2.0F + 100.0F, 520.0F };
+			XMFLOAT2 position = {0.0F, 0.0F };
 			XMFLOAT2 origin = { 0, 0 };
-			XMFLOAT2 scale = { 0.6F, 0.6F };
 			XMVECTOR color = XMVectorSet(1.f, 1.f, 1.f, m_blend);
-			sprite->Draw(tex.hGpu, tex.size, position, nullptr, color, 0.0F, origin, scale);
+			sprite->Draw(tex.hGpu, tex.size, position, nullptr, color);
 		}
 	}
 	sprite->End();

@@ -128,7 +128,7 @@ ID3D12Resource* DXCreateTextureFromFile(const std::string& szFileName)
 		{
 			hr = DirectX::CreateWICTextureFromFile(device, resourceUpload, wFile.c_str(), &ret);
 		}
-		ThrowIfFailed(hr);
+		ThrowIfFailed2(hr, szFileName);
 		if (FAILED(hr))
 			return {};
 

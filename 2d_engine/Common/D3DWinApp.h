@@ -8,7 +8,6 @@
 
 using namespace std;
 
-
 class D3DWinApp : public G2::IG2AppFrameWin
 {
 protected:
@@ -33,11 +32,15 @@ public:
 	int			Render3D();
 
 protected:
+	virtual	SIZE GetScreenSize() { return m_screenSize; }
+	virtual	void SetScreenSize(const ::SIZE& v) { m_screenSize = v; }
+	virtual	wstring GetWindowTitle() { return mMainWndCaption; }
+	virtual	void SetWindowTitle(const wstring& v) { mMainWndCaption = v; }
 	bool		InitMainWindow();
 	void		CalculateFrameStats();
 
 protected:
-    std::wstring mMainWndCaption = L"d3d App";
+    wstring		mMainWndCaption = L"d3d App";
     HINSTANCE	mhAppInst			{};	// application instance handle
     HWND		mhMainWnd			{};	// main window handle
 	bool		mAppPaused			{};	// is the application paused?

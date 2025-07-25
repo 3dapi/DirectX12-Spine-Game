@@ -257,15 +257,15 @@ LRESULT D3DWinApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_KEYUP:
 		{
-			if (wParam == VK_ESCAPE)
-			{
-				PostQuitMessage(0);
-			}
-			else if ((int)wParam == VK_F2)
-			{
-				m_msaa4State = !m_msaa4State;
-				IG2Graphics::instance()->command(CMD_MSAASTATE4X, m_msaa4State);
-			}
+			//if (wParam == VK_ESCAPE)
+			//{
+			//	PostQuitMessage(0);
+			//}
+			//else if ((int)wParam == VK_F2)
+			//{
+			//	m_msaa4State = !m_msaa4State;
+			//	IG2Graphics::instance()->command(CMD_MSAASTATE4X, m_msaa4State);
+			//}
 
 			return 0;
 		}
@@ -292,13 +292,20 @@ bool D3DWinApp::InitMainWindow()
 	}
 
 	// Compute window rectangle dimensions based on requested client area dimensions.
-	RECT R = { 0, 0, m_screenSize.cx, m_screenSize.cy };
-    AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
-	int width  = R.right - R.left;
-	int height = R.bottom - R.top;
+	RECT rc = { 0, 0, m_screenSize.cx, m_screenSize.cy };
+    AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
+	int width  = rc.right  - rc.left;
+	int height = rc.bottom - rc.top;
 
-	mhMainWnd = CreateWindow(L"MainWnd", mMainWndCaption.c_str(), 
-		WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, mhAppInst, 0); 
+	int iScnSysW = ::GetSystemMetrics(SM_CXSCREEN);
+	int iScnSysH = ::GetSystemMetrics(SM_CYSCREEN);
+	int posX = (iScnSysW - width )/2;
+	int posY = (iScnSysH - height -10)/2;
+
+	mhMainWnd = CreateWindow(L"MainWnd", mMainWndCaption.c_str(), WS_OVERLAPPEDWINDOW
+		, posX, posY
+		, width, height
+		, nullptr, nullptr, mhAppInst, nullptr); 
 	if( !mhMainWnd )
 	{
 		MessageBox(0, L"CreateWindow Failed.", 0, 0);

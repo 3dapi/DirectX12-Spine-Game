@@ -43,6 +43,10 @@ public:
 	ID3D12Resource* FindRes(const std::string& name) const;
 
 	static XMUINT2 GetTextureSize(ID3D12Resource* texture);
+
+public:
+	inline static const std::string	RES_CHECKER		= "res_checker"		;
+	inline static const std::string	RES_DEBUUGING	= "res_debugging"	;
 };
 
 } // namespace G2

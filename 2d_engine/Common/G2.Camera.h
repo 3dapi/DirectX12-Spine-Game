@@ -2,6 +2,7 @@
 #ifndef _G2_CAMERA_H_
 #define _G2_CAMERA_H_
 
+#include <any>
 #include <string>
 #include <DirectXMath.h>
 
@@ -124,5 +125,12 @@ public:
 	int			Init	(const std::any& initialValue = {}) override;
 	int			Update	(const std::any& t = {}) override;
 };
+
+namespace G2
+{
+
+XMFLOAT2 GameCoordToScreen(const XMFLOAT2& pos);
+
+} // namespace G2
 
 #endif // _G2_CAMERA_H_

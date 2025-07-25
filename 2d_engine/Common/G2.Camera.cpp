@@ -177,3 +177,12 @@ IG2Camera* IG2Camera::create(const std::string& name, EG2CAMERA type)
 
 	return ret;
 }
+
+XMFLOAT2 G2::GameCoordToScreen(const XMFLOAT2& pos)
+{
+	XMFLOAT2 ret = pos;
+	::SIZE screenSize = *any_cast<::SIZE*>(IG2GraphicsD3D::instance()->getAttrib(ATT_SCREEN_SIZE));
+	ret.x += screenSize.cx * 0.5f;
+	ret.y  = -ret.y + screenSize.cy * 0.5f;
+	return ret;
+}

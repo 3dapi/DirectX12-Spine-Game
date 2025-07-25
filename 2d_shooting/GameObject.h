@@ -19,6 +19,30 @@ struct T_KINETICS
 	bool			alive	{false};
 };
 
+inline bool IsCollision(const struct T_KINETICS* p0, const struct T_KINETICS* p1)
+{
+	float p0_w = p0->box.x * p0->scale;
+	float p0_h = p0->box.y * p0->scale;
+	float p0_x = p0->pos.x - p0_w * 0.5F;
+	float p0_y = p0->pos.y - p0_h * 0.5F;
+
+	float p1_w = p1->box.x * p1->scale;
+	float p1_h = p1->box.y * p1->scale;
+	float p1_x = p1->pos.x - p1_w * 0.5F;
+	float p1_y = p1->pos.y - p1_h * 0.5F;
+
+	auto ret =	p0_x        <= p1_x + p1_w &&	// left   <= v_right
+				p0_x + p0_w >= p1_x        &&	// right  >= v_left
+				p0_y        <= p1_y + p1_h &&	// top    <= v_bottom
+				p0_y + p0_h >= p1_y;			// bottom >= v_top
+	if(ret)
+	{
+		int c;
+		c = 0;
+	}
+	return ret;
+}
+
 class GameInfo;
 class GameObject
 {
@@ -42,6 +66,7 @@ public:
 	virtual	void		Damage(float v);
 	virtual	float		Damage() const;
 
+	virtual	const T_KINETICS* Kinetics() const { return &m_kt; }
 	virtual	void		Position(XMFLOAT2 v);
 	virtual	XMFLOAT2	Position() const;
 	virtual	void		Velocity(const XMFLOAT2& v);
@@ -87,12 +112,12 @@ public:
 class GameBullet : public T_KINETICS
 {
 public:
-	bool	m_isEnemy		{false};
+	bool	m_isPlayer		{false};
 	int		m_movePattern	{};
 	string	m_model;
 public:
-	int		Init(int movePattern, const T_KINETICS& kt, bool isEnemy);
-	int		Update(const GameTimer& gt);
+	int		Init(int movePattern, const T_KINETICS& kt, bool isPlayer);
+	int		Update(const GameTimer& gt, const function<bool(GameBullet* obj)>& funcCollision);
 };
 
 class EnemyDrone : public GameObject
@@ -103,10 +128,13 @@ public:
 	bool	m_firedBullet	{};
 	float	m_timeStore		{};
 	float	m_timeFire		{};
+	float	m_flipLen		{};
+	float	m_flipAngle		{};
 public:
 	EnemyDrone();
 	int		Init(int movePattern, const T_KINETICS& kt);
 	int		Update(const GameTimer& gt);
+	void	Move(float dt) override;
 	void	FireBullet();
 };
 

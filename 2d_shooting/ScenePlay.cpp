@@ -178,25 +178,30 @@ int ScenePlay::Update(const std::any& t)
 	}
 
 	// setup play state
-	if(2<m_timeStored && PLAY_STATE::BEGIN == m_playState)
 	{
-		m_playState = PLAY_STATE::LOW;
-	}
-	else if(30<m_timeStored && PLAY_STATE::LOW == m_playState)
-	{
-		m_playState = PLAY_STATE::MIDDLE;
-	}
-	else if(120<m_timeStored && PLAY_STATE::MIDDLE == m_playState)
-	{
-		m_playState = PLAY_STATE::HI;
-	}
-	else if(240<m_timeStored && PLAY_STATE::HI == m_playState)
-	{
-		m_playState = PLAY_STATE::BOSS;
+		if(1<m_timeStored && PLAY_STATE::BEGIN == m_playState)
+		{
+			m_playState = PLAY_STATE::LOW;
+		}
+		else if(10<m_timeStored && PLAY_STATE::LOW == m_playState)
+		{
+			m_playState = PLAY_STATE::MIDDLE;
+		}
+		else if(20<m_timeStored && PLAY_STATE::MIDDLE == m_playState)
+		{
+			m_playState = PLAY_STATE::HI;
+		}
+		else if(240<m_timeStored && PLAY_STATE::HI == m_playState)
+		{
+			m_playState = PLAY_STATE::BOSS;
+		}
 	}
 
 	// update enemy
 	UpdateEnemy(t);
+
+	// update enemy
+	BulletUpdate(t);
 
 	// check input event
 	if (pGameInfo->m_enablePlay)
@@ -227,6 +232,7 @@ int ScenePlay::Update(const std::any& t)
 		// bullet 발사
 		if (keyEvent[VK_SPACE] == EAPP_INPUT_UP)
 		{
+			BulletFire(m_mainPlayer, true);
 		}
 	}
 
@@ -265,11 +271,34 @@ int ScenePlay::Render()
 			auto& tex = m_srvTex[modelName];
 
 			auto pos = drone->Position();
+			auto box = drone->Box();
+
 			XMFLOAT2 origin = {tex.size.x/2.0F, tex.size.y/2.0F};
 			XMFLOAT2 scale = {1.0F, 1.0F};
-			XMFLOAT2 position = G2::ScreenToGameCoord(pos);
+			XMFLOAT2 position = G2::GameCoordToScreen(pos);
+
+			XMFLOAT2 begin = G2::GameCoordToScreen({pos.x - box.x/2, pos.y - box.y/2});
+			XMFLOAT2 end = G2::GameCoordToScreen({pos.x + box.x/2, pos.y + box.y/2});
+
+			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, 0.0F, origin, scale);
+			RenderDebugging(sprite, begin, end, XMVECTORF32{{{1.F, 1.F, 0.F, 0.6F}}});
+		}
+		// draw player bullet
+		for(auto& bullet : m_vecBulletPlayer)
+		{
+			if(!bullet->alive)
+				continue;
+
+			auto modelName = bullet->m_model;
+			auto& tex = m_srvTex[modelName];
+
+			auto pos = bullet->pos;
+			XMFLOAT2 origin = {tex.size.x/2.0F, tex.size.y/2.0F};
+			XMFLOAT2 scale = {1.0F, 1.0F};
+			XMFLOAT2 position = G2::GameCoordToScreen(pos);
 			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, 0.0F, origin, scale);
 		}
+
 		// draw player
 		{
 			auto modelName = m_mainPlayer->Model();
@@ -279,15 +308,16 @@ int ScenePlay::Render()
 			auto box = m_mainPlayer->Box();
 			XMFLOAT2 origin = {tex.size.x/2.0F, tex.size.y/2.0F};
 			XMFLOAT2 scale = {1.0F, 1.0F};
-			XMFLOAT2 position = G2::ScreenToGameCoord(pos);
+			XMFLOAT2 position = G2::GameCoordToScreen(pos);
 
-			XMFLOAT2 begin = G2::ScreenToGameCoord({pos.x - box.x/2, pos.y - box.y/2});
-			XMFLOAT2 end   = G2::ScreenToGameCoord({pos.x + box.x/2, pos.y + box.y/2});
+			XMFLOAT2 begin = G2::GameCoordToScreen({pos.x - box.x/2, pos.y - box.y/2});
+			XMFLOAT2 end   = G2::GameCoordToScreen({pos.x + box.x/2, pos.y + box.y/2});
 
 			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, 0.0F, origin, scale);
 			RenderDebugging(sprite, begin, end);
 		}
-		// draw bullet
+
+		// draw enemy bullet
 		for(auto& bullet : m_vecBulletEnemy)
 		{
 			if(!bullet->alive)
@@ -299,7 +329,7 @@ int ScenePlay::Render()
 			auto pos = bullet->pos;
 			XMFLOAT2 origin = {tex.size.x/2.0F, tex.size.y/2.0F};
 			XMFLOAT2 scale = {1.0F, 1.0F};
-			XMFLOAT2 position = G2::ScreenToGameCoord(pos);
+			XMFLOAT2 position = G2::GameCoordToScreen(pos);
 			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, 0.0F, origin, scale);
 		}
 	}
@@ -311,14 +341,14 @@ int ScenePlay::Render()
 	return S_OK;
 }
 
-void ScenePlay::RenderDebugging(SpriteBatch* sprite, const XMFLOAT2& from, const XMFLOAT2& to)
+void ScenePlay::RenderDebugging(SpriteBatch* sprite, const XMFLOAT2& from, const XMFLOAT2& to, const XMVECTORF32& color)
 {
 	auto& tex = m_srvTex[FactoryTexture::RES_DEBUUGING];
-
-	LONG r = (LONG)std::fabsf(from.x - to.x);
-	LONG b = (LONG)std::fabsf(from.y - to.y);
+	auto r = (LONG)std::fabsf(from.x - to.x);
+	auto b = (LONG)std::fabsf(from.y - to.y);
 	::RECT rc {0, 0, r, b};
-	sprite->Draw(tex.hGpu, tex.size, from, &rc, XMVECTORF32{{{1.F, 1.F, 1.F, 0.5F}}});
+	XMFLOAT2 pos { std::min(from.x, to.x), std::min(from.y, to.y)};
+	sprite->Draw(tex.hGpu, tex.size, pos, &rc, color);
 }
 
 int ScenePlay::Notify(const std::string& name, const std::any& t)
@@ -382,7 +412,7 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 					kt.alive = true;
 					kt.pos = XMFLOAT2{G2::randomRange(-260.0F, +260.0F), G2::randomRange(550.0F, +750.0F)};
 					kt.vlc = XMFLOAT2{0.0F, G2::randomRange(-400.0F, -350.0F)};
-					drone->Init((int)PLAY_STATE::LOW, kt);
+					drone->Init((int)PLAY_STATE::MIDDLE, kt);
 					drone->Model(EMODEL_DRONE[indexModel]);
 					{
 						auto modelName = drone->Model();
@@ -407,7 +437,7 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 					kt.alive = true;
 					kt.pos = XMFLOAT2{G2::randomRange(-260.0F, +260.0F), G2::randomRange(550.0F, +750.0F)};
 					kt.vlc = XMFLOAT2{0.0F, G2::randomRange(-500.0F, -450.0F)};
-					drone->Init((int)PLAY_STATE::LOW, kt);
+					drone->Init((int)PLAY_STATE::HI, kt);
 					drone->Model(EMODEL_DRONE[indexModel]);
 					{
 						auto modelName = drone->Model();
@@ -459,40 +489,7 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 		if(filedBullet)
 		{
 			drone->m_firedBullet = false;
-
-			for(auto& bullet : m_vecBulletEnemy)
-			{
-				if(bullet && !bullet->alive)
-				{
-					int indexModel = 2;
-					T_KINETICS kt{};
-					kt.dif = XMVECTORF32{{{1.0F, 1.0F, 1.0F, 1.0F}}};
-					kt.alive = true;
-					kt.pos = drone->Position();
-
-					float speed = m_speedBullet;
-					auto vlc_x = m_mainPlayer->Position().x - drone->Position().x;
-					auto vlc_y = m_mainPlayer->Position().y - drone->Position().y;
-					float len = kt.vlc.x = sqrtf(vlc_x * vlc_x + vlc_y * vlc_y);
-
-					// 너무 가까와서 충돌로 플레이어 죽음
-					if(0.0001F>len)
-						continue;
-
-					kt.vlc.x = vlc_x * speed/len;
-					kt.vlc.y = vlc_y * speed/len;
-
-					bullet->Init((int)PLAY_STATE::LOW, kt, true);
-					bullet->m_model = EMODEL_BULLET[indexModel];
-					{
-						auto modelName = bullet->m_model;
-						auto& tex = m_srvTex[modelName];
-						XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
-						bullet->box = box;
-					}
-					break;
-				}
-			}
+			BulletFire(drone, false);
 		}
 
 		if(600 < fabsf(drone->Position().y))
@@ -501,19 +498,137 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 		}
 	}
 
-	// update bullet
-	for(auto& bullet : m_vecBulletEnemy)
+	return S_OK;
+}
+
+void ScenePlay::BulletFire(GameObject* obj, bool isPlayer)
+{
+	if(isPlayer)
+	{
+		for(auto& bullet : m_vecBulletPlayer)
+		{
+			if(!bullet || bullet->alive)
+				continue;
+
+			int indexModel = 0;
+			T_KINETICS kt{};
+			kt.dif = XMVECTORF32{{{1.0F, 1.0F, 1.0F, 1.0F}}};
+			kt.alive = true;
+			kt.pos = obj->Position();
+
+			float speed = m_speedBullet;
+			kt.vlc.y = speed;
+
+			bullet->Init((int)PLAY_STATE::LOW, kt, true);
+			bullet->m_model = EMODEL_BULLET[indexModel];
+			{
+				auto modelName = bullet->m_model;
+				auto& tex = m_srvTex[modelName];
+				XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
+				bullet->box = box;
+			}
+			break;
+		}
+	}
+	else
+	{
+		for(auto& bullet : m_vecBulletEnemy)
+		{
+			if(!bullet || bullet->alive)
+				continue;
+
+			int indexModel = 2;
+			T_KINETICS kt{};
+			kt.dif = XMVECTORF32{{{1.0F, 1.0F, 1.0F, 1.0F}}};
+			kt.alive = true;
+			kt.pos = obj->Position();
+
+			float speed = m_speedBullet;
+			auto vlc_x = m_mainPlayer->Position().x - obj->Position().x;
+			auto vlc_y = m_mainPlayer->Position().y - obj->Position().y;
+			float len = kt.vlc.x = sqrtf(vlc_x * vlc_x + vlc_y * vlc_y);
+
+			// 너무 가까와서 충돌로 플레이어 죽음
+			if(0.0001F>len)
+				continue;
+
+			kt.vlc.x = vlc_x * speed/len;
+			kt.vlc.y = vlc_y * speed/len;
+
+			bullet->Init((int)PLAY_STATE::LOW, kt, false);
+			bullet->m_model = EMODEL_BULLET[indexModel];
+			{
+				auto modelName = bullet->m_model;
+				auto& tex = m_srvTex[modelName];
+				XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
+				bullet->box = box;
+			}
+			break;
+		}
+	}
+}
+
+void ScenePlay::BulletUpdate(const std::any& t)
+{
+	GameTimer gt = std::any_cast<GameTimer>(t);
+
+	auto pGameInfo = GameInfo::instance();
+
+	auto funcPlayerBullet = [&](GameBullet* bt)
+	{
+		for(auto& drone : m_vecDrone)
+		{
+			if(!drone->Alive())
+				continue;
+			auto isCollision = IsCollision(bt, drone->Kinetics());
+			if(isCollision)
+			{
+				//__debugbreak();
+				drone->Alive(false);
+			}
+			auto ret = bt->m_isPlayer && isCollision && pGameInfo->m_enablePlay;
+			if(ret)
+			{
+				//__debugbreak();
+			}
+			return ret;
+		}
+		return false;
+	};
+
+	for(auto& bullet : m_vecBulletPlayer)
 	{
 		if(!bullet || !bullet->alive)
 			continue;
-		bullet->Update(gt);
-
+		bullet->Update(gt, funcPlayerBullet);
 		if(600 < fabsf(bullet->pos.y))
 		{
 			bullet->alive = false;
 		}
 	}
 
-	return S_OK;
+	auto funcDroneBulletCollision = [&](GameBullet* bt)
+	{
+		auto isCollision = IsCollision(pGameInfo->MainPlayer()->Kinetics(), bt);
+		if(isCollision)
+		{
+			//__debugbreak();
+		}
+		auto ret = !bt->m_isPlayer && isCollision && pGameInfo->m_enablePlay;
+		return ret;
+	};
+
+	for(auto& bullet : m_vecBulletEnemy)
+	{
+		if(!bullet || !bullet->alive)
+			continue;
+
+		bullet->Update(gt, funcDroneBulletCollision);
+
+		if(600 < fabsf(bullet->pos.y))
+		{
+			bullet->alive = false;
+		}
+	}
 }
 

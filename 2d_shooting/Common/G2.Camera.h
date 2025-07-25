@@ -129,7 +129,7 @@ public:
 namespace G2
 {
 
-XMFLOAT2 ScreenToGameCoord(const XMFLOAT2& pos);
+XMFLOAT2 GameCoordToScreen(const XMFLOAT2& pos);
 
 } // namespace G2
 

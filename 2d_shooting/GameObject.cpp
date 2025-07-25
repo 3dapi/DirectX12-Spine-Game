@@ -99,7 +99,7 @@ XMFLOAT2 GameObject::Box() const
 }
 void GameObject::Alive(bool v)
 {
-	m_kt.alive;
+	m_kt.alive = v;
 }
 bool GameObject::Alive() const
 {
@@ -229,6 +229,21 @@ int EnemyDrone::Init(int movePattern, const T_KINETICS& kt)
 	m_timeStore ={};
 	m_timeFire = G2::randomRange(0.5F, 3.5F);
 
+	if(1>= m_movePattern)
+	{
+
+	}
+	else if(2>= m_movePattern)
+	{
+		m_flipLen = G2::randomRange(200.0F, 500.0F);
+		m_flipAngle = G2::randomRange(0.0F, float(2.0 * M_PI));
+	}
+	else if(3>= m_movePattern)
+	{
+		m_flipLen = G2::randomRange(100.0F, 400.0F);
+		m_flipAngle = G2::randomRange(0.0F, float(2.0 * M_PI));
+	}
+
 	return S_OK;
 }
 
@@ -253,7 +268,7 @@ int EnemyDrone::Update(const GameTimer& t)
 		}
 	}
 
-	if (pGameInfo->IsCollisionPlayer(&m_kt) && pGameInfo->m_enablePlay)
+	if (IsCollision(pGameInfo->MainPlayer()->Kinetics(), &m_kt) && pGameInfo->m_enablePlay)
 	{
 		this->m_kt.alive = false;
 		auto hp = pGameInfo->MainPlayer()->HP();
@@ -272,6 +287,29 @@ int EnemyDrone::Update(const GameTimer& t)
 
 	return S_OK;
 }
+
+void EnemyDrone::Move(float dt)
+{
+	if(1>= m_movePattern)
+	{
+	}
+	else if(2>= m_movePattern)
+	{
+		m_kt.acc.x = m_flipLen * sinf(m_timeStore + m_flipAngle);
+	}
+	else if(4>= m_movePattern)
+	{
+		m_kt.acc.x = m_flipLen * cosf(m_timeStore + m_flipAngle);
+		m_kt.acc.y = m_flipLen * sinf(m_timeStore + m_flipAngle);
+	}
+
+	m_kt.vlc.x += m_kt.acc.x * dt;
+	m_kt.vlc.y += m_kt.acc.y * dt;
+
+	m_kt.pos.x += m_kt.vlc.x * dt;
+	m_kt.pos.y += m_kt.vlc.y * dt;
+}
+
 
 void EnemyDrone::FireBullet()
 {
@@ -292,24 +330,22 @@ int EnemyBoss::Update(const GameTimer& gt)
 	return 0;
 }
 
-int GameBullet::Init(int movePattern, const T_KINETICS& kt, bool isEnemy)
+int GameBullet::Init(int movePattern, const T_KINETICS& kt, bool isPlayer)
 {
-	m_isEnemy = isEnemy;
+	m_isPlayer = isPlayer;
 	m_movePattern = movePattern;
 	memcpy(&this->pos, &kt, sizeof(T_KINETICS));
 	return S_OK;
 }
 
-int GameBullet::Update(const GameTimer& gt)
+int GameBullet::Update(const GameTimer& gt, const function<bool(GameBullet*)>& funcCollision)
 {
 	auto dt = gt.DeltaTime();
-	auto pGameInfo = GameInfo::instance();
-
 	// 살아 있을 때만....
 	if(!this->alive)
 		return S_OK;
 
-	if(m_isEnemy && pGameInfo->IsCollisionPlayer(this) && pGameInfo->m_enablePlay)
+	if(funcCollision(this))
 	{
 		this->alive = false;
 		//pGameInfo->MainPlayer()->HP(0);

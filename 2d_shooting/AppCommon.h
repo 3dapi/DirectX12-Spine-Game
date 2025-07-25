@@ -2,6 +2,8 @@
 #ifndef __APPCOMMON_H__
 #define __APPCOMMON_H__
 
+#include <intrin.h>
+
 #include <algorithm>
 #include <any>
 #include <array>
@@ -13,6 +15,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+#include <math.h>
 #include <Windows.h>
 #include <wrl.h>
 #include <pix.h>

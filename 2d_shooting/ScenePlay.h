@@ -59,8 +59,9 @@ public:
 	int		Notify(const std::string& name, const std::any& t)	override;
 
 	int		UpdateEnemy(const std::any& t);
-
-	void	RenderDebugging(SpriteBatch* sprite, const XMFLOAT2& begin, const XMFLOAT2& end);
+	void	BulletFire(GameObject* obj, bool isPlayer);
+	void	BulletUpdate(const std::any& t);
+	void	RenderDebugging(SpriteBatch* sprite, const XMFLOAT2& begin, const XMFLOAT2& end, const XMVECTORF32& color=XMVECTORF32{{{1.F, 0.F, 1.F, 0.6F}}});
 };
 
 #endif

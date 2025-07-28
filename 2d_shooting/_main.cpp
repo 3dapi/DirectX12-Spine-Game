@@ -4,9 +4,9 @@
 #define CONSOLE_DEBUG 1
 #endif
 
-#if defined(CONSOLE_DEBUG) && (CONSOLE_DEBUG==1)
-#pragma comment(linker, "/subsystem:console")
-#endif
+//#if defined(CONSOLE_DEBUG) && (CONSOLE_DEBUG==1)
+//#pragma comment(linker, "/subsystem:console")
+//#endif
 
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")

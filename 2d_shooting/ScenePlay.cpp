@@ -654,7 +654,8 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 			BulletFire(drone, false);
 		}
 
-		if(600 < fabsf(drone->Position().y))
+		::SIZE screenSize = *any_cast<::SIZE*>(IG2GraphicsD3D::instance()->getAttrib(ATT_SCREEN_SIZE));
+		if(screenSize.cy/1.5F < fabsf(drone->Position().y))
 		{
 			drone->Alive(false);
 		}

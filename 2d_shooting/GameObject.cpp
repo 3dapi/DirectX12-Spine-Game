@@ -130,7 +130,7 @@ void GameObject::Move(float dt)
 
 void GameObject::MoveLeft(float dt)
 {
-	m_kt.pos.x += (-1.0F) * m_spdForce* dt;
+  	m_kt.pos.x += (-1.0F) * m_spdForce* dt;
 	this->State(EAPP_CHAR_STATE::ESTATE_CHAR_MOVE);
 }
 
@@ -178,8 +178,8 @@ GamePlayer::GamePlayer()
 int GamePlayer::Init(const string& model)
 {
 	m_hp    = 500;
-	m_damage = 34.0F;
-	m_spdForce = 250.0F;
+	m_damage = 35.0F;
+	m_spdForce = 360.0F;
 	m_kt       = {};
 	m_kt.pos   = XMFLOAT2{ 0.0F, -300.0F };
 	m_kt.dif   = XMVECTORF32{{{ 1.0F, 1.0F, 1.0F, 1.0F }}};

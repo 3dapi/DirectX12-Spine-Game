@@ -21,6 +21,7 @@ _OBJ/
 _bin/
 Debug/
 Release/
+packages/
 .vs/
 .vscode/
 .tlog/

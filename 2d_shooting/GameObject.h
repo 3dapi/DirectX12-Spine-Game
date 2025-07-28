@@ -116,6 +116,7 @@ public:
 	int		Update(const GameTimer& gt);
 	void	State(EAPP_CHAR_STATE v) override;
 	EAPP_CHAR_STATE	State() const override;
+	void	PositionScreenBoundary(const ::SIZE& screenSize);
 };
 
 class GameBullet : public T_KINETICS
@@ -124,10 +125,20 @@ public:
 	int		m_movePattern	{};
 	bool	m_isPlayer		{false};
 	string	m_model			;
-
 public:
 	int		Init(int movePattern, const T_KINETICS& kt, bool isPlayer);
 	int		Update(const GameTimer& gt, const function<bool(GameBullet* obj)>& funcCollision);
+};
+
+class GameMissile : public T_KINETICS
+{
+public:
+	int		m_movePattern	{};				// 0: 비추적, 1: 추적
+	bool	m_isPlayer		{false};
+	string	m_model			;
+public:
+	int		Init(int movePattern, const T_KINETICS& kt, bool isPlayer);
+	int		Update(const GameTimer& gt, const function<bool(GameMissile* obj)>& funcCollision);
 };
 
 class EnemyDrone : public GameObject
@@ -148,15 +159,38 @@ public:
 	void	FireBullet();
 };
 
+struct TMOVE_PATTERN
+{
+	XMFLOAT2	dir;
+	XMFLOAT2	dest;
+};
+
+struct TMOVE_PATTERN_CIRCLE
+{
+	float		phase	{};		// angle : start
+	float		angle	{};		// angle : radian
+	XMFLOAT2	center	{};		// center position
+	float		len		{};		// radius
+	float		speed	{};		// angle speed
+};
+
 class EnemyBoss : public GameObject
 {
-protected:
-	int		m_movePattern{};
-	string	m_model;
+public:
+	int		m_movePattern	{};
+	int		m_missile		{};
+	bool	m_firedMissile	{};
+	float	m_timeStore		{};
+	float	m_timeFire		{};
+
+	TMOVE_PATTERN_CIRCLE m_mov_pattern	{};
+
 public:
 	EnemyBoss();
-	int		Init(int stage);
+	int		Init(int movePattern, const T_KINETICS& kt);
 	int		Update(const GameTimer& gt);
+	void	MovePatternCircle(const GameTimer& gt);
+	void	FireBosMissle();
 };
 
 #endif

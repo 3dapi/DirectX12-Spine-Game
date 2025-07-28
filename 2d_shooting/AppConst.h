@@ -91,7 +91,8 @@ inline static const vector<string> EMODEL_BULLET
 
 inline static const vector<string> EMODEL_BOSS
 {
-	"space_shooter/Boss_1_A_Medium",
+	"space_shooter/Boss_1_A_Small",
+	"space_shooter/Boss_1_B_Small",
 };
 
 inline static const vector<string> EMODEL_BG

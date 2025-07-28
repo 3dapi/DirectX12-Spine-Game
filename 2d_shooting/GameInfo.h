@@ -17,10 +17,13 @@ public:
 	static GameInfo* instance();
 	static void      deleteInstance();
 public:
-	static bool				M_CHEAT		;
+	static bool					M_CHEAT		;
+	inline static const float	SPEED_BULLET = 700.0F;
+	inline static const float	SPEED_MISSILE = 500.0F;
 
 	int						m_gameScore		{};
 	bool					m_enablePlay	{ true };
+
 protected:
 	class GamePlayer*		m_player		{};
 

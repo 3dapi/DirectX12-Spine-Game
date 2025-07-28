@@ -9,7 +9,7 @@
 using namespace G2;
 
 static GameInfo* _inst = new GameInfo;
-bool GameInfo::M_CHEAT = true;
+bool GameInfo::M_CHEAT = false;
 
 GameInfo* GameInfo::instance()
 {

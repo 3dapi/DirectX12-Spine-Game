@@ -105,6 +105,9 @@ int ScenePlay::Init(const std::any&)
 	m_vecBulletPlayer.resize(MAX_BULLET_PLAYER, nullptr);
 	std::generate(m_vecBulletPlayer.begin(), m_vecBulletPlayer.end(), [](){ return new GameBullet; });
 
+	m_vecMissileEnemy.resize(MAX_MISSLE_ENEMY, nullptr);
+	std::generate(m_vecMissileEnemy.begin(), m_vecMissileEnemy.end(), [](){ return new GameMissile; });
+
 	m_sndLaser.resize(MAX_SND_EFFECT, nullptr);
 	std::generate(m_sndLaser.begin(), m_sndLaser.end(), []() { return MfAudioPlayer::Create("asset/sound/laser_02.wav");});
 
@@ -119,6 +122,11 @@ int ScenePlay::Init(const std::any&)
 		return E_FAIL;
 	}
 	m_pUi->Init();
+
+	if(auto pUI = dynamic_cast<UiPlay*>(m_pUi); pUI !=nullptr)
+	{
+		pUI->m_pScenePlay = this;
+	}
 
 	m_pUiBg = new UiBackground;
 	if(!m_pUiBg)
@@ -136,9 +144,10 @@ int ScenePlay::Destroy()
 	m_srvTex.clear();
 
 	SAFE_DELETE_VECTOR(m_vecDrone);
-	SAFE_DELETE(m_vecMobBoss);
+	SAFE_DELETE(m_droneBoss);
 	SAFE_DELETE_VECTOR(m_vecBulletEnemy);
 	SAFE_DELETE_VECTOR(m_vecBulletPlayer);
+	SAFE_DELETE_VECTOR(m_vecMissileEnemy);
 	SAFE_DELETE_VECTOR(m_sndLaser);
 	SAFE_DELETE_VECTOR(m_sndBoom);
 	SAFE_DELETE(m_pUi);
@@ -147,7 +156,6 @@ int ScenePlay::Destroy()
 	m_playState		= {};
 	m_timeStored	= {};
 	m_timeDrone		= {};
-	m_speedBullet	= {700};
 
 	return S_OK;
 }
@@ -157,6 +165,7 @@ int ScenePlay::Update(const std::any& t)
 	auto pGameInfo    = GameInfo::instance();
 	auto playerState  = m_mainPlayer->State();
 	auto playerPos    = m_mainPlayer->Position();
+	auto screenSize   = *any_cast<::SIZE*>(IG2GraphicsD3D::instance()->getAttrib(ATT_SCREEN_SIZE));
 
 	GameTimer gt = std::any_cast<GameTimer>(t);
 	auto dt = gt.DeltaTime();
@@ -184,6 +193,7 @@ int ScenePlay::Update(const std::any& t)
 	}
 
 	// setup play state
+	if(true)
 	{
 		if(1<m_timeStored && PLAY_STATE::BEGIN == m_playState)
 		{
@@ -199,7 +209,25 @@ int ScenePlay::Update(const std::any& t)
 		}
 		else if(40<m_timeStored && PLAY_STATE::HI == m_playState)
 		{
-			//m_playState = PLAY_STATE::BOSS;
+			m_playState = PLAY_STATE::BOSS;
+			DroneBossSetup();
+		}
+		else if( (m_droneBoss && !m_droneBoss->Alive()) && PLAY_STATE::BOSS == m_playState)
+		{
+			m_playState = PLAY_STATE::END;
+			SetStateEnd();
+		}
+	}
+	else
+	{
+		if(1<m_timeStored && PLAY_STATE::BEGIN == m_playState)
+		{
+			m_playState = PLAY_STATE::BOSS;
+			DroneBossSetup();
+		}
+		else if((m_droneBoss && !m_droneBoss->Alive()) && PLAY_STATE::BOSS == m_playState)
+		{
+			m_playState = PLAY_STATE::END;
 			SetStateEnd();
 		}
 	}
@@ -207,33 +235,48 @@ int ScenePlay::Update(const std::any& t)
 	// update enemy
 	UpdateEnemy(t);
 
+	// update boss
+	DroneBossUpdate(t);
+
 	// update enemy
 	BulletUpdate(t);
+
+	// update enemy
+	MissileUpdate(t);
 
 	// check input event
 	bool hasKeyEvent = InputManager::instance()->hasEvent();
 	auto const keyEvent = InputManager::instance()->Key();
+	bool updatedPos = false;
 	// 이동.
 	if (keyEvent[VK_LEFT] == EAPP_INPUT_PRESS)
 	{
 		m_mainPlayer->MoveLeft(dt);
+		updatedPos = true;
 	}
 
 	if (keyEvent[VK_RIGHT] == EAPP_INPUT_PRESS)
 	{
 		m_mainPlayer->MoveRight(dt);
+		updatedPos = true;
 	}
 
 	if (keyEvent[VK_UP] == EAPP_INPUT_PRESS)
 	{
 		m_mainPlayer->MoveUp(dt);
+		updatedPos = true;
 	}
 
 	if (keyEvent[VK_DOWN] == EAPP_INPUT_PRESS)
 	{
 		m_mainPlayer->MoveDown(dt);
+		updatedPos = true;;
 	}
 
+	if(updatedPos)
+	{
+		m_mainPlayer->PositionScreenBoundary(screenSize);
+	}
 	if(pGameInfo->m_enablePlay)
 	{
 		// bullet 발사
@@ -243,7 +286,7 @@ int ScenePlay::Update(const std::any& t)
 		}
 		if(GameInfo::M_CHEAT)
 		{
-			if(keyEvent[VK_F2] == EAPP_INPUT_UP)
+			if(keyEvent[VK_F3] == EAPP_INPUT_UP)
 			{
 				m_mainPlayer->HP(500);
 			}
@@ -275,6 +318,25 @@ int ScenePlay::Render()
 
 	sprite->Begin(cmdList);
 	{
+		// draw player
+		if(m_droneBoss)
+		{
+			auto modelName = m_droneBoss->Model();
+			auto& tex = m_srvTex[modelName];
+
+			auto pos = m_droneBoss->Position();
+			auto box = m_droneBoss->Box();
+			XMFLOAT2 origin = {tex.size.x/2.0F, tex.size.y/2.0F};
+			XMFLOAT2 scale = {1.0F, 1.0F};
+			XMFLOAT2 position = G2::GameCoordToScreen(pos);
+
+			XMFLOAT2 begin = G2::GameCoordToScreen({pos.x - box.x/2, pos.y - box.y/2});
+			XMFLOAT2 end = G2::GameCoordToScreen({pos.x + box.x/2, pos.y + box.y/2});
+
+			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, 0.0F, origin, scale);
+			RenderDebugging(sprite, begin, end);
+		}
+
 		// draw enemy drone
 		for(auto& drone : m_vecDrone)
 		{
@@ -351,7 +413,24 @@ int ScenePlay::Render()
 			XMFLOAT2 origin = {tex.size.x/2.0F, tex.size.y/2.0F};
 			XMFLOAT2 scale = {1.0F, 1.0F};
 			XMFLOAT2 position = G2::GameCoordToScreen(pos);
-			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, 0.0F, origin, scale);
+			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, (float)M_PI, origin, scale);
+		}
+
+		// draw enemy missile
+		for(auto& missile : m_vecMissileEnemy)
+		{
+			if(!missile->alive)
+				continue;
+
+			auto modelName = missile->m_model;
+			auto& tex = m_srvTex[modelName];
+
+			auto pos = missile->pos;
+			auto rot = missile->rot;
+			XMFLOAT2 origin = {tex.size.x/2.0F, tex.size.y/2.0F};
+			XMFLOAT2 scale = {1.0F, 1.0F};
+			XMFLOAT2 position = G2::GameCoordToScreen(pos);
+			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 1.F, 1.F, 1.0F}}}, rot, origin, scale);
 		}
 	}
 	sprite->End();
@@ -400,12 +479,11 @@ void ScenePlay::SetStateStart()
 		XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
 		m_mainPlayer->Box(box);
 	}
-	m_playState = PLAY_STATE::BEGIN;
+	m_playState = PLAY_STATE::BOSS;
 
 	m_playState		= {};
 	m_timeStored	= {};
 	m_timeDrone		= {};
-	m_speedBullet	= {700};
 }
 
 void ScenePlay::SetStateEnd()
@@ -499,6 +577,32 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 				}
 			}
 		},
+		[&]()
+		{
+			// PLAY_STATE::BOSS
+			for(auto& drone : m_vecDrone)
+			{
+				if(drone && !drone->Alive())
+				{
+					T_KINETICS kt{};
+
+					int indexModel = G2::randomRange(2, 3);
+					drone->Model(EMODEL_DRONE[indexModel]);
+					{
+						auto modelName = drone->Model();
+						auto& tex = m_srvTex[modelName];
+						XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
+						kt.box = box;
+					}
+					kt.dif = XMVECTORF32{{{1.0F, 1.0F, 1.0F, 1.0F}}};
+					kt.alive = true;
+					kt.pos = XMFLOAT2{G2::randomRange(-260.0F, +260.0F), G2::randomRange(550.0F, +750.0F)};
+					kt.vlc = XMFLOAT2{0.0F, G2::randomRange(-500.0F, -450.0F)};
+					drone->Init((int)PLAY_STATE::HI, kt);
+					break;
+				}
+			}
+		},
 	};
 
 	// 0.1초마다 적들을 생산함
@@ -522,7 +626,15 @@ int ScenePlay::UpdateEnemy(const std::any& t)
 	{
 		if(0.1F < m_timeDrone)
 		{
- 			m_timeDrone -= 0.1F;
+ 			m_timeDrone -= 0.15F;
+			enemyGen[(int)m_playState]();
+		}
+	}
+	else if(PLAY_STATE::BOSS == m_playState)
+	{
+		if(0.1F < m_timeDrone)
+		{
+			m_timeDrone -= 0.08F;
 			enemyGen[(int)m_playState]();
 		}
 	}
@@ -574,7 +686,7 @@ void ScenePlay::BulletFire(GameObject* obj, bool isPlayer)
 			kt.dif = XMVECTORF32{{{1.0F, 1.0F, 1.0F, 1.0F}}};
 			kt.alive = true;
 			kt.pos = obj->Position();
-			kt.vlc.y = m_speedBullet;
+			kt.vlc.y = GameInfo::SPEED_BULLET;
 
 			bullet->Init((int)PLAY_STATE::LOW, kt, true);
 			break;
@@ -601,10 +713,9 @@ void ScenePlay::BulletFire(GameObject* obj, bool isPlayer)
 			kt.alive = true;
 			kt.pos = obj->Position();
 
-			float speed = m_speedBullet;
 			auto vlc_x = m_mainPlayer->Position().x - obj->Position().x;
 			auto vlc_y = m_mainPlayer->Position().y - obj->Position().y;
-			float len = kt.vlc.x = sqrtf(vlc_x * vlc_x + vlc_y * vlc_y);
+			float len = sqrtf(vlc_x * vlc_x + vlc_y * vlc_y);
 
 			// 너무 가까와서 충돌로 플레이어 죽음
 			if(0.0001F>len)
@@ -613,8 +724,8 @@ void ScenePlay::BulletFire(GameObject* obj, bool isPlayer)
 				continue;
 			}
 
-			kt.vlc.x = vlc_x * speed/len;
-			kt.vlc.y = vlc_y * speed/len;
+			kt.vlc.x = vlc_x * GameInfo::SPEED_BULLET/len;
+			kt.vlc.y = vlc_y * GameInfo::SPEED_BULLET/len;
 
 			bullet->Init((int)PLAY_STATE::LOW, kt, false);
 			break;
@@ -625,29 +736,75 @@ void ScenePlay::BulletFire(GameObject* obj, bool isPlayer)
 void ScenePlay::BulletUpdate(const std::any& t)
 {
 	GameTimer gt = std::any_cast<GameTimer>(t);
-
 	auto pGameInfo = GameInfo::instance();
 
+	// player의 bullet
 	auto funcPlayerBullet = [&](GameBullet* bt)
 	{
 		bool isCollision = false;
-		for(auto& drone : m_vecDrone)
+		// boss와 충돌.
+		if(m_droneBoss && m_droneBoss->Alive())
 		{
-			if(!drone->Alive())
-				continue;
-			auto droneKt = drone->Kinetics();
-			isCollision = IsCollision(droneKt->pos.x, droneKt->pos.y
-									, droneKt->box.x, droneKt->box.y, droneKt->scale
+			auto enemyKt = m_droneBoss->Kinetics();
+			isCollision = IsCollision(enemyKt->pos.x, enemyKt->pos.y
+									, enemyKt->box.x, enemyKt->box.y, enemyKt->scale
 									, bt->pos.x, bt->pos.y
 									, bt->box.x, bt->box.y, bt->scale);
 			if(isCollision)
 			{
 				BoomSoundPlay();
-				drone->Alive(false);
-				break;
+				auto hp = m_droneBoss->HP();
+				hp -= 5;
+   				m_droneBoss->HP(hp);
 			}
 		}
 		auto ret = isCollision && pGameInfo->m_enablePlay;
+		if(ret)
+		{
+			pGameInfo->IncreaseScore(50);
+		}
+
+		// boss missile 과 충돌
+		if(!isCollision)
+		{
+			for(auto& missile : m_vecMissileEnemy)
+			{
+				if(!missile->alive)
+					continue;
+				isCollision = IsCollision(missile->pos.x, missile->pos.y
+										, missile->box.x, missile->box.y, missile->scale
+										, bt->pos.x, bt->pos.y
+										, bt->box.x, bt->box.y, bt->scale);
+				if(isCollision)
+				{
+					missile->alive = false;
+  					pGameInfo->IncreaseScore(20);
+					break;
+				}
+			}
+		}
+
+		// drone 과 충돌
+		if(!isCollision)
+		{
+			for(auto& drone : m_vecDrone)
+			{
+				if(!drone->Alive())
+					continue;
+				auto enemyKt = drone->Kinetics();
+				isCollision = IsCollision(enemyKt->pos.x, enemyKt->pos.y
+										, enemyKt->box.x, enemyKt->box.y, enemyKt->scale
+										, bt->pos.x, bt->pos.y
+										, bt->box.x, bt->box.y, bt->scale);
+				if(isCollision)
+				{
+					BoomSoundPlay();
+					drone->Alive(false);
+					break;
+				}
+			}
+		}
+		ret = isCollision && pGameInfo->m_enablePlay;
 		if(ret)
 		{
 			pGameInfo->IncreaseScore(250);
@@ -658,6 +815,7 @@ void ScenePlay::BulletUpdate(const std::any& t)
 	auto d3d = IG2GraphicsD3D::instance();
 	::SIZE screenSize = *any_cast<::SIZE*>(IG2GraphicsD3D::instance()->getAttrib(ATT_SCREEN_SIZE));
 
+	// drone bullet 이 화면 밖으로 나가는 경우.
 	for(auto& bullet : m_vecBulletPlayer)
 	{
 		if(!bullet || !bullet->alive)
@@ -670,6 +828,7 @@ void ScenePlay::BulletUpdate(const std::any& t)
 		}
 	}
 
+	// drone bullet 이 플레이어와 충돌 체크.
 	auto funcDroneBulletCollision = [&](GameBullet* bt)
 	{
 		auto playerKt = pGameInfo->MainPlayer()->Kinetics();
@@ -697,6 +856,139 @@ void ScenePlay::BulletUpdate(const std::any& t)
 			bullet->alive = false;
 		}
 	}
+}
+
+void ScenePlay::MissileFire(GameObject* obj)
+{
+	if(true)
+	{
+		int fireMissle = 5;
+		// fireMissle 만큼 발사
+		for(int i=0; i<fireMissle; ++i)
+		{
+			for(auto& missle : m_vecMissileEnemy)
+			{
+				if(!missle || missle->alive)
+					continue;
+
+				T_KINETICS kt{};
+
+				int indexModel = G2::randomRange(0, 2);
+				missle->m_model = EMODEL_MISSILE[indexModel];
+				{
+					auto modelName = missle->m_model;
+					auto& tex = m_srvTex[modelName];
+					XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
+					kt.box = box;
+				}
+				kt.dif = XMVECTORF32{{{1.0F, 1.0F, 1.0F, 1.0F}}};
+				kt.alive = true;
+				kt.pos = obj->Position();
+
+				auto acc_x = m_mainPlayer->Position().x - obj->Position().x;
+				auto acc_y = m_mainPlayer->Position().y - obj->Position().y;
+				float len = sqrtf(acc_x * acc_x + acc_y * acc_y);
+
+				float acc_len = GameInfo::SPEED_MISSILE * 5.0F;
+
+				// 너무 가까와서 충돌로 플레이어 죽음
+				if(0.0001F>len)
+				{
+					missle->m_model = "";
+					continue;
+				}
+				kt.acc.x = acc_x * acc_len/len;
+				kt.acc.y = acc_y * acc_len/len;
+				float angle = G2::randomRange(0.0F, float(2.* M_PI));
+				kt.vlc.x = cosf(angle) * GameInfo::SPEED_MISSILE;
+				kt.vlc.y = sinf(angle) * GameInfo::SPEED_MISSILE;
+				missle->Init((int)PLAY_STATE::LOW, kt, false);
+				break;
+			}
+		}
+	}
+}
+
+void ScenePlay::MissileUpdate(const std::any& t)
+{
+	GameTimer gt = std::any_cast<GameTimer>(t);
+	auto d3d = IG2GraphicsD3D::instance();
+	::SIZE screenSize = *any_cast<::SIZE*>(IG2GraphicsD3D::instance()->getAttrib(ATT_SCREEN_SIZE));
+	auto pGameInfo = GameInfo::instance();
+	auto funcCollision = [&](GameMissile* bt)
+	{
+		auto playerKt = pGameInfo->MainPlayer()->Kinetics();
+		bool isCollision = IsCollision(playerKt->pos.x, playerKt->pos.y
+										, playerKt->box.x, playerKt->box.y, playerKt->scale
+										, bt->pos.x, bt->pos.y
+										, bt->box.x, bt->box.y, bt->scale);
+		if(isCollision)
+		{
+			//__debugbreak();
+		}
+		auto ret = isCollision && pGameInfo->m_enablePlay;
+		return ret;
+	};
+
+	for(auto& missile : m_vecMissileEnemy)
+	{
+		if(!missile || !missile->alive)
+			continue;
+
+		missile->Update(gt, funcCollision);
+
+		if(screenSize.cy/2.0F < fabsf(missile->pos.y) || screenSize.cx/2 < fabsf(missile->pos.x))
+		{
+			missile->alive = false;
+		}
+	}
+}
+
+void ScenePlay::DroneBossSetup()
+{
+	EnemyBoss* boss {};
+	if(!m_droneBoss)
+	{
+		boss = new(nothrow) EnemyBoss;
+		if(!boss)
+			return;
+	}
+	m_droneBoss = boss;
+
+	T_KINETICS kt{};
+	auto modelName = EMODEL_BOSS[0];
+	{
+		auto& tex = m_srvTex[modelName];
+		XMFLOAT2 box{(float)tex.size.x, (float)tex.size.y};
+		kt.box = box;
+	}
+	kt.dif = XMVECTORF32{{{1.0F, 1.0F, 1.0F, 1.0F}}};
+	kt.alive = true;
+	kt.pos = XMFLOAT2{G2::randomRange(-260.0F, +260.0F), G2::randomRange(550.0F, +750.0F)};
+	kt.vlc = XMFLOAT2{0.0F, G2::randomRange(-400.0F, -250.0F)};
+	if(auto hr = boss->Init((int)PLAY_STATE::BOSS, kt); FAILED(hr))
+	{
+		delete boss;
+		return;
+	}
+	m_droneBoss->Model(modelName);
+	m_droneBoss = boss;
+}
+
+void ScenePlay::DroneBossUpdate(const std::any& t)
+{
+	GameTimer gt = std::any_cast<GameTimer>(t);
+	if(!m_droneBoss)
+		return;
+	// boss 에서 미사일 발사.
+	bool filedBullet = m_droneBoss->m_firedMissile;
+	if(GameInfo::instance()->m_enablePlay && filedBullet)
+	{
+		m_droneBoss->m_firedMissile = false;
+		MissileFire(m_droneBoss);
+	}
+
+	m_droneBoss->Update(gt);
 }
 
 void ScenePlay::BulletSoundPlay()

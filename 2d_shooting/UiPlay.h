@@ -12,11 +12,13 @@ using Microsoft::WRL::ComPtr;
 
 class UiPlay : public UiDrawable
 {
+	friend class ScenePlay;
 protected:
 	ComPtr<ID3D12DescriptorHeap>	m_srvHeapUI{};
 	map<string, UI_TEXTURE>			m_uiTex;
 	float							m_blend{ 0.0F };
 	float							m_blendDir{ 1.0F };
+	class ScenePlay*				m_pScenePlay {};
 
 public:
 	UiPlay();

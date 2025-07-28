@@ -301,6 +301,10 @@ void MainApp::OnKeyboardInput()
 
 	if (hasEvent && m_scene[m_sceneIdxCur])
 	{
+		if(keyCur[VK_F2] == EAPP_INPUT_UP)
+		{
+			GameInfo::M_CHEAT = !GameInfo::M_CHEAT;
+		}
 		m_scene[m_sceneIdxCur]->Notify("KeyEvent", static_cast<const uint8_t*>(keyCur));
 	}
 }

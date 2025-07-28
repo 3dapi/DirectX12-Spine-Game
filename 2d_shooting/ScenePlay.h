@@ -13,6 +13,7 @@ using namespace G2;
 
 class ScenePlay: public G2::IG2Scene
 {
+	friend	class UiPlay;
 public:
 	enum class PLAY_STATE: int
 	{
@@ -28,16 +29,19 @@ protected:
 	inline static const int			MAX_DRONE			{1000};
 	inline static const int			MAX_BULLET_PLAYER	{1000};
 	inline static const int			MAX_BULLET_ENEMY	{1000};
+	inline static const int			MAX_MISSLE_ENEMY	{2000};
 
 	ComPtr<ID3D12DescriptorHeap>	m_srvHeap	{};
 	map<string, struct UI_TEXTURE>	m_srvTex	;
 
 	GamePlayer*				m_mainPlayer	{};
 	vector<EnemyDrone*>		m_vecDrone		;
-	EnemyDrone*				m_vecMobBoss	{};
+	EnemyBoss*				m_droneBoss		{};
 
 	vector<GameBullet*>		m_vecBulletEnemy	;
 	vector<GameBullet*>		m_vecBulletPlayer	;
+
+	vector<GameMissile*>	m_vecMissileEnemy	;
 	vector<PG2AUDIOPLAYER>	m_sndLaser		{};
 	vector<PG2AUDIOPLAYER>	m_sndBoom		{};
 
@@ -47,7 +51,6 @@ protected:
 	PLAY_STATE				m_playState		{};
 	float					m_timeStored	{};
 	float					m_timeDrone		{};
-	float					m_speedBullet	{700};
 
 public:
 	ScenePlay();
@@ -66,6 +69,10 @@ public:
 	int		UpdateEnemy(const std::any& t);
 	void	BulletFire(GameObject* obj, bool isPlayer);
 	void	BulletUpdate(const std::any& t);
+	void	MissileFire(GameObject* obj);
+	void	MissileUpdate(const std::any& t);
+	void	DroneBossSetup();
+	void	DroneBossUpdate(const std::any& t);
 	void	BulletSoundPlay();
 	void	BoomSoundPlay();
 	void	RenderDebugging(SpriteBatch* sprite, const XMFLOAT2& begin, const XMFLOAT2& end, const XMVECTORF32& color=XMVECTORF32{{{1.F, 0.F, 1.F, 0.6F}}});

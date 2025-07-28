@@ -6,6 +6,7 @@
 #include "AppCommonXTK.h"
 #include "GameInfo.h"
 #include "UiPlay.h"
+#include "ScenePlay.h"
 
 using std::any_cast;
 using namespace std;
@@ -62,6 +63,11 @@ int UiPlay::Init()
 		std::string text = "HP: ";
 		auto [fontTex, sizeTex, sizeSrc] = StringTexture::CreateStringTexture("고도 B", 24, text);
 		m_uiTex.insert(std::make_pair("ui_font hp", UI_TEXTURE{fontTex, sizeTex, {}, sizeSrc}));	
+	}
+	{
+		std::string text = "BOSS: ";
+		auto [fontTex, sizeTex, sizeSrc] = StringTexture::CreateStringTexture("고도 B", 24, text);
+		m_uiTex.insert(std::make_pair("ui_font boss", UI_TEXTURE{fontTex, sizeTex, {}, sizeSrc}));
 	}
 	{
 		std::string text = "Stage: ";
@@ -122,6 +128,17 @@ int UiPlay::Update(float dt)
 			tex.sizeSrc = sizeSrc;
 		}
 	}
+	if(m_pScenePlay && m_pScenePlay->m_droneBoss && m_pScenePlay->m_playState == ScenePlay::PLAY_STATE::BOSS)
+	{
+		auto& tex = m_uiTex["ui_font boss"];
+		std::string text = "BOSS: " + std::to_string((int)m_pScenePlay->m_droneBoss->HP());
+		auto [fontTex, sizeTex, sizeSrc] = StringTexture::UpdateStringTexture(tex.res, "고도 B", 20, text);
+		if(fontTex)
+		{
+			tex.size = sizeTex;
+			tex.sizeSrc = sizeSrc;
+		}
+	}
 	
 	return S_OK;
 }
@@ -147,7 +164,7 @@ int UiPlay::Draw()
 			XMFLOAT2 scale = {1.0F, 1.0f};
 			sprite->Draw(texScore.hGpu, texScore.size, position, nullptr, Colors::Yellow, 0.0F, origin, scale);
 		}
-		// HP
+		// player HP
 		{
 			auto& texHp = m_uiTex["ui_font hp"];
 			XMFLOAT2 position = {5.0F, 35.0F};
@@ -158,11 +175,33 @@ int UiPlay::Draw()
 		{
 			auto hp = (int)pGameInfo->MainPlayer()->HP();
 			auto& tex = m_uiTex["ui/ui_rect"];
-			XMFLOAT2 position = { 60, 38.0F };
-			XMFLOAT2 origin = { 0, 0 };
-			XMFLOAT2 scale = { (hp +0.4F)*1.0F /100.0F, 0.25F};
-			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{ { { 1.F, 0.F, 0.F, 1.0F } } }, 0.0F, origin, scale);
+			XMFLOAT2 position = {150, 38.0F};
+			XMFLOAT2 origin = {0, 0};
+			XMFLOAT2 scale = {(hp +0.4F)*0.7F /100.0F, 0.25F};
+			sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{1.F, 0.F, 0.F, 1.0F}}}, 0.0F, origin, scale);
 		}
+
+		// boss HP
+		if(m_pScenePlay && m_pScenePlay->m_droneBoss && m_pScenePlay->m_playState == ScenePlay::PLAY_STATE::BOSS)
+		{
+			{
+				auto& texHp = m_uiTex["ui_font boss"];
+				XMFLOAT2 position = {5.0F, 70.0F};
+				XMFLOAT2 origin = {0.0F, 0.0F};
+				XMFLOAT2 scale = {1.0F, 1.0f};
+				sprite->Draw(texHp.hGpu, texHp.size, position, nullptr, XMVECTORF32{{{0.7F, 0.F, 0.7F, 1.0F}}}, 0.0F, origin, scale);
+			}
+			{
+				auto hp = (int)m_pScenePlay->m_droneBoss->HP();
+				auto& tex = m_uiTex["ui/ui_rect"];
+				XMFLOAT2 position = {150, 73.0F};
+				XMFLOAT2 origin = {0, 0};
+				XMFLOAT2 scale = {(hp +0.4F)*0.7F /100.0F, 0.25F};
+				sprite->Draw(tex.hGpu, tex.size, position, nullptr, XMVECTORF32{{{0.7F, 0.F, 0.7F, 1.0F}}}, 0.0F, origin, scale);
+			}
+		}
+
+		// game Over
 		if (!pGameInfo->m_enablePlay)
 		{
 			auto& tex = m_uiTex["ui/ui_gameover"];

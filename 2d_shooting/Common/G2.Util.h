@@ -168,25 +168,12 @@ inline std::wstring ansiToWstr(const std::string& str)
 	return wstr;
 }
 
-inline void debugToOutputWindow(const char* format, ...)
-{
-	va_list args;
-	va_start(args, format);
-
-	va_list args_copy;
-	va_copy(args_copy, args);
-	int length = std::vsnprintf(nullptr, 0, format, args_copy);
-	va_end(args_copy);
-
-	if (length > 0) {
-		++length;		// for null char
-		std::string buffer(length, 0);
-		std::vsnprintf(&buffer[0], length, format, args);
-		OutputDebugStringA(buffer.c_str());
-	}
-
-	va_end(args);
-}
+// formatting string
+std::string stringFormat(const char* const format, ...);
+std::string stringFormat(const char* const format, va_list);
+// visual studio output window 표시.
+void debugToOutputWindow(const char* format, ...);
+void outputDebugString(const char* const format, ...);
 
 void avx2_memcpy(void* dst, const void* src, size_t size);	// avx2 메모리 복사: memcpy 대신
 void avx2_memset32(void* dst, int32_t val, size_t count);	// 32bit 값 채우기: memset 대신.
@@ -233,7 +220,6 @@ public:
 	}                                                   \
 }
 #endif
-
 
 } // namespace G2
 

@@ -25,6 +25,67 @@
 
 namespace G2 {
 
+static int stringFormatLength(const char* const format, va_list va)
+{
+	int ret=-1;
+	va_list va_c;
+	va_copy(va_c, va);
+	ret = vsnprintf(nullptr, 0, format, va_c);
+	va_end(va_c);
+	return ret;
+}
+
+// formatting string
+std::string stringFormat(const char* const format, ...)
+{
+	va_list va;
+	std::string ret;
+	va_start(va, format);
+	int len = stringFormatLength(format, va);
+	if(0 < len)
+	{
+		ret = stringFormat(format, va);
+	}
+	va_end(va);
+	return ret;
+}
+
+// formatting string
+std::string stringFormat(const char* const format, va_list va)
+{
+	va_list va_c;
+	int     len;
+	std::string ret;
+	va_copy(va_c, va);
+	len = stringFormatLength(format, va_c);
+	if(0 < len)
+	{
+		ret.resize(len, 0);
+		vsnprintf(&ret[0], size_t(len+1), format, va_c);
+	}
+	va_end(va_c);
+	return ret;
+}
+
+void debugToOutputWindow(const char* format, ...)
+{
+	va_list va;
+	va_start(va, format);
+	std::string buffer = stringFormat(format, va);
+	va_end(va);
+	::OutputDebugStringA(buffer.c_str());
+}
+
+// visual studio output window 표시.
+void outputDebugString(const char* const format, ...)
+{
+	va_list va;
+	va_start(va, format);
+	std::string buffer = stringFormat(format, va);
+	va_end(va);
+	::OutputDebugStringA(buffer.c_str());
+}
+
 void avx2_memcpy(void* dst, const void* src, size_t size)
 {
 	// 작은 데이터는 memcpy로 처리 (성능 유리)
